@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════
    Supabase Config
-   SUBSTITUA pelos dados do seu projeto Supabase
    ═══════════════════════════════════════════ */
 
 const SUPABASE_URL = 'https://lztfoprapoyicldunhzw.supabase.co';
