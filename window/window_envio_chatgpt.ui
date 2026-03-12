@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Atividades</class>
+ <widget class="QWidget" name="Atividades">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1155</width>
+    <height>931</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>App Papiron</string>
+  </property>
+  <layout class="QVBoxLayout" name="work_space">
+   <item>
+    <layout class="QHBoxLayout" name="area_dados">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_5"/>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_10">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <item>
+          <widget class="QTableWidget" name="tableWidget">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>600</width>
+             <height>300</height>
+            </size>
+           </property>
+           <column>
+            <property name="text">
+             <string>Curso</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Disciplina</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Situação</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Gabarito</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Selecione o módulo</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="menu_modulos"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="l_situacao_modulo">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QPushButton" name="btn_modulo_excluir">
+           <property name="text">
+            <string>Excluir Módulo</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_modulo_abrir">
+           <property name="text">
+            <string>Abrir Módulo</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_modulo_fechar">
+           <property name="text">
+            <string>Fechar Módulo</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Informe novo módulo</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <item>
+          <widget class="QPushButton" name="btn_modulo_novo">
+           <property name="text">
+            <string>Novo Módulo</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="input_modulo_novo">
+           <property name="placeholderText">
+            <string>p.e: 2023/51</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Funções de inserção no Papiron</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QPushButton" name="btn_postar_atividades">
+           <property name="text">
+            <string>Postar Atividades</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_gabaritos">
+           <property name="text">
+            <string>Postar Gabaritos</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_comentar_questionarios">
+         <property name="text">
+          <string>Comentar Questionários</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_12">
+         <item>
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>LISTA CURSOS</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="input_lista_cursos">
+           <property name="placeholderText">
+            <string>p.e: GFIN,ADM</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_13">
+         <item>
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>DISCIPLINA ESPECÍFICA:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="input_disciplina">
+           <property name="placeholderText">
+            <string>p.e: DIDÁTICA</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_scg">
+         <property name="text">
+          <string>Semana de Conhecimentos Gerais</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_geral">
+         <property name="text">
+          <string>Atividades Gerais</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_verificar_idurl_site">
+         <property name="text">
+          <string>Verificar se está publicado no site</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_discursivas">
+         <property name="text">
+          <string>Postar somente Discursivas</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <item>
+          <widget class="QLabel" name="l_processos">
+           <property name="text">
+            <string>Processos simultâneos</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="menu_processos">
+           <item><property name="text"><string>1</string></property></item>
+           <item><property name="text"><string>2</string></property></item>
+           <item><property name="text"><string>3</string></property></item>
+           <item><property name="text"><string>4</string></property></item>
+           <item><property name="text"><string>5</string></property></item>
+           <item><property name="text"><string>6</string></property></item>
+           <item><property name="text"><string>7</string></property></item>
+           <item><property name="text"><string>8</string></property></item>
+           <item><property name="text"><string>9</string></property></item>
+           <item><property name="text"><string>10</string></property></item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Andamento das postagens</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QProgressBar" name="barra_progresso_postar">
+         <property name="value">
+          <number>0</number>
+         </property>
+         <property name="textVisible">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Dados do Papiron</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>LOGIN</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="input_login"/>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="cb_salvar">
+           <property name="text">
+            <string>Salvar Senha</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>SENHA</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="input_senha">
+           <property name="echoMode">
+            <enum>QLineEdit::Password</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_voltar">
+           <property name="text">
+            <string>Voltar</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

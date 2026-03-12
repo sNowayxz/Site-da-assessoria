@@ -1,0 +1,6 @@
+pyHanko
+pyhanko-certvalidator
+uritools
+qrcode
+pypng
+sortedcontainers

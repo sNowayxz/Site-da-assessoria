@@ -1,0 +1,136 @@
+
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f9fafb;
+                margin: 0;
+                padding: 0;
+                color: #333;
+            }
+
+            .container-dicas {
+                background-color: #ffffff;
+                padding: 4px;
+                max-width: 800px;
+                margin: 40px auto;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            }
+
+            .container-dicas a {
+                color: #1d72b8;
+                font-size: 18px;
+                text-decoration: underline;
+                transition: color 0.3s;
+            }
+
+            .container-dicas a:hover {
+                color: #145e9d;
+            }
+
+            .container-dicas {
+                margin-bottom: 32px;
+            }
+
+            .container-dicas h2 {
+                font-size: 22px;
+                color: #222;
+                margin-bottom: 16px;
+                border-bottom: 1px solid #ddd;
+                padding-bottom: 12px;
+            }
+
+            .container-dicas h3 {
+                padding-top: 20px;
+                font-size: 18px;
+                margin-top: 20px;
+                margin-bottom: 8px;
+                color: #333;
+            }
+
+            .container-dicas p {
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 16px;
+            }
+
+            .container-dicas ul {
+            margin-left: 20px;
+
+            }
+
+            .container-dicas li {
+                margin-left: 20px;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 10px;
+                padding-top:11px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 16px;
+                font-size: 14px;
+            }
+
+            table, th, td {
+                border: 1px solid #e0e0e0;
+            }
+
+            th {
+                background-color: #f1f5f9;
+                color: #333;
+                padding: 10px;
+                text-align: left;
+            }
+
+            td {
+                padding: 8px 12px;
+            }
+
+            .link, .cta {
+                text-align: center;
+                margin: 24px 0;
+            }
+
+            .link a, .cta a {
+                font-size: 16px;
+                color: #e63946;
+                text-decoration: none;
+            }
+
+            .link a img, .link-small img {
+                margin-top: 12px;
+                border-radius: 8px;
+            }
+
+            .link a img {
+                width: 60%;
+            }
+
+            .link-small img {
+                width: 25%;
+            }
+        </style>
+
+        
+    <div class="container-dicas">
+    <h2>Dicas para seu texto dissertativo:</h2>
+
+    <h3>Introdução:</h3>
+    <p>Comece seu texto apresentando a relação histórica entre universidades e a produção do conhecimento científico. Destaque a transformação do cenário acadêmico devido à crescente influência do mercado sobre as pesquisas. Introduza uma questão-problema sobre como equilibrar os diferentes interesses na geração de conhecimento científico.</p>
+
+    <h3>Desenvolvimento:</h3>
+    <ul>
+        <li>Explique como o mercado tem influenciado as prioridades de pesquisa universitária e como isso afeta o compromisso com temas sociais. Cite exemplos de áreas amplamente financiadas pelo mercado.</li>
+        <li>Aborde o papel das universidades em garantir que o conhecimento produzido atenda às necessidades sociais e observe princípios éticos, independentemente das pressões econômicas.</li>
+        <li>Discuta possíveis estratégias para equilibrar essas demandas, como a importância de políticas públicas que incentivem pesquisas voltadas para o bem-estar social e a inovação ética.</li>
+    </ul>
+
+    <h3>Conclusão:</h3>
+    <p>Finalize destacando a importância de um equilíbrio saudável entre universidade, mercado e sociedade para a construção de um conhecimento científico que seja, ao mesmo tempo, inovador e socialmente responsável.</p>
+
+    <h3>Exemplo de introdução pronta:</h3>
+    <p><i>"Historicamente, as universidades têm sido protagonistas na produção de conhecimento científico. No entanto, com a crescente influência do mercado, surgem desafios sobre como equilibrar interesses econômicos e a responsabilidade social na pesquisa acadêmica. Esse cenário nos leva a refletir sobre a essência da missão acadêmica e os compromissos éticos na geração do conhecimento."</i></p>
+</div>

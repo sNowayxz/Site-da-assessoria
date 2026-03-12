@@ -1,0 +1,14 @@
+xhtml2pdf==0.2.17
+reportlab>=4.0.4
+pillow
+lxml
+svglib
+html5lib
+pypdf
+tinycss2
+cssselect2
+webencodings
+fonttools
+arabic-reshaper
+python-bidi
+pyphen

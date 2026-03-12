@@ -1,0 +1,3 @@
+Para remover da lista do GIT e manter localmente.
+    
+    git rm --cached

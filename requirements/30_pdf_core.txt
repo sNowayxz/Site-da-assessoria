@@ -1,0 +1,13 @@
+google-api-core
+google-api-python-client
+google-auth
+google-auth-httplib2
+google-auth-oauthlib
+googleapis-common-protos
+httplib2
+oauthlib
+requests-oauthlib
+cachetools
+protobuf
+proto-plus
+uritemplate

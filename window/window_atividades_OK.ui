@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Atividades</class>
+ <widget class="QMainWindow" name="Atividades">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1200</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>App Papiron</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="mainHorizontal">
+    <item>
+     <!-- Lado esquerdo -->
+     <widget class="QWidget" name="leftWidget">
+      <layout class="QVBoxLayout" name="leftLayout">
+       <item>
+        <widget class="QLabel" name="label_andamento">
+         <property name="text">
+          <string>Andamento</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="tabela_registro">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_andamento_rastreio">
+         <property name="text">
+          <string>Andamento do rastreamento</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="progressHorizontal">
+         <item>
+          <widget class="QProgressBar" name="barra_progresso_rastrear">
+           <property name="value">
+            <number>0</number>
+           </property>
+           <property name="textVisible">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_progresso_valor">
+           <property name="text">
+            <string>0%</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <!-- Lado direito -->
+     <widget class="QWidget" name="rightWidget">
+      <layout class="QVBoxLayout" name="rightLayout">
+       <item>
+        <widget class="QLabel" name="label_modulo">
+         <property name="text">
+          <string>Selecione o módulo</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="menu_modulos"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="l_situacao_modulo">
+         <property name="text">
+          <string>ABERTO</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="moduloButtons">
+         <item>
+          <widget class="QPushButton" name="btn_modulo_excluir">
+           <property name="text">
+            <string>Excluir Módulo</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_modulo_abrir">
+           <property name="text">
+            <string>Abrir Módulo</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_modulo_fechar">
+           <property name="text">
+            <string>Fechar Módulo</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="moduloNovoLayout">
+         <item>
+          <widget class="QLineEdit" name="input_modulo_novo">
+           <property name="placeholderText">
+            <string>p.e: 2023/51</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_modulo_novo">
+           <property name="text">
+            <string>Novo Módulo</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_funcoes">
+         <property name="text">
+          <string>Funções de rastreio</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="funcoesLayout">
+         <item row="0" column="0">
+          <widget class="QPushButton" name="btn_rastrear_atividades">
+           <property name="text">
+            <string>Rastrear Atividades</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="btn_rastrear_scg">
+           <property name="text">
+            <string>Rastrear SCG</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="btn_rastrear_ect">
+           <property name="text">
+            <string>Rastrear AV ECT</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="btn_retomar_scrapped">
+           <property name="text">
+            <string>Retomar Scrapped</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="btn_resetar_atividades">
+           <property name="text">
+            <string>Reset Atividades</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="btn_resetar_alunos">
+           <property name="text">
+            <string>Reset Alunos</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="diasLayout">
+         <item>
+          <widget class="QComboBox" name="menu_dias_rastreios_deslocar"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_dias_deslocar">
+           <property name="text">
+            <string>Dias de deslocamento no rastreio</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="processosLayout">
+         <item>
+          <widget class="QLabel" name="label_processos">
+           <property name="text">
+            <string>Processos simultâneos</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="menu_processos"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_download_livros">
+         <property name="text">
+          <string>Baixar Livros</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_material_atualizar">
+         <property name="text">
+          <string>Atualizar Material Didático</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_scg">
+         <property name="text">
+          <string>SCG</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_geral">
+         <property name="text">
+          <string>Geral</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="dataInicioLayout">
+         <item>
+          <widget class="QCheckBox" name="cb_data_inicio_rastreio">
+           <property name="text">
+            <string>Travar Data de Início</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDateEdit" name="data_inicio_rastreio"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_voltar">
+         <property name="text">
+          <string>Voltar</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar"/>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

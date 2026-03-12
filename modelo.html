@@ -1,0 +1,221 @@
+
+    <html lang="pt-br">
+    <head>
+      <meta charset="utf-8">
+      <title>ATIVIDADE 1 - ECO - CIÊNCIAS SOCIAIS - 53_2025</title>
+      <style>
+        body {
+          background: #fff;
+          color: #222;
+          font-family: Arial, Helvetica, sans-serif;
+          font-size: 12pt;
+        }
+        .cabecalho {
+          display: flex;
+          align-items: flex-start;
+          gap: 1em;
+          margin-bottom: 0.5em;
+        }
+
+        /* Troque aqui o src da logo! */
+        .logo-unicesumar {
+          height: 45px;
+          margin-right: 1.2em;
+        }
+
+        .papiron-endereco {
+          font-size: 0.93em;
+          color: #1463c1;
+          font-weight: bold;
+          margin-top: 0.2em;
+        }
+
+        .titulo-pagina {
+          font-size: 1.32em;
+          font-weight: bold;
+          margin-bottom: 0.3em;
+          padding-bottom: 0.23em;
+          border-bottom: 4px solid #1463c1;
+          color: #232d37;
+        }
+        .info-top {
+          border: 1px solid #bbb;
+          padding: 1em;
+          margin-bottom: 1.2em;
+          background: #fafbfc;
+        }
+        .info-top b { color: #232d37; }
+        .info-top span {
+          margin-right: 2em;
+          display: inline-block;
+          min-width: 130px;
+        }
+        .questao {
+          margin-bottom: 1.7em;
+          page-break-inside: avoid;
+        }
+        .questao.anulada {
+          background: #ffeaea !important;
+          border: 2.5px solid #ee2222;
+          border-radius: 8px;
+          padding-top: 0.8em;
+          padding-bottom: 0.8em;
+        }
+        .questao-numero {
+          font-size: 1em;
+          font-weight: bold;
+          color: #222;
+          margin-bottom: 0;
+          padding-bottom: 0.15em;
+          border-bottom: 3px solid #1463c1;
+          width: fit-content;
+        }
+        .enunciado {
+          border: 1px solid #bbb;
+          border-radius: 4px;
+          margin-bottom: 0.85em;
+          margin-top: 0.6em;
+          padding: 1em 1.2em 0.8em 1.2em;
+          font-size: 1.02em;
+          text-align: justify;
+          background: #fff;
+        }
+        .alternativas-bloco {
+          border: 1px solid #bbb;
+          border-radius: 4px;
+          background: #fff;
+          margin-bottom: 0.2em;
+          padding: 0.3em 1.2em 0.8em 1.2em;
+        }
+        .alternativas-titulo {
+          font-weight: bold;
+          color: #222;
+          margin-top: 0.5em;
+          margin-bottom: 0.5em;
+          padding-bottom: 0.15em;
+          border-bottom: 3px solid #1463c1;
+          width: fit-content;
+          font-size: 1.05em;
+        }
+        .alternativas-lista {
+          margin: 0.2em 0 0 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 0.4em;
+        }
+        .alternativas-lista label {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.65em;
+          font-size: 1em;
+          padding: 0.4em 0.5em 0.4em 0.3em;
+          border-radius: 5px;
+          cursor: pointer;
+          user-select: none;
+        }
+        .alternativas-lista label:hover {
+          background: #f6f7fb;
+        }
+        .alternativas-lista input[type="radio"] {
+          accent-color: #1463c1;
+          margin-right: 0.6em;
+        }
+        .alternativas-lista {
+            display: block;
+            margin: 0.2em 0 0 0;
+            padding: 0;
+        }
+        .alternativa-linha {
+            display: table-row;
+            margin-bottom: 0.9em;
+            height: 2.2em;
+        }
+        .alternativa-linha input[type="radio"] {
+            display: table-cell;
+            vertical-align: top;
+            margin-right: 0.6em;
+        }
+        .alternativa-texto {
+            color:black;
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 0.7em;
+            padding-bottom: 0.5em;
+            padding-top: 0.5em;
+            border-radius: 12px;
+        }
+        .alternativa-gabarito {
+            background: #fff940 !important;
+            font-weight: bold;
+            color: #664d00;
+            border-radius: 5px;
+            /* pode customizar mais se quiser */
+        }
+      </style>
+    </head>
+    <body>
+      <div class="questionario">
+        <div class="cabecalho">
+          <!-- Substitua o src abaixo pelo seu logo base64 ou url -->
+          <img src="data:image/png;base64,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">
+     
+          <div>
+            <div style="font-size:1.25em; color:#444;">
+              <b>UniCesumar</b> - Ensino a Distância -
+              <span class="papiron-endereco"> https://www.papiron.com.br </span>
+            </div><br>
+          </div>
+        </div>
+        <div class="titulo-pagina">
+          ATIVIDADE 1 - ECO - CIÊNCIAS SOCIAIS - 53_2025
+        </div>
+        <div class="info-top">
+          <span><b>Período:</b> 21/07/2025 08:00 a 10/08/2025 23:59</span>
+          <span><b>Status:</b> ABERTO</span>
+          <span><b>Nota máxima:</b> -</span>
+          <span><b>Gabarito:</b> --</span>
+        </div>
+    
+        <div class="questao ">
+          <div class="questao-numero">1ª QUESTÃO</div>
+          <div class="enunciado"><div style="text-align:justify"><strong>Texto 1</strong><br />
+<br />
+No código visual, coletinhos sem manga, tênis ecológicos e patinetes formavam o combo que definia o típico Faria Limer em 2019. De lá para cá, alguns elementos se mantêm e, ainda que os veículos de duas rodas não estejam mais disponíveis para locação, é possível vê-los, aos montes, ao lado de bicicletas e patins, entre 8h e 9h da manhã, percorrendo a ciclovia que corta a famosa avenida.<br />
+Se na década de 1960 a visualidade de grupos específicos estava mais ligada ao lazer, a partir de 1980 a balança pende para o trabalho, com os <em>yuppies</em> norte-americanos ditando o estilo de vida dos ingressantes no mercado.<br />
+“Esses jovens urbanos profissionais ganhavam muito dinheiro em Wall Street, então existia uma ideia de símbolos como relógios, joias, restaurantes e apartamentos caros”, diz Maíra Zimmermann, historiadora de moda e professora da FAAP.<br />
+Natural que os frequentadores do Vale do Silício Brasileiro, que passam quase 12 horas por dia no trabalho, se espelhem no país vizinho. Apesar das influências externas, é sobretudo a dinâmica pautada na lógica capitalista que dita a identidade coletiva.<br />
+Para Marcelo Ribas, <em>advisor</em> em um escritório de advocacia, que trabalha na rua há 10 anos, a vivência transcende o trabalho. “Criou-se um polo e a gente acaba resolvendo a vida por aqui. Moradia, mercado, clube, academia, bar, restaurante. É como dizem por aí, o Condado”.<br />
+ </div>
+
+<div style="text-align:right">Fonte: https://istoe.com.br/os-novos-faria-limers-mais-informais-menos-isolados/. Acesso em: 17 jun. 2024. (Adaptado).</div>
+
+<div style="text-align:justify"> <br />
+<strong>Texto 2</strong><br />
+<br />
+Camisa polo, shorts acima do joelho, cabelo loiro penteado para o lado e três palavras: o <em>beach</em> venceu. No último ano, Jorginho “do Jeep” foi das profundezas das areias artificiais paulistas até o assento ao lado de Guga em Roland Garros, torneio de tênis parisiense. O personagem que satiriza a Faria Lima acumula milhões de visualizações nas redes sociais; parcerias com marcas como a Lacoste, Jeep e Stanley; e se tornou o único influenciador a fazer um <em>publi</em> post da B3, no Instagram.<br />
+Para o homem embaixo da peruca, o impacto é o mesmo – senão maior. Fausto Carvalho veio de uma região em São Paulo bem longe do condado da Faria Lima: o município de Diadema, no ABC paulista. Os trejeitos de “faria limer” – as gírias exageradas, a ostentação de roupas de marcas e a presença semanal no <em>beach tennis</em> – vêm de observar a espécie como um verdadeiro antropólogo. “Comecei a entender onde eles vão, o que fazem, o que comem [risos]”, explicou em entrevista exclusiva à EXAME.<br />
+O imaginário “faria limer” cresceu nas redes sociais de uns anos para cá. É um meme que personifica o "<em>way of life</em>" de quem trabalha no centro financeiro de São Paulo, especificamente na Avenida Faria Lima, que cruza do bairro de Pinheiros até o Itaim Bibi. Perpetuadores de tendências controversas, como o cigarro eletrônico sabor uva e crossfit às 5 da manhã, engloba a geração <em>millennial</em> das startups e os boomers das corporações tradicionais.<br />
+Da cabeça aos pés, marcas como Lacoste, Tommy Hilfiger e Golden Goose. Às sextas são destinadas a “casual friday”; as conversas são sobre o mercado financeiro, o futuro das criptomoedas e a próxima disrupção econômica; as gírias misturam o paulistês com o inglês. Este resumo serve como exemplo de quais trejeitos Jorge busca para exagerar de um “faria limer”.<br />
+Fausto tem 15 anos de experiência como animador e passou anos trabalhando dentro de cruzeiros, criando personagens caricatos e até imitando os “maôes” de Silvio Santos para as atividades do navio. “Eu sou do evento, né? Tenho esse lance de conversar com as pessoas”, conta. E foi num evento empresarial em Curitiba, em junho de 2022, que nasceu Jorginho: era um encontro com um público grande de “<em>beach</em> tenistas”, ou jogadores de tênis de praia, então criar um personagem a partir daí parecia a solução lógica.<br />
+Com uma camiseta apertada demais, desceu os andares do hotel em que ficava e, no meio do caminho, pensou em algumas piadas que poderia soltar para os convidados assim que chegasse. “Acabei falando umas coisas tipo “não tem nem escada rolante aqui, meu, já cheguei cansadão” e também que tinha perdido o meu copo Stanley”.<br />
+ </div>
+
+<div style="text-align:right">Fonte: https://exame.com/reportagens-especiais/pop/jorginho-da-rene-o-jeitinho-faria-limer-que-conquistou-o-brasil/#s-ano-fantastico. Acesso em: 17 jun. 2024. (Adaptado).</div>
+
+<div style="text-align:justify"> <br />
+Os dois textos abordam sobre os frequentadores da Avenida Faria Lima, da cidade de São Paulo, conhecida por ser um centro financeiro e empresarial, abrigando diversas empresas, escritórios, instituições financeiras e sedes corporativas.<br />
+<br />
+Diante do que é exposto nesses textos sobre esses frequentadores e se utilizando dos estudos da disciplina, explique os conceitos grupo social, grupo de referência e estereótipo a partir dos “faria limers”.</div></div>
+          <div class="alternativas-bloco">
+            <div class="alternativas-titulo">ALTERNATIVAS</div>
+            <div class="alternativas-lista">
+        
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </body>
+    </html>
+    

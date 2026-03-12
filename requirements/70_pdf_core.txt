@@ -1,0 +1,12 @@
+selenium
+webdriver-manager
+selenium-wire
+trio
+trio-websocket
+wsproto
+PySocks
+h2
+hpack
+hyperframe
+Brotli
+zstandard

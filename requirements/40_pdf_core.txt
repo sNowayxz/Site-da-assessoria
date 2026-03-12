@@ -1,0 +1,6 @@
+openai
+httpx
+httpcore
+anyio
+sniffio
+h11

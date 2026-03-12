@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PapironLab</class>
+ <widget class="QMainWindow" name="PapironLab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>801</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>800</width>
+    <height>500</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>App Papiron Lab</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="2" column="0" colspan="2">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="botao_sair">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>SAIR</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>35</width>
+          <height>35</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QCommandLinkButton" name="botao_cadastro_aluno">
+          <property name="minimumSize">
+           <size>
+            <width>400</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Atualizar Cadastro Alunos</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCommandLinkButton" name="botao_extrai_atividades">
+          <property name="minimumSize">
+           <size>
+            <width>400</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="baseSize">
+           <size>
+            <width>700</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Rastrear Atividades </string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCommandLinkButton" name="botao_extrai_atividades_responsivo">
+          <property name="text">
+           <string>Envio das Atividades</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCommandLinkButton" name="botao_mensalistas">
+          <property name="text">
+           <string>Mensalistas</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="1">
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_atualizacao">
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>78</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;a href=&quot;http://etc.intra.fazenda.sp.gov.br/sites/drt10nf/Documentos%20Nos%20Conformes/Forms/AllItems.aspx?RootFolder=%2Fsites%2Fdrt10nf%2FDocumentos%20Nos%20Conformes%2F205P&amp;amp;FolderCTID=0x01200091C9215F0FCD194AB620B1CF102AF7D4&amp;amp;View=%7BAADAE351%2D3E7F%2D4770%2DAD5B%2D8D8BC0179A57%7D&quot;&gt;&lt;span style=&quot; font-family:'verdana'; font-size:10pt; font-weight:600; text-decoration: underline; color:#ff0000;&quot;&gt;Clique aqui para baixar &lt;br/&gt;a nova versão&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>250</width>
+          <height>35</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>500</width>
+          <height>45</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Verdana</family>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;App Papiron LAB&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_6">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Ignored</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>30</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QToolButton" name="toolButton">
+        <property name="minimumSize">
+         <size>
+          <width>42</width>
+          <height>35</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>40</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>801</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuArquivo">
+    <property name="title">
+     <string>Arquivo</string>
+    </property>
+    <addaction name="actionSair"/>
+   </widget>
+   <widget class="QMenu" name="menuPrograma">
+    <property name="title">
+     <string>Programa</string>
+    </property>
+    <addaction name="actionAtualizaCadastro"/>
+    <addaction name="actionExtraiAtividades"/>
+   </widget>
+   <widget class="QMenu" name="menuConfigura_es">
+    <property name="title">
+     <string>Configurações</string>
+    </property>
+    <addaction name="actionPreferencias"/>
+    <addaction name="actionPerfil"/>
+    <addaction name="actionSobre"/>
+   </widget>
+   <addaction name="menuArquivo"/>
+   <addaction name="menuPrograma"/>
+   <addaction name="menuConfigura_es"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionSair">
+   <property name="text">
+    <string>Sair</string>
+   </property>
+  </action>
+  <action name="actionAtualizaCadastro">
+   <property name="text">
+    <string>Protocolo 2.05P</string>
+   </property>
+  </action>
+  <action name="actionSalvar_credenciais">
+   <property name="text">
+    <string>Salvar credenciais</string>
+   </property>
+  </action>
+  <action name="actionPreferencias">
+   <property name="text">
+    <string>Preferências</string>
+   </property>
+  </action>
+  <action name="actionExtraiAtividades">
+   <property name="text">
+    <string>Relatório Avaliação Não Localizados</string>
+   </property>
+  </action>
+  <action name="actionRotina_INapto">
+   <property name="text">
+    <string>Rotina Inapto</string>
+   </property>
+  </action>
+  <action name="actionColocar_OSF_em_Execu_o">
+   <property name="text">
+    <string>Colocar OSF em Execução</string>
+   </property>
+  </action>
+  <action name="actionPerfil">
+   <property name="text">
+    <string>Perfil</string>
+   </property>
+  </action>
+  <action name="actionSobre">
+   <property name="text">
+    <string>Sobre</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
