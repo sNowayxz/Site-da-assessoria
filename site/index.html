@@ -3,263 +3,506 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assessoria Acadêmica</title>
-  <meta name="description" content="Assessoria acadêmica especializada em atividades de extensão. Suporte, organização e orientação para seu projeto acadêmico.">
+  <title>Assessoria Acadêmica — Suporte Especializado</title>
+  <meta name="description" content="Assessoria acadêmica com +4 anos de experiência. Atividades, TCC, mapas mentais, extensões e muito mais. Atendimento personalizado para +2.000 alunos.">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta property="og:title" content="Assessoria Acadêmica">
+  <meta property="og:description" content="Suporte especializado para sua jornada acadêmica. Atividades, TCC, mapas, extensões e pacotes mensalistas.">
+  <meta property="og:image" content="logo.png">
   <link rel="icon" href="logo.png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- ════════════ BANNER ════════════ -->
-  <header class="banner">
-    <div class="banner-grid"></div>
-    <div class="banner-particles" id="particles"></div>
-    <div class="banner-inner">
-      <div class="banner-logo">
-        <img src="logo.png" alt="Assessoria Acadêmica">
+  <!-- ════════════ NAVBAR ════════════ -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar-inner">
+      <a href="#home" class="navbar-brand">
+        <img src="logo.png" alt="Logo" class="navbar-logo-img">
+        <span>Assessoria <strong>Acadêmica</strong></span>
+      </a>
+      <div class="navbar-links" id="navLinks">
+        <a href="#home" class="active">Início</a>
+        <a href="#servicos">Serviços</a>
+        <a href="#como-funciona">Como Funciona</a>
+        <a href="#sobre">Sobre Nós</a>
+        <a href="#contato">Contato</a>
+        <a href="#faq">FAQ</a>
       </div>
-      <div class="banner-text">
-        <h1>Assessoria <span>Acadêmica</span></h1>
-        <p>Suporte especializado em atividades de extensão. Organização, orientação e acompanhamento para o desenvolvimento do seu projeto acadêmico.</p>
-      </div>
-    </div>
-  </header>
-
-  <!-- ════════════ NAVEGAÇÃO ════════════ -->
-  <nav class="nav-bar" id="navbar">
-    <div class="nav-inner">
-      <button class="nav-btn active" data-tab="apresentacao">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Apresentação
-      </button>
-      <button class="nav-btn" data-tab="como-funciona">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Como Funciona
-      </button>
-      <button class="nav-btn" data-tab="orcamento">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Faça um Orçamento
+      <a href="https://wa.me/5543999066267?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20a%20assessoria." target="_blank" rel="noopener" class="navbar-cta">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Fale Conosco
+      </a>
+      <button class="navbar-toggle" id="navToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
       </button>
     </div>
   </nav>
 
-  <!-- ════════════ CONTEÚDO PRINCIPAL ════════════ -->
-  <main class="main-content">
-
-    <!-- ──── ABA: APRESENTAÇÃO ──── -->
-    <section id="apresentacao" class="tab-section active">
-      <div class="welcome-block">
-        <div class="welcome-text">
-          <div class="section-tag">Bem-vindo</div>
-          <h2>Seu projeto acadêmico com <span class="accent">orientação especializada</span></h2>
-          <p>Oferecemos suporte especializado para estudantes que precisam de orientação na compreensão, organização, desenvolvimento e estruturação de atividades acadêmicas.</p>
-          <p>Nosso compromisso é tornar esse processo mais claro, objetivo e seguro, proporcionando acompanhamento em cada etapa da demanda.</p>
-          <p>Aqui, você encontra apoio para entender melhor as exigências da sua atividade, organizar suas ideias, estruturar conteúdos com mais eficiência e avançar no seu projeto com mais tranquilidade e confiança.</p>
-          <button class="cta-button" id="btn-orcamento">
-            Solicitar orçamento
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </button>
+  <!-- ════════════ HERO ════════════ -->
+  <section id="home" class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-particles" id="particles"></div>
+    <div class="hero-content">
+      <div class="hero-logo">
+        <img src="logo.png" alt="Assessoria Acadêmica">
+      </div>
+      <h1>Assessoria <span>Acadêmica</span></h1>
+      <p class="hero-subtitle">Suporte especializado para sua jornada acadêmica. Atividades, TCC, mapas mentais, extensões e acompanhamento completo.</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number" data-target="4">0</span><span class="stat-suffix">+</span>
+          <span class="stat-label">Anos de Experiência</span>
         </div>
-        <div class="welcome-visual">
-          <div class="visual-card vc-1">
-            <div class="vc-icon">📚</div>
-            <span>Estruturação</span>
+        <div class="stat-item">
+          <span class="stat-number" data-target="2000">0</span><span class="stat-suffix">+</span>
+          <span class="stat-label">Alunos Atendidos</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" data-target="9000">0</span><span class="stat-suffix">+</span>
+          <span class="stat-label">Horas Validadas</span>
+        </div>
+      </div>
+      <div class="hero-cta-group">
+        <a href="#servicos" class="cta-button">
+          Ver Serviços
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+        <a href="https://wa.me/5543999066267?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20a%20assessoria." target="_blank" rel="noopener" class="cta-button-outline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Fale Conosco
+        </a>
+      </div>
+      <div class="hero-scroll">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ SERVIÇOS ════════════ -->
+  <section id="servicos" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag center">Nossos Serviços</div>
+        <h2>Soluções para sua Jornada Acadêmica</h2>
+        <p>Conheça todos os serviços que oferecemos para facilitar sua vida acadêmica.</p>
+      </div>
+
+      <div class="servicos-grid">
+        <!-- Atividades -->
+        <div class="servico-card animate-on-scroll">
+          <div class="servico-icon">📝</div>
+          <h3>Atividades Acadêmicas</h3>
+          <p>Suporte na elaboração de atividades dissertativas e objetivas.</p>
+          <div class="servico-prices">
+            <div class="price-row"><span>Atividade 1</span><span class="price">R$ 30</span></div>
+            <div class="price-row"><span>Atividades 2 e 3</span><span class="price">R$ 40</span></div>
+            <div class="price-row"><span>Engenharia</span><span class="price">R$ 60</span></div>
           </div>
-          <div class="visual-card vc-2">
-            <div class="vc-icon">✍️</div>
-            <span>Desenvolvimento</span>
+          <a href="https://wa.me/5543999066267?text=Olá!%20Tenho%20interesse%20em%20atividades%20acadêmicas." target="_blank" rel="noopener" class="servico-btn">Solicitar</a>
+        </div>
+
+        <!-- Mapas -->
+        <div class="servico-card animate-on-scroll">
+          <div class="servico-icon">🧠</div>
+          <h3>Mapas Mentais</h3>
+          <p>Mapas estruturados para organizar e fixar o conteúdo de forma visual.</p>
+          <div class="servico-prices">
+            <div class="price-row"><span>Mapa Modelo</span><span class="price">R$ 50</span></div>
+            <div class="price-row"><span>Modelo (Eng.)</span><span class="price">R$ 60</span></div>
+            <div class="price-row"><span>Mapa Exclusivo</span><span class="price">Consultar</span></div>
           </div>
-          <div class="visual-card vc-3">
-            <div class="vc-icon">🎯</div>
-            <span>Orientação</span>
+          <a href="https://wa.me/5543999066267?text=Olá!%20Tenho%20interesse%20em%20mapas%20mentais." target="_blank" rel="noopener" class="servico-btn">Solicitar</a>
+        </div>
+
+        <!-- Pacotes (destaque) -->
+        <div class="servico-card servico-featured animate-on-scroll">
+          <div class="servico-badge">Mais Popular</div>
+          <div class="servico-icon">📦</div>
+          <h3>Pacotes</h3>
+          <p>Combine serviços e economize com nossos pacotes especiais.</p>
+          <div class="servico-prices">
+            <div class="price-row"><span>Atv1 + Mapa</span><span class="price">R$ 70</span></div>
+            <div class="price-row"><span>Atv1+2+3 + Mapa</span><span class="price">R$ 100</span></div>
+            <div class="price-row"><span>Completo</span><span class="price">R$ 120</span></div>
+            <div class="price-row"><span>Mensalista</span><span class="price">R$ 250</span></div>
+            <div class="price-row"><span>Mensalista (Eng.)</span><span class="price">R$ 300</span></div>
           </div>
-          <div class="visual-center-logo">
-            <img src="logo.png" alt="Logo">
+          <a href="https://wa.me/5543999066267?text=Olá!%20Tenho%20interesse%20nos%20pacotes." target="_blank" rel="noopener" class="servico-btn">Solicitar</a>
+        </div>
+
+        <!-- TCC -->
+        <div class="servico-card animate-on-scroll">
+          <div class="servico-icon">🎓</div>
+          <h3>TCC</h3>
+          <p>Trabalho exclusivo, completo e estruturado conforme normas ABNT.</p>
+          <div class="servico-prices">
+            <div class="price-row"><span>Por página</span><span class="price">R$ 30</span></div>
           </div>
-          <div class="visual-ring ring-1"></div>
-          <div class="visual-ring ring-2"></div>
+          <a href="https://wa.me/5543999066267?text=Olá!%20Tenho%20interesse%20em%20TCC." target="_blank" rel="noopener" class="servico-btn">Solicitar</a>
+        </div>
+
+        <!-- Relatório de Estágio -->
+        <div class="servico-card animate-on-scroll">
+          <div class="servico-icon">📋</div>
+          <h3>Relatório de Estágio</h3>
+          <p>Relatório exclusivo e completo conforme exigências institucionais.</p>
+          <div class="servico-prices">
+            <div class="price-row"><span>Relatório completo</span><span class="price">R$ 150–200</span></div>
+          </div>
+          <a href="https://wa.me/5543999066267?text=Olá!%20Tenho%20interesse%20em%20relatório%20de%20estágio." target="_blank" rel="noopener" class="servico-btn">Solicitar</a>
+        </div>
+
+        <!-- Extensão -->
+        <div class="servico-card animate-on-scroll">
+          <div class="servico-icon">💡</div>
+          <h3>Projetos de Extensão</h3>
+          <p>Desenvolvidos conforme carga horária exigida pela instituição.</p>
+          <div class="servico-prices">
+            <div class="price-row"><span>Sob consulta</span><span class="price">Consultar</span></div>
+          </div>
+          <a href="https://wa.me/5543999066267?text=Olá!%20Tenho%20interesse%20em%20projetos%20de%20extensão." target="_blank" rel="noopener" class="servico-btn">Solicitar</a>
         </div>
       </div>
 
-      <!-- ── Quem Somos ── -->
-      <div class="quem-somos-block">
-        <div class="section-tag center">Quem Somos</div>
-        <h3>Nossa Identidade</h3>
-        <div class="quem-somos-content">
-          <p>Há mais de 4 anos, nossa assessoria acadêmica transforma desafios acadêmicos em resultados reais. Somos especialistas em atividades de extensão e já ajudamos mais de <strong>2.000 alunos</strong>, contribuindo para a validação de mais de <strong>9.000 horas</strong> ao longo da nossa trajetória. Unimos experiência, agilidade e excelência no atendimento para oferecer o suporte que você precisa, com foco total em facilitar sua jornada e aproximar você da conquista da sua graduação.</p>
+      <!-- Trust Bar -->
+      <div class="trust-bar">
+        <div class="trust-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Garantia: estorno ou prova substitutiva</span>
+        </div>
+        <div class="trust-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <span>Pix ou cartão (com taxa)</span>
+        </div>
+        <div class="trust-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Parcelamento via cartão</span>
         </div>
       </div>
+    </div>
+  </section>
 
-      <div class="cards-section">
-        <div class="section-tag center">Diferenciais</div>
-        <h3>Por que escolher nossa assessoria?</h3>
-        <div class="cards-grid">
-          <div class="card" data-delay="0">
-            <div class="card-icon-wrap">
-              <div class="card-icon">🎯</div>
-            </div>
-            <h4>Atendimento Personalizado</h4>
-            <p>Cada demanda é analisada com atenção às necessidades específicas do estudante, garantindo um suporte mais direcionado e eficiente.</p>
-            <div class="card-line"></div>
-          </div>
-          <div class="card" data-delay="1">
-            <div class="card-icon-wrap">
-              <div class="card-icon">📋</div>
-            </div>
-            <h4>Orientação Especializada</h4>
-            <p>O atendimento é conduzido com foco na clareza das informações, na organização do conteúdo e no melhor direcionamento para cada projeto.</p>
-            <div class="card-line"></div>
-          </div>
-          <div class="card" data-delay="2">
-            <div class="card-icon-wrap">
-              <div class="card-icon">⚡</div>
-            </div>
-            <h4>Agilidade e Organização</h4>
-            <p>Priorizamos um processo prático, organizado e objetivo, facilitando o andamento da demanda acadêmica.</p>
-            <div class="card-line"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ──── ABA: COMO FUNCIONA ──── -->
-    <section id="como-funciona" class="tab-section">
+  <!-- ════════════ COMO FUNCIONA ════════════ -->
+  <section id="como-funciona" class="section section-alt">
+    <div class="container">
       <div class="section-header">
         <div class="section-tag center">Passo a Passo</div>
-        <h2>Como Funciona o Desenvolvimento</h2>
-        <p>Conheça cada etapa do nosso processo de atendimento, do envio da demanda até a entrega final.</p>
+        <h2>Como Funciona</h2>
+        <p>Conheça cada etapa do nosso processo, do envio da demanda até a entrega final.</p>
       </div>
 
       <div class="timeline">
         <div class="timeline-line"></div>
 
-        <div class="timeline-step" data-step="0">
-          <div class="step-number"><span>1</span></div>
+        <div class="timeline-step animate-on-scroll" data-step="0">
+          <div class="step-number">1</div>
           <div class="step-content">
             <div class="step-tag">Início</div>
             <h4>Envio da Demanda</h4>
-            <p>O estudante entra em contato e informa sua necessidade acadêmica, compartilhando a atividade, o tema, as orientações recebidas ou qualquer material disponível.</p>
+            <p>Você entra em contato pelo WhatsApp e informa sua necessidade, compartilhando a atividade, o tema e qualquer material disponível.</p>
           </div>
         </div>
 
-        <div class="timeline-step" data-step="1">
-          <div class="step-number"><span>2</span></div>
+        <div class="timeline-step animate-on-scroll" data-step="1">
+          <div class="step-number">2</div>
           <div class="step-content">
             <div class="step-tag">Avaliação</div>
             <h4>Análise das Informações</h4>
-            <p>A equipe avalia cuidadosamente o conteúdo enviado, identificando os objetivos da demanda, o nível de complexidade e a melhor forma de condução do atendimento.</p>
+            <p>Nossa equipe avalia o conteúdo enviado, identificando os objetivos, a complexidade e a melhor forma de condução.</p>
           </div>
         </div>
 
-        <div class="timeline-step" data-step="2">
-          <div class="step-number"><span>3</span></div>
+        <div class="timeline-step animate-on-scroll" data-step="2">
+          <div class="step-number">3</div>
           <div class="step-content">
             <div class="step-tag">Estratégia</div>
-            <h4>Planejamento do Desenvolvimento</h4>
-            <p>Com base na análise inicial, é definido o direcionamento do trabalho, a organização das informações e os pontos essenciais que devem ser considerados.</p>
+            <h4>Planejamento</h4>
+            <p>Definimos o direcionamento do trabalho, a organização das informações e os pontos essenciais a serem considerados.</p>
           </div>
         </div>
 
-        <div class="timeline-step" data-step="3">
-          <div class="step-number"><span>4</span></div>
+        <div class="timeline-step animate-on-scroll" data-step="3">
+          <div class="step-number">4</div>
           <div class="step-content">
             <div class="step-tag">Processo</div>
-            <h4>Acompanhamento e Alinhamento</h4>
-            <p>Durante o processo, o estudante recebe suporte, esclarecimentos e alinhamentos necessários para acompanhar o desenvolvimento com clareza e segurança.</p>
+            <h4>Acompanhamento</h4>
+            <p>Durante o processo, você recebe suporte e alinhamentos necessários para acompanhar o desenvolvimento.</p>
           </div>
         </div>
 
-        <div class="timeline-step" data-step="4">
-          <div class="step-number"><span>5</span></div>
+        <div class="timeline-step animate-on-scroll" data-step="4">
+          <div class="step-number">5</div>
           <div class="step-content">
             <div class="step-tag">Entrega</div>
             <h4>Finalização</h4>
-            <p>Ao final, a entrega é organizada, revisada e alinhada com o que foi solicitado, mantendo o padrão de qualidade e atenção aos detalhes.</p>
+            <p>A entrega é organizada, revisada e alinhada com o que foi solicitado, mantendo o padrão de qualidade.</p>
           </div>
         </div>
       </div>
 
-      <div class="timeline-cta">
+      <div class="section-cta">
         <p>Pronto para começar?</p>
-        <button class="cta-button" id="btn-orcamento-2">
-          Solicitar orçamento
+        <a href="#contato" class="cta-button">
+          Solicitar Orçamento
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-        </button>
+        </a>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- ──── ABA: ORÇAMENTO ──── -->
-    <section id="orcamento" class="tab-section">
-      <div class="orcamento-section">
-        <div class="orcamento-header">
-          <div class="section-tag center">Contato</div>
-          <h2>Solicite seu Orçamento</h2>
-          <p>Entre em contato com uma de nossas assessorias e receba atendimento prático, rápido e direcionado para a sua necessidade acadêmica. Nossa equipe está preparada para analisar sua demanda e apresentar a melhor solução de forma clara e objetiva.</p>
+  <!-- ════════════ SOBRE NÓS ════════════ -->
+  <section id="sobre" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag center">Quem Somos</div>
+        <h2>Sobre Nós</h2>
+      </div>
+
+      <div class="sobre-grid">
+        <div class="sobre-text">
+          <p>Há mais de <strong>4 anos</strong>, nossa assessoria acadêmica transforma desafios acadêmicos em resultados reais. Somos especialistas em atividades de extensão e já ajudamos mais de <strong>2.000 alunos</strong>, contribuindo para a validação de mais de <strong>9.000 horas</strong> ao longo da nossa trajetória.</p>
+          <p>Unimos experiência, agilidade e excelência no atendimento para oferecer o suporte que você precisa, com foco total em facilitar sua jornada e aproximar você da conquista da sua graduação.</p>
+          <p>Administramos o portal do aluno com excelência e profissionalismo, garantindo que cada demanda seja tratada com a atenção e o cuidado que merece.</p>
         </div>
-
-        <div class="contact-grid">
-          <!-- Assessoria 1 -->
-          <div class="contact-card">
-            <div class="contact-badge">01</div>
-            <div class="contact-label">AG Assessoria</div>
-            <div class="contact-phone">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              +55 43 99906-6267
-            </div>
-            <div class="qr-container">
-              <canvas id="qr1" width="140" height="140"></canvas>
-            </div>
-            <div class="qr-caption">Escaneie para falar com a AG Assessoria</div>
-            <a href="https://wa.me/5543999066267?text=Tenho%20interesse%20em%20extens%C3%B5es" target="_blank" rel="noopener" class="whatsapp-btn">
-              <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              Falar no WhatsApp
-            </a>
+        <div class="sobre-stats">
+          <div class="sobre-stat-card animate-on-scroll">
+            <span class="sobre-stat-number">4+</span>
+            <span class="sobre-stat-label">Anos no Mercado</span>
           </div>
-
-          <!-- Assessoria 2 -->
-          <div class="contact-card">
-            <div class="contact-badge">02</div>
-            <div class="contact-label">Einstein Assessoria</div>
-            <div class="contact-phone">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              +55 18 98159-1286
-            </div>
-            <div class="qr-container">
-              <canvas id="qr2" width="140" height="140"></canvas>
-            </div>
-            <div class="qr-caption">Escaneie para falar com a Einstein Assessoria</div>
-            <a href="https://wa.me/5518981591286?text=Tenho%20interesse%20em%20extens%C3%B5es" target="_blank" rel="noopener" class="whatsapp-btn">
-              <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              Falar no WhatsApp
-            </a>
+          <div class="sobre-stat-card animate-on-scroll">
+            <span class="sobre-stat-number">2.000+</span>
+            <span class="sobre-stat-label">Alunos Atendidos</span>
+          </div>
+          <div class="sobre-stat-card animate-on-scroll">
+            <span class="sobre-stat-number">9.000+</span>
+            <span class="sobre-stat-label">Horas Validadas</span>
+          </div>
+          <div class="sobre-stat-card animate-on-scroll">
+            <span class="sobre-stat-number">100%</span>
+            <span class="sobre-stat-label">Compromisso</span>
           </div>
         </div>
       </div>
-    </section>
 
-  </main>
+      <div class="cards-grid">
+        <div class="card animate-on-scroll">
+          <div class="card-icon-wrap"><div class="card-icon">🎯</div></div>
+          <h4>Atendimento Personalizado</h4>
+          <p>Cada demanda é analisada com atenção às necessidades específicas do estudante.</p>
+          <div class="card-line"></div>
+        </div>
+        <div class="card animate-on-scroll">
+          <div class="card-icon-wrap"><div class="card-icon">📋</div></div>
+          <h4>Orientação Especializada</h4>
+          <p>Foco na clareza das informações e no melhor direcionamento para cada projeto.</p>
+          <div class="card-line"></div>
+        </div>
+        <div class="card animate-on-scroll">
+          <div class="card-icon-wrap"><div class="card-icon">⚡</div></div>
+          <h4>Agilidade e Organização</h4>
+          <p>Processo prático e objetivo, facilitando o andamento da demanda acadêmica.</p>
+          <div class="card-line"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <!-- ════════════ RODAPÉ ════════════ -->
+  <!-- ════════════ CONTATO ════════════ -->
+  <section id="contato" class="section section-alt">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag center">Contato</div>
+        <h2>Solicite seu Orçamento</h2>
+        <p>Entre em contato e receba atendimento prático, rápido e direcionado para sua necessidade acadêmica.</p>
+      </div>
+
+      <div class="contato-info-bar">
+        <div class="info-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>09h às 20h</span>
+        </div>
+        <div class="info-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          <span>@assessoriaacademicaag</span>
+        </div>
+        <div class="info-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span>(43) 99906-6267</span>
+        </div>
+      </div>
+
+      <div class="contact-grid">
+        <div class="contact-card">
+          <div class="contact-badge">01</div>
+          <div class="contact-label">AG Assessoria</div>
+          <div class="contact-phone">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            +55 43 99906-6267
+          </div>
+          <div class="qr-container"><canvas id="qr1" width="140" height="140"></canvas></div>
+          <div class="qr-caption">Escaneie para falar no WhatsApp</div>
+          <a href="https://wa.me/5543999066267?text=Olá!%20Gostaria%20de%20solicitar%20um%20orçamento." target="_blank" rel="noopener" class="whatsapp-btn">
+            <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Falar no WhatsApp
+          </a>
+        </div>
+
+        <div class="contact-card">
+          <div class="contact-badge">02</div>
+          <div class="contact-label">Einstein Assessoria</div>
+          <div class="contact-phone">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            +55 18 98159-1286
+          </div>
+          <div class="qr-container"><canvas id="qr2" width="140" height="140"></canvas></div>
+          <div class="qr-caption">Escaneie para falar no WhatsApp</div>
+          <a href="https://wa.me/5518981591286?text=Olá!%20Gostaria%20de%20solicitar%20um%20orçamento." target="_blank" rel="noopener" class="whatsapp-btn">
+            <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Falar no WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ FAQ ════════════ -->
+  <section id="faq" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag center">Dúvidas</div>
+        <h2>Perguntas Frequentes</h2>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Como funciona o processo de atendimento?</span>
+            <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Você entra em contato pelo WhatsApp, envia sua demanda (atividade, tema, orientações), nossa equipe analisa e apresenta o melhor direcionamento. Acompanhamos cada etapa até a entrega final.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Quais formas de pagamento são aceitas?</span>
+            <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Aceitamos Pix e cartão de crédito (com acréscimo de taxas). Parcelamento disponível via cartão.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Vocês oferecem garantia?</span>
+            <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Sim! Oferecemos estorno ou prova substitutiva caso o conteúdo não obtenha nota satisfatória.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Atendem cursos de Engenharia?</span>
+            <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Sim! Atendemos cursos de Engenharia com valores diferenciados devido à maior complexidade das atividades.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>O que está incluso nos pacotes?</span>
+            <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Os pacotes combinam atividades e mapas com desconto. O pacote Completo inclui atividades, mapa e horas complementares. O plano Mensalista cobre a administração completa do portal do aluno.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Como funciona o plano Mensalista?</span>
+            <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Por R$250/mês (R$300 para Engenharia), administramos o portal do aluno com excelência, cuidando de todas as demandas acadêmicas do período.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Vocês fazem TCC?</span>
+            <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Sim! Fazemos TCC completo e exclusivo, estruturado conforme normas ABNT, por R$30 por página.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Qual o horário de atendimento?</span>
+            <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Nosso atendimento funciona das 09h às 20h, de segunda a sábado, pelo WhatsApp.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ FOOTER ════════════ -->
   <footer class="footer">
     <div class="footer-inner">
-      <div class="footer-logo">
-        <img src="logo.png" alt="Logo" width="48" height="48">
+      <div class="footer-col">
+        <div class="footer-brand">
+          <img src="logo.png" alt="Logo" class="footer-logo-img">
+          <h4>Assessoria Acadêmica</h4>
+        </div>
+        <p>Suporte, organização e orientação para demandas acadêmicas.</p>
       </div>
-      <h4>Assessoria Acadêmica</h4>
-      <p>Atendimento via WhatsApp &middot; Suporte, organização e orientação para demandas acadêmicas</p>
+      <div class="footer-col">
+        <h5>Navegação</h5>
+        <a href="#home">Início</a>
+        <a href="#servicos">Serviços</a>
+        <a href="#como-funciona">Como Funciona</a>
+        <a href="#sobre">Sobre Nós</a>
+        <a href="#contato">Contato</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h5>Contato</h5>
+        <p>(43) 99906-6267</p>
+        <p>@assessoriaacademicaag</p>
+        <p>09h às 20h</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
       <div class="footer-badge">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         Assessoria de Confiança
       </div>
       <div class="footer-cnpj">CNPJ: 52.955.516/0001-93</div>
+      <p class="footer-copy">&copy; 2026 Assessoria Acadêmica. Todos os direitos reservados.</p>
     </div>
   </footer>
 
+  <!-- ════════════ WHATSAPP FLOAT ════════════ -->
+  <a href="https://wa.me/5543999066267?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20a%20assessoria." target="_blank" rel="noopener" class="whatsapp-float" aria-label="WhatsApp">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  </a>
+
   <!-- ════════════ QR CODE LIBRARY ════════════ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-  <!-- ════════════ JAVASCRIPT ════════════ -->
   <script src="script.js"></script>
 
 </body>
