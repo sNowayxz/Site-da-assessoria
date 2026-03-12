@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Painel Assessoria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/painel.css">
+</head>
+<body>
+
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="../logo.png" alt="Assessoria Acadêmica" onerror="this.style.display='none'">
+      </div>
+      <h1>Painel Assessoria</h1>
+      <p class="subtitle">Acesse sua conta para gerenciar alunos e atividades</p>
+
+      <div id="login-error" class="login-error"></div>
+
+      <form id="form-login">
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn-primary" id="btn-login">Entrar</button>
+      </form>
+
+      <div class="login-footer">
+        <a href="../">← Voltar ao site</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Se já logado, redireciona
+      redirectIfLoggedIn();
+
+      var form = document.getElementById('form-login');
+      var errorEl = document.getElementById('login-error');
+      var btnLogin = document.getElementById('btn-login');
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        errorEl.classList.remove('show');
+        btnLogin.disabled = true;
+        btnLogin.textContent = 'Entrando...';
+
+        try {
+          var email = document.getElementById('email').value.trim();
+          var password = document.getElementById('password').value;
+          await handleLogin(email, password);
+          window.location.href = '/painel/app.html';
+        } catch (err) {
+          errorEl.textContent = err.message === 'Invalid login credentials'
+            ? 'E-mail ou senha incorretos.'
+            : 'Erro ao fazer login: ' + err.message;
+          errorEl.classList.add('show');
+          btnLogin.disabled = false;
+          btnLogin.textContent = 'Entrar';
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
