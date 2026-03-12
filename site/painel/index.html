@@ -35,8 +35,11 @@
       </form>
 
       <div class="login-footer">
+        <button type="button" id="btn-forgot" style="background:none;border:none;color:var(--gold);font-size:0.85rem;font-weight:600;cursor:pointer;margin-bottom:12px;">Esqueci minha senha</button>
+        <br>
         <a href="../">← Voltar ao site</a>
       </div>
+      <div id="forgot-msg" style="display:none;margin-top:16px;padding:10px 14px;border-radius:8px;background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;font-size:0.85rem;"></div>
     </div>
   </div>
 
@@ -51,6 +54,24 @@
       var form = document.getElementById('form-login');
       var errorEl = document.getElementById('login-error');
       var btnLogin = document.getElementById('btn-login');
+
+      // Esqueci senha
+      document.getElementById('btn-forgot').addEventListener('click', async function () {
+        var email = document.getElementById('email').value.trim();
+        if (!email) { alert('Digite seu e-mail primeiro'); return; }
+        var forgotMsg = document.getElementById('forgot-msg');
+        try {
+          await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/painel/' });
+          forgotMsg.style.display = 'block';
+          forgotMsg.textContent = 'E-mail de recuperação enviado para ' + email;
+        } catch (err) {
+          forgotMsg.style.display = 'block';
+          forgotMsg.style.background = '#fef2f2';
+          forgotMsg.style.borderColor = '#fecaca';
+          forgotMsg.style.color = '#ef4444';
+          forgotMsg.textContent = 'Erro: ' + err.message;
+        }
+      });
 
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
