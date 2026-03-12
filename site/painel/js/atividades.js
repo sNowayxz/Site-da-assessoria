@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 async function loadAlunosSelect() {
-  var { data } = await supabase.from('alunos').select('id, nome, ra').order('nome');
+  var { data } = await sb.from('alunos').select('id, nome, ra').order('nome');
   _alunosList = data || [];
 
   var select = document.getElementById('ativ-aluno-id');
@@ -128,10 +128,10 @@ async function handleSaveAtividade(e) {
 
   try {
     if (currentEditAtivId) {
-      var { error } = await supabase.from('atividades').update(data).eq('id', currentEditAtivId);
+      var { error } = await sb.from('atividades').update(data).eq('id', currentEditAtivId);
       if (error) throw error;
     } else {
-      var { error } = await supabase.from('atividades').insert(data);
+      var { error } = await sb.from('atividades').insert(data);
       if (error) throw error;
     }
     closeModal('modal-atividade');
@@ -159,7 +159,7 @@ async function editAtividade(id) {
 
 async function deleteAtividade(id) {
   if (!confirm('Tem certeza que deseja excluir esta atividade?')) return;
-  var { error } = await supabase.from('atividades').delete().eq('id', id);
+  var { error } = await sb.from('atividades').delete().eq('id', id);
   if (error) { alert('Erro: ' + error.message); return; }
   await loadAtividades();
 }
@@ -173,7 +173,7 @@ async function cycleStatus(id, currentStatus) {
     revisao: 'pendente'
   };
   var next = nextMap[currentStatus] || 'pendente';
-  var { error } = await supabase.from('atividades').update({ status: next }).eq('id', id);
+  var { error } = await sb.from('atividades').update({ status: next }).eq('id', id);
   if (error) { alert('Erro: ' + error.message); return; }
   await loadAtividades();
 }

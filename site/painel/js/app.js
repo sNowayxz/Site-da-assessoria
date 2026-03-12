@@ -19,10 +19,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 async function loadDashboard() {
   try {
     // Contadores
-    var { count: totalAlunos } = await supabase.from('alunos').select('*', { count: 'exact', head: true });
-    var { count: pendentes } = await supabase.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'pendente');
-    var { count: emAndamento } = await supabase.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'em_andamento');
-    var { count: entregues } = await supabase.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'entregue');
+    var { count: totalAlunos } = await sb.from('alunos').select('*', { count: 'exact', head: true });
+    var { count: pendentes } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'pendente');
+    var { count: emAndamento } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'em_andamento');
+    var { count: entregues } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'entregue');
 
     document.getElementById('count-alunos').textContent = totalAlunos || 0;
     document.getElementById('count-pendentes').textContent = pendentes || 0;

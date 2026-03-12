@@ -87,9 +87,9 @@ async function handleSaveAluno(e) {
 
   try {
     if (currentEditId) {
-      await supabase.from('alunos').update(data).eq('id', currentEditId);
+      await sb.from('alunos').update(data).eq('id', currentEditId);
     } else {
-      await supabase.from('alunos').insert(data);
+      await sb.from('alunos').insert(data);
     }
     closeModal('modal-aluno');
     await loadAlunos();
@@ -116,7 +116,7 @@ async function editAluno(id) {
 
 async function deleteAluno(id) {
   if (!confirm('Tem certeza que deseja excluir este aluno? As atividades vinculadas também serão excluídas.')) return;
-  await supabase.from('alunos').delete().eq('id', id);
+  await sb.from('alunos').delete().eq('id', id);
   await loadAlunos();
 }
 

@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════ */
 
 async function getUser() {
-  var { data: { user } } = await supabase.auth.getUser();
+  var { data: { user } } = await sb.auth.getUser();
   return user;
 }
 
@@ -24,13 +24,13 @@ async function redirectIfLoggedIn() {
 }
 
 async function handleLogin(email, password) {
-  var { data, error } = await supabase.auth.signInWithPassword({ email: email, password: password });
+  var { data, error } = await sb.auth.signInWithPassword({ email: email, password: password });
   if (error) throw error;
   return data;
 }
 
 async function handleLogout() {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   window.location.href = '/painel/';
 }
 
