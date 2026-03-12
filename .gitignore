@@ -1,3 +1,8 @@
+# Secrets
+notebooks/nb_google_contatos.ipynb
+notebooks/nb_chatGPT.ipynb
+class_papiron/class_comentario.py
+
 # App
 00/
 log/
@@ -154,7 +159,7 @@ id_url.txt
 .ropeproject
 
 # mkdocs documentation
-/site
+#/site
 
 # mypy
 .mypy_cache/
