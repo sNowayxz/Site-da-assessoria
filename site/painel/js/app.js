@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 async function loadDashboard() {
   try {
-    // Contadores
+    // Contadores de atividades
     var { count: totalAlunos } = await sb.from('alunos').select('*', { count: 'exact', head: true });
     var { count: pendentes } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'pendente');
     var { count: emAndamento } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'em_andamento');
@@ -28,6 +28,22 @@ async function loadDashboard() {
     document.getElementById('count-pendentes').textContent = pendentes || 0;
     document.getElementById('count-andamento').textContent = emAndamento || 0;
     document.getElementById('count-entregues').textContent = entregues || 0;
+
+    // Receita financeira (se tabela existir)
+    try {
+      var { data: pagos } = await sb.from('pagamentos').select('valor').eq('status', 'pago');
+      var { data: pendPag } = await sb.from('pagamentos').select('valor').eq('status', 'pendente');
+
+      var totalRecebido = (pagos || []).reduce(function (sum, p) { return sum + (parseFloat(p.valor) || 0); }, 0);
+      var totalPendenteFin = (pendPag || []).reduce(function (sum, p) { return sum + (parseFloat(p.valor) || 0); }, 0);
+
+      var elRec = document.getElementById('dash-receita');
+      var elPen = document.getElementById('dash-pendente-fin');
+      if (elRec) elRec.textContent = 'R$ ' + totalRecebido.toFixed(2);
+      if (elPen) elPen.textContent = 'R$ ' + totalPendenteFin.toFixed(2);
+    } catch (e) {
+      // Tabela pagamentos pode não existir ainda
+    }
 
     // Últimas atividades
     var { data: ultimas } = await sb
