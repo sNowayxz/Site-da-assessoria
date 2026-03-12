@@ -30,7 +30,7 @@ async function loadDashboard() {
     document.getElementById('count-entregues').textContent = entregues || 0;
 
     // Últimas atividades
-    var { data: ultimas } = await supabase
+    var { data: ultimas } = await sb
       .from('atividades')
       .select('*, alunos(nome, ra)')
       .order('created_at', { ascending: false })
