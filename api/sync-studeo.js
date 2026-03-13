@@ -142,30 +142,55 @@ function extractNameFromJWT(token) {
 }
 
 async function studeoLogin(ra, senha) {
-  const raClean = String(ra).replace(/[\s.\-]/g, '').trim();
+  // Tenta múltiplos formatos de RA: original, sem traço, só números
+  const raStr = String(ra).trim();
+  const formatos = [...new Set([
+    raStr,                                    // original: 23136944-5
+    raStr.replace(/[\s]/g, ''),               // sem espaços
+    raStr.replace(/[\s.\-]/g, ''),            // sem traço/ponto: 231369445
+    raStr.replace(/[^0-9]/g, ''),             // só números
+  ])];
 
-  let resp;
-  try {
-    resp = await fetch(`${STUDEO_API}/auth-api-controller/auth/token/create`, {
-      method: 'POST',
-      headers: HEADERS_BASE,
-      body: JSON.stringify({ username: raClean, password: senha }),
-    });
-  } catch (err) {
-    throw new Error('Não foi possível conectar ao Studeo. Verifique sua conexão.');
+  let lastError = 'Nenhum formato de RA funcionou';
+
+  for (const formato of formatos) {
+    if (!formato) continue;
+    try {
+      const resp = await fetch(`${STUDEO_API}/auth-api-controller/auth/token/create`, {
+        method: 'POST',
+        headers: HEADERS_BASE,
+        body: JSON.stringify({ username: formato, password: senha }),
+      });
+
+      const text = await resp.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = null; }
+
+      // Credenciais inválidas neste formato — tenta o próximo
+      if (data && data.valid === false) {
+        lastError = `RA "${formato}": credenciais inválidas`;
+        continue;
+      }
+      if (!resp.ok) {
+        lastError = `RA "${formato}": HTTP ${resp.status}`;
+        continue;
+      }
+      if (!data || !data.token) {
+        lastError = `RA "${formato}": token não retornado`;
+        continue;
+      }
+
+      // Sucesso!
+      console.log(`[studeo] Login OK com formato: ${formato}`);
+      return data.token;
+
+    } catch (err) {
+      lastError = `RA "${formato}": ${err.message}`;
+      continue;
+    }
   }
 
-  const text = await resp.text();
-  let data;
-  try { data = JSON.parse(text); } catch { data = null; }
-
-  if (data && data.valid === false) {
-    throw new Error('Credenciais inválidas. Verifique o RA e a senha do Studeo.');
-  }
-  if (!resp.ok) throw new Error(`Login falhou (${resp.status}). Verifique as credenciais.`);
-  if (!data || !data.token) throw new Error('Token não retornado. Verifique as credenciais.');
-
-  return data.token;
+  throw new Error(`Login falhou em todos os formatos. Último erro: ${lastError}`);
 }
 
 async function buscarDisciplinas(ra) {

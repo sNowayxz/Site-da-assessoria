@@ -47,7 +47,7 @@ async function loadAlunosSelect() {
 }
 
 async function loadAtividades() {
-  var { data, error } = await supabase
+  var { data, error } = await sb
     .from('atividades')
     .select('*, alunos(nome, ra)')
     .order('created_at', { ascending: false });
@@ -85,7 +85,7 @@ function renderAtividades(atividades) {
       '<td><span class="badge badge-tipo">' + formatTipo(a.tipo) + '</span></td>' +
       '<td class="desc-cell">' + escapeHtml(a.descricao || '—') + '</td>' +
       '<td><span class="badge badge-' + a.status + '">' + formatStatus(a.status) + '</span></td>' +
-      '<td>R$ ' + parseFloat(a.valor || 0).toFixed(2) + '</td>' +
+      '<td>R$ ' + (Number(a.valor) || 0).toFixed(2) + '</td>' +
       '<td>' + formatDate(a.created_at) + '</td>' +
       '<td>' + formatDate(a.updated_at) + '</td>' +
       '<td class="actions">' +

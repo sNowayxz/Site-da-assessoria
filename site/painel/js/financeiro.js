@@ -87,7 +87,7 @@ function renderPagamentos(pagamentos) {
     return '<tr>' +
       '<td><span class="aluno-name">' + escapeHtml(aluno.nome || '—') + '</span></td>' +
       '<td><span class="badge badge-tipo">' + formatTipoPag(p.tipo) + '</span></td>' +
-      '<td><strong>R$ ' + parseFloat(p.valor).toFixed(2) + '</strong></td>' +
+      '<td><strong>R$ ' + (Number(p.valor) || 0).toFixed(2) + '</strong></td>' +
       '<td>' + escapeHtml(p.referencia || '—') + '</td>' +
       '<td>' + vencimento + '</td>' +
       '<td>' + pgto + '</td>' +

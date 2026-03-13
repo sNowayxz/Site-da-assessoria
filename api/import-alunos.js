@@ -43,24 +43,32 @@ function extractNameFromJWT(token) {
   }
 }
 
-// Login Studeo + extrai nome
+// Login Studeo + extrai nome (tenta múltiplos formatos de RA)
 async function studeoLoginComNome(ra, senha) {
-  const raClean = String(ra).replace(/[\s.\-]/g, '').trim();
-  const resp = await fetch(`${STUDEO_API}/auth-api-controller/auth/token/create`, {
-    method: 'POST',
-    headers: HEADERS_BASE,
-    body: JSON.stringify({ username: raClean, password: senha }),
-  });
-  const text = await resp.text();
-  let data;
-  try { data = JSON.parse(text); } catch { data = null; }
+  const raStr = String(ra).trim();
+  const formatos = [...new Set([raStr, raStr.replace(/[\s]/g, ''), raStr.replace(/[\s.\-]/g, ''), raStr.replace(/[^0-9]/g, '')])];
 
-  if (data && data.valid === false) throw new Error('Credenciais inválidas');
-  if (!resp.ok) throw new Error(`Login falhou (${resp.status})`);
-  if (!data || !data.token) throw new Error('Token não retornado');
+  for (const formato of formatos) {
+    if (!formato) continue;
+    try {
+      const resp = await fetch(`${STUDEO_API}/auth-api-controller/auth/token/create`, {
+        method: 'POST',
+        headers: HEADERS_BASE,
+        body: JSON.stringify({ username: formato, password: senha }),
+      });
+      const text = await resp.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = null; }
 
-  const nome = extractNameFromJWT(data.token);
-  return { token: data.token, nome };
+      if (data && data.valid === false) continue;
+      if (!resp.ok) continue;
+      if (!data || !data.token) continue;
+
+      const nome = extractNameFromJWT(data.token);
+      return { token: data.token, nome, raUsado: formato };
+    } catch { continue; }
+  }
+  throw new Error('Credenciais inválidas (todos os formatos de RA testados)');
 }
 
 module.exports = async function handler(req, res) {
