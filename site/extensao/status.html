@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status do Pedido — Assessoria Acadêmica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dark: #1a1a2e; --gold: #f0c030; --gold-light: #f5d45a;
+      --gold-glow: rgba(240,192,48,0.12); --gold-shadow: rgba(240,192,48,0.25);
+      --white: #ffffff; --gray-50: #f8f9fc; --gray-100: #eef1f6; --gray-200: #d8dde8;
+      --gray-400: #8892a4; --gray-600: #4a5568; --gray-800: #2d3748;
+      --success: #22c55e; --warning: #f59e0b; --danger: #ef4444; --info: #3b82f6; --radius-lg: 14px;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: var(--gray-800); background: var(--gray-50); line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+
+    .navbar { background: var(--dark); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .nav-brand { display: flex; align-items: center; gap: 12px; color: var(--white); font-weight: 700; font-size: 1.1rem; }
+    .nav-brand img { width: 36px; height: 36px; border-radius: 50%; }
+    .nav-links a { color: var(--gray-400); font-size: 0.9rem; font-weight: 500; margin-left: 20px; }
+    .nav-links a:hover { color: var(--white); }
+
+    .container { max-width: 640px; margin: 40px auto; padding: 0 20px; }
+    .card { background: var(--white); border-radius: var(--radius-lg); padding: 36px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; }
+    .card h1 { font-size: 1.4rem; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .card .sub { color: var(--gray-400); font-size: 0.9rem; margin-bottom: 24px; }
+
+    .search-form { display: flex; gap: 12px; }
+    .search-form input { flex: 1; padding: 12px 14px; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 0.95rem; outline: none; font-family: inherit; }
+    .search-form input:focus { border-color: var(--gold); }
+    .search-form button { padding: 12px 24px; background: var(--gold); color: var(--dark); border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
+
+    .status-card { border-left: 4px solid var(--gray-200); padding: 20px 24px; margin-bottom: 16px; background: var(--white); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .status-card.aguardando_pagamento { border-color: var(--warning); }
+    .status-card.pago { border-color: var(--success); }
+    .status-card.em_andamento { border-color: var(--info); }
+    .status-card.concluido { border-color: var(--success); }
+    .status-card.cancelado { border-color: var(--danger); }
+
+    .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .status-header h3 { font-size: 1rem; font-weight: 700; color: var(--dark); }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; }
+    .badge-aguardando_pagamento { background: rgba(245,158,11,0.12); color: #d97706; }
+    .badge-pago { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-em_andamento { background: rgba(59,130,246,0.12); color: #2563eb; }
+    .badge-concluido { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-cancelado { background: rgba(239,68,68,0.12); color: #dc2626; }
+
+    .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-100); font-size: 0.9rem; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: var(--gray-400); font-weight: 500; }
+    .detail-value { font-weight: 600; color: var(--gray-800); }
+
+    .empty { text-align: center; padding: 40px; color: var(--gray-400); }
+
+    .footer { text-align: center; padding: 32px; color: var(--gray-400); font-size: 0.85rem; }
+    .footer a { color: var(--gold); }
+
+    @media (max-width: 640px) {
+      .search-form { flex-direction: column; }
+      .status-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="/extensao/" class="nav-brand">
+      <img src="../logo.png" alt="Logo" onerror="this.style.display='none'">
+      Projetos de Extensão
+    </a>
+    <div class="nav-links">
+      <a href="/">Início</a>
+      <a href="pedido.html">Novo Pedido</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h1>Consultar Status do Pedido</h1>
+      <p class="sub">Informe seu e-mail para ver seus pedidos</p>
+      <div class="search-form">
+        <input type="email" id="search-email" placeholder="seu@email.com">
+        <button onclick="searchByEmail()">Buscar</button>
+      </div>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <div class="footer">
+    <a href="/extensao/">Catálogo</a> | <a href="pedido.html">Novo pedido</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/status.js"></script>
+
+</body>
+</html>

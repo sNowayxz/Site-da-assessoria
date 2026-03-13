@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitar Projeto de Extensão — Assessoria Acadêmica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dark: #1a1a2e; --gold: #f0c030; --gold-light: #f5d45a;
+      --gold-glow: rgba(240,192,48,0.12); --gold-shadow: rgba(240,192,48,0.25);
+      --white: #ffffff; --gray-50: #f8f9fc; --gray-100: #eef1f6; --gray-200: #d8dde8;
+      --gray-400: #8892a4; --gray-600: #4a5568; --gray-800: #2d3748;
+      --danger: #ef4444; --radius-lg: 14px;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: var(--gray-800); background: var(--gray-50); line-height: 1.6; min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+
+    .navbar { background: var(--dark); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .nav-brand { display: flex; align-items: center; gap: 12px; color: var(--white); font-weight: 700; font-size: 1.1rem; }
+    .nav-brand img { width: 36px; height: 36px; border-radius: 50%; }
+    .nav-links a { color: var(--gray-400); font-size: 0.9rem; font-weight: 500; margin-left: 20px; }
+    .nav-links a:hover { color: var(--white); }
+
+    .container { max-width: 640px; margin: 40px auto; padding: 0 20px; }
+    .form-card { background: var(--white); border-radius: var(--radius-lg); padding: 40px 36px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .form-card h1 { font-size: 1.5rem; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .form-card .sub { color: var(--gray-400); font-size: 0.9rem; margin-bottom: 32px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--gray-600); margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 12px 14px; border: 2px solid var(--gray-200); border-radius: 8px;
+      font-size: 0.95rem; color: var(--gray-800); background: var(--white); outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s; font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-glow);
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group small { display: block; margin-top: 4px; font-size: 0.78rem; color: var(--gray-400); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Price display */
+    .price-display {
+      background: linear-gradient(135deg, var(--dark) 0%, #1f2b47 100%);
+      border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .price-label { color: var(--gray-400); font-size: 0.9rem; font-weight: 500; }
+    .price-label span { display: block; font-size: 0.78rem; margin-top: 2px; }
+    .price-amount { color: var(--gold); font-size: 1.8rem; font-weight: 800; }
+    .price-amount.empty { color: var(--gray-400); font-size: 1.2rem; }
+
+    .btn-submit {
+      width: 100%; padding: 16px; background: var(--gold); color: var(--dark);
+      font-weight: 700; font-size: 1.05rem; border: none; border-radius: 10px;
+      cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 16px var(--gold-shadow); font-family: inherit;
+    }
+    .btn-submit:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .error-msg { display: none; background: #fef2f2; border: 1px solid #fecaca; color: var(--danger); padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 20px; }
+    .error-msg.show { display: block; }
+
+    .footer { text-align: center; padding: 32px; color: var(--gray-400); font-size: 0.85rem; }
+    .footer a { color: var(--gold); }
+
+    @media (max-width: 640px) {
+      .form-row { grid-template-columns: 1fr; }
+      .form-card { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="/extensao/" class="nav-brand">
+      <img src="../logo.png" alt="Logo" onerror="this.style.display='none'">
+      Projetos de Extensão
+    </a>
+    <div class="nav-links">
+      <a href="/">Início</a>
+      <a href="status.html">Consultar Status</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="form-card">
+      <h1>Solicitar Projeto de Extensão</h1>
+      <p class="sub">Preencha os dados abaixo. O valor é calculado automaticamente pela carga horária.</p>
+
+      <div class="error-msg" id="error-msg"></div>
+
+      <form id="form-pedido">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nome">Nome Completo *</label>
+            <input type="text" id="nome" name="nome_cliente" required placeholder="Seu nome completo">
+          </div>
+          <div class="form-group">
+            <label for="email">E-mail *</label>
+            <input type="email" id="email" name="email" required placeholder="seu@email.com">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="telefone">Telefone / WhatsApp</label>
+            <input type="tel" id="telefone" name="telefone" placeholder="(xx) xxxxx-xxxx">
+          </div>
+          <div class="form-group">
+            <label for="ra">RA do Aluno</label>
+            <input type="text" id="ra" name="ra" placeholder="Ex: 12345678">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="curso">Curso *</label>
+          <input type="text" id="curso" name="curso" required placeholder="Ex: Pedagogia, Administração...">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="carga_horaria">Carga Horária (horas) *</label>
+            <input type="number" id="carga_horaria" name="carga_horaria" required min="1" max="1000" placeholder="Ex: 100">
+            <small>Digite a quantidade de horas para ver o valor</small>
+          </div>
+          <div class="form-group">
+            <label for="prazo">Prazo Desejado</label>
+            <input type="date" id="prazo" name="prazo">
+          </div>
+        </div>
+
+        <!-- Price Display -->
+        <div class="price-display">
+          <div class="price-label">
+            Valor Total
+            <span id="price-detail"></span>
+          </div>
+          <div class="price-amount" id="price-amount">
+            Digite as horas
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="tema">Tema do Projeto *</label>
+          <textarea id="tema" name="tema" required placeholder="Descreva o tema ou área do projeto de extensão..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="observacoes">Observações</label>
+          <textarea id="observacoes" name="observacoes" placeholder="Informações adicionais, requisitos específicos..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btn-submit">Prosseguir para Pagamento</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="/extensao/">Voltar ao catálogo</a> | <a href="status.html">Consultar pedido</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/pedido.js"></script>
+
+</body>
+</html>

@@ -3,6 +3,7 @@
    ═══════════════════════════════════════════ */
 
 var syncInProgress = false;
+var currentTab = 'todas';
 
 document.addEventListener('DOMContentLoaded', async function () {
   var user = await requireAuth();
@@ -22,6 +23,16 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('btn-sync-all').addEventListener('click', handleSyncAll);
   document.getElementById('filter-aluno-rastreio').addEventListener('change', loadSyncData);
   document.getElementById('filter-status-rastreio').addEventListener('change', loadSyncData);
+
+  // Tab listeners
+  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentTab = btn.getAttribute('data-tab');
+      renderSyncData(window._syncData || []);
+    });
+  });
 });
 
 async function loadMensalistas() {
@@ -111,8 +122,18 @@ function renderSyncData(data) {
     grouped[key].items.push(item);
   });
 
+  // Filtrar por aba ativa/passada
+  var groups = Object.values(grouped);
+  if (currentTab === 'ativas') groups = groups.filter(isActiveDisc);
+  if (currentTab === 'passadas') groups = groups.filter(function (g) { return !isActiveDisc(g); });
+
+  if (!groups.length) {
+    container.innerHTML = '<div class="empty-state" style="padding:48px;text-align:center;">Nenhuma disciplina ' + (currentTab === 'ativas' ? 'ativa' : currentTab === 'passadas' ? 'passada' : '') + ' encontrada.</div>';
+    return;
+  }
+
   var html = '';
-  Object.values(grouped).forEach(function (group) {
+  groups.forEach(function (group) {
     var pendentes = group.items.filter(function (i) { return !i.respondida; }).length;
     var total = group.items.length;
 
@@ -287,6 +308,14 @@ function showSyncStatus(msg, type) {
   if (type === 'success' || type === 'warning') {
     setTimeout(function () { el.style.display = 'none'; }, 8000);
   }
+}
+
+function isActiveDisc(group) {
+  var now = new Date();
+  return group.items.some(function (item) {
+    if (!item.data_final) return true;
+    return new Date(item.data_final) >= now;
+  });
 }
 
 function formatDate(dateStr) {
