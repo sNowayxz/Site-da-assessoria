@@ -3,6 +3,11 @@
   "buildCommand": "",
   "framework": null,
   "trailingSlash": true,
+  "rewrites": [
+    { "source": "/api/webhook-mp", "destination": "/api/webhook-mp" },
+    { "source": "/api/create-preference", "destination": "/api/create-preference" },
+    { "source": "/api/sync-studeo", "destination": "/api/sync-studeo" }
+  ],
   "headers": [
     {
       "source": "/painel/(.*)",
@@ -14,6 +19,14 @@
       "source": "/extensao/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" }
       ]
     }
   ]
