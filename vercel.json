@@ -2,12 +2,7 @@
   "outputDirectory": "site",
   "buildCommand": "",
   "framework": null,
-  "trailingSlash": true,
-  "rewrites": [
-    { "source": "/api/webhook-mp", "destination": "/api/webhook-mp" },
-    { "source": "/api/create-preference", "destination": "/api/create-preference" },
-    { "source": "/api/sync-studeo", "destination": "/api/sync-studeo" }
-  ],
+  "trailingSlash": false,
   "headers": [
     {
       "source": "/painel/(.*)",
