@@ -1,7 +1,6 @@
 /* ═══════════════════════════════════════════
    Vercel Serverless Function — Studeo Sync
-   Proxy para API do Studeo Unicesumar
-   (evita CORS do navegador)
+   Proxy para API do Studeo Unicesumar (evita CORS)
    ═══════════════════════════════════════════ */
 
 const STUDEO_API = 'https://studeoapi.unicesumar.edu.br';
@@ -15,7 +14,6 @@ const HEADERS_BASE = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
 };
 
-// Disciplinas excluídas do rastreio
 const EXCLUIR = [
   'ESTUDO CONTEMPORÂNEO E TRANSVERSAL',
   'FORMAÇÃO SOCIOCULTURAL E ÉTICA',
@@ -33,63 +31,54 @@ function corsHeaders() {
 }
 
 module.exports = async function handler(req, res) {
-  // CORS preflight
   Object.entries(corsHeaders()).forEach(([k, v]) => res.setHeader(k, v));
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
   const { action, ra, senha } = req.body || {};
 
+  if (!action) return res.status(400).json({ error: 'Campo "action" obrigatório' });
+  if (!ra)     return res.status(400).json({ error: 'Campo "ra" obrigatório' });
+
   try {
     if (action === 'login') {
-      // Apenas testa login e retorna disciplinas
       const token = await studeoLogin(ra, senha);
       const disciplinas = await buscarDisciplinas(ra);
       return res.status(200).json({ ok: true, token, disciplinas });
     }
 
     if (action === 'sync') {
-      // Login + buscar atividades de todas as disciplinas
+      if (!senha) return res.status(400).json({ error: 'Campo "senha" obrigatório para sync' });
+
       const token = await studeoLogin(ra, senha);
       const disciplinas = await buscarDisciplinas(ra);
-
       const resultado = [];
+
       for (const disc of disciplinas) {
-        // Pular disciplinas excluídas
-        if (EXCLUIR.some(e => disc.nm_disciplina.toUpperCase().includes(e))) continue;
+        const nomeUpper = (disc.nm_disciplina || '').toUpperCase();
+        if (EXCLUIR.some(e => nomeUpper.includes(e))) continue;
 
         try {
-          const atividades = await buscarAtividades(token, disc.cd_shortname);
-          const mapa = await buscarMapa(token, disc.cd_shortname);
+          const [atividades, mapa] = await Promise.all([
+            buscarAtividades(token, disc.cd_shortname),
+            buscarMapa(token, disc.cd_shortname),
+          ]);
 
           resultado.push({
             disciplina: disc.nm_disciplina,
             cd_shortname: disc.cd_shortname,
-            ano: disc.ano,
-            modulo: disc.modulo,
-            atividades: atividades.map(a => ({
-              descricao: a.descricao || a.nome || '',
-              idQuestionario: a.idQuestionario,
-              dataInicial: a.dataInicial || null,
-              dataFinal: a.dataFinal || null,
-              tipo: 'AV',
-              respondida: a.respondida || false,
-            })),
-            mapa: mapa.map(a => ({
-              descricao: a.descricao || a.nome || '',
-              idQuestionario: a.idQuestionario,
-              dataInicial: a.dataInicial || null,
-              dataFinal: a.dataFinal || null,
-              tipo: 'MAPA',
-              respondida: a.respondida || false,
-            })),
+            ano: disc.ano || null,
+            modulo: disc.modulo || null,
+            atividades: normalizarAtividades(atividades, 'AV'),
+            mapa: normalizarAtividades(mapa, 'MAPA'),
           });
         } catch (err) {
+          console.error(`[sync] Erro em ${disc.nm_disciplina}:`, err.message);
           resultado.push({
             disciplina: disc.nm_disciplina,
             cd_shortname: disc.cd_shortname,
-            ano: disc.ano,
-            modulo: disc.modulo,
+            ano: disc.ano || null,
+            modulo: disc.modulo || null,
             atividades: [],
             mapa: [],
             erro: err.message,
@@ -103,86 +92,122 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Ação inválida. Use "login" ou "sync".' });
 
   } catch (err) {
-    console.error('Sync error:', err);
-    return res.status(500).json({ error: err.message || 'Erro interno' });
+    console.error('[sync-studeo] Erro geral:', err.message);
+    return res.status(500).json({ ok: false, error: err.message || 'Erro interno no servidor' });
   }
 };
 
-// ─── Studeo Auth ───────────────────────────
+function normalizarAtividades(arr, tipo) {
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .filter(a => a && (a.descricao || a.nome || a.titulo || a.title))
+    .map(a => ({
+      descricao: a.descricao || a.nome || a.titulo || a.title || '',
+      idQuestionario: a.idQuestionario || a.id || null,
+      dataInicial: normalizarData(a.dataInicial || a.dataInicio || a.data_inicio || a.dtInicio || null),
+      dataFinal:   normalizarData(a.dataFinal   || a.dataFim    || a.data_fim    || a.dtFim    || null),
+      tipo,
+      respondida: !!(a.respondida || a.concluida || a.finalizada || a.status === 'concluida'),
+    }));
+}
+
+function normalizarData(val) {
+  if (!val) return null;
+  try {
+    if (/^\d{4}-\d{2}-\d{2}/.test(String(val))) return String(val);
+    if (/^\d{2}\/\d{2}\/\d{4}/.test(String(val))) {
+      const [date, time] = String(val).split(' ');
+      const [d, m, y] = date.split('/');
+      return time ? `${y}-${m}-${d}T${time}:00` : `${y}-${m}-${d}`;
+    }
+    const parsed = new Date(val);
+    if (!isNaN(parsed.getTime())) return parsed.toISOString();
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 async function studeoLogin(ra, senha) {
-  // Limpa RA: remove pontos, traços, espaços
   const raClean = String(ra).replace(/[\s.\-]/g, '').trim();
 
-  const resp = await fetch(`${STUDEO_API}/auth-api-controller/auth/token/create`, {
-    method: 'POST',
-    headers: HEADERS_BASE,
-    body: JSON.stringify({ username: raClean, password: senha }),
-  });
+  let resp;
+  try {
+    resp = await fetch(`${STUDEO_API}/auth-api-controller/auth/token/create`, {
+      method: 'POST',
+      headers: HEADERS_BASE,
+      body: JSON.stringify({ username: raClean, password: senha }),
+    });
+  } catch (err) {
+    throw new Error('Não foi possível conectar ao Studeo. Verifique sua conexão.');
+  }
 
   const text = await resp.text();
   let data;
-  try { data = JSON.parse(text); } catch (e) { data = null; }
+  try { data = JSON.parse(text); } catch { data = null; }
 
-  // Tratar resposta 200 com valid: false (credenciais erradas)
   if (data && data.valid === false) {
-    throw new Error('Credenciais inválidas. Verifique o RA e a senha do Studeo do aluno.');
+    throw new Error('Credenciais inválidas. Verifique o RA e a senha do Studeo.');
   }
+  if (!resp.ok) throw new Error(`Login falhou (${resp.status}). Verifique as credenciais.`);
+  if (!data || !data.token) throw new Error('Token não retornado. Verifique as credenciais.');
 
-  if (!resp.ok) {
-    throw new Error(`Login falhou (${resp.status}): ${text}`);
-  }
-
-  if (!data || !data.token) throw new Error('Token não retornado pelo Studeo. Verifique as credenciais.');
   return data.token;
 }
 
-// ─── Buscar Disciplinas via Papiron ────────
 async function buscarDisciplinas(ra) {
+  const raClean = String(ra).replace(/[\s.\-]/g, '').trim();
+
+  let resp;
   try {
-    const resp = await fetch(`${PAPIRON_API}/ferramentas/informar_disciplinas_aluno_json/${ra}`, {
+    resp = await fetch(`${PAPIRON_API}/ferramentas/informar_disciplinas_aluno_json/${raClean}`, {
       headers: { 'Accept': 'application/json' },
     });
-
-    if (!resp.ok) throw new Error(`Papiron status ${resp.status}`);
-
-    const data = await resp.json();
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new Error('Nenhuma disciplina encontrada');
-    }
-
-    return data.map(d => ({
-      nm_disciplina: d.nm_disciplina || d.disciplina || '',
-      cd_shortname: d.cd_shortname || d.shortname || '',
-      ano: d.ano || '',
-      modulo: d.modulo || '',
-    }));
   } catch (err) {
-    throw new Error('Não foi possível buscar disciplinas: ' + err.message);
+    throw new Error('Não foi possível conectar ao serviço de disciplinas.');
   }
+
+  if (!resp.ok) throw new Error(`Erro ao buscar disciplinas (status ${resp.status})`);
+
+  let data;
+  try { data = await resp.json(); } catch {
+    throw new Error('Resposta inválida do serviço de disciplinas');
+  }
+
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error(`Nenhuma disciplina encontrada para RA ${raClean}. Verifique se o RA está correto.`);
+  }
+
+  return data
+    .map(d => ({
+      nm_disciplina: d.nm_disciplina || d.disciplina || d.nome || '',
+      cd_shortname:  d.cd_shortname  || d.shortname  || d.codigo || '',
+      ano:    d.ano    || null,
+      modulo: d.modulo || null,
+    }))
+    .filter(d => d.nm_disciplina && d.cd_shortname);
 }
 
-// ─── Buscar Atividades da Disciplina ───────
 async function buscarAtividades(token, cdShortname) {
-  const headers = { ...HEADERS_BASE, Authorization: token };
-  const resp = await fetch(
-    `${STUDEO_API}/objeto-ensino-api-controller/api/questionario/disciplina/${cdShortname}`,
-    { headers }
-  );
-
-  if (!resp.ok) return [];
-  const data = await resp.json();
-  return Array.isArray(data) ? data : [];
+  try {
+    const resp = await fetch(
+      `${STUDEO_API}/objeto-ensino-api-controller/api/questionario/disciplina/${cdShortname}`,
+      { headers: { ...HEADERS_BASE, Authorization: token } }
+    );
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    return Array.isArray(data) ? data : (data && (data.content || data.data || data.items || []));
+  } catch { return []; }
 }
 
-// ─── Buscar MAPA da Disciplina ─────────────
 async function buscarMapa(token, cdShortname) {
-  const headers = { ...HEADERS_BASE, Authorization: token };
-  const resp = await fetch(
-    `${STUDEO_API}/objeto-ensino-api-controller/api/questionario/disciplina/${cdShortname}/MAPA`,
-    { headers }
-  );
-
-  if (!resp.ok) return [];
-  const data = await resp.json();
-  return Array.isArray(data) ? data : [];
+  try {
+    const resp = await fetch(
+      `${STUDEO_API}/objeto-ensino-api-controller/api/questionario/disciplina/${cdShortname}/MAPA`,
+      { headers: { ...HEADERS_BASE, Authorization: token } }
+    );
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    return Array.isArray(data) ? data : (data && (data.content || data.data || data.items || []));
+  } catch { return []; }
 }
