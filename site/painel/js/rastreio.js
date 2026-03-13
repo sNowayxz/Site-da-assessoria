@@ -201,7 +201,13 @@ async function handleSync() {
     });
 
     var result = await resp.json();
-    if (!resp.ok || !result.ok) throw new Error(result.error || 'Erro na sincronização');
+    if (!resp.ok || !result.ok) {
+      var errMsg = result.error || 'Erro na sincronização';
+      if (errMsg.includes('Credenciais') || errMsg.includes('401') || errMsg.includes('password')) {
+        errMsg = 'Credenciais inválidas para ' + aluno.nome + '. Verifique o RA e a senha do Studeo na página de Alunos.';
+      }
+      throw new Error(errMsg);
+    }
 
     // Salvar resultados no Supabase
     var count = await saveResults(alunoId, result.resultado);

@@ -121,7 +121,13 @@ document.getElementById('form-pedido').addEventListener('submit', async function
     window.location.href = mpResult.init_point;
 
   } catch (err) {
-    errorEl.textContent = 'Erro: ' + err.message;
+    var msg = err.message || 'Erro desconhecido';
+    if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+      msg = 'Erro de conexão. Verifique sua internet e tente novamente.';
+    } else if (msg.includes('violates') || msg.includes('duplicate')) {
+      msg = 'Erro ao salvar pedido. Tente novamente em alguns instantes.';
+    }
+    errorEl.textContent = msg;
     errorEl.classList.add('show');
     btn.disabled = false;
     btn.textContent = 'Prosseguir para Pagamento';

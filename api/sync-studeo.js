@@ -110,19 +110,29 @@ module.exports = async function handler(req, res) {
 
 // ─── Studeo Auth ───────────────────────────
 async function studeoLogin(ra, senha) {
+  // Limpa RA: remove pontos, traços, espaços
+  const raClean = String(ra).replace(/[\s.\-]/g, '').trim();
+
   const resp = await fetch(`${STUDEO_API}/auth-api-controller/auth/token/create`, {
     method: 'POST',
     headers: HEADERS_BASE,
-    body: JSON.stringify({ username: ra, password: senha }),
+    body: JSON.stringify({ username: raClean, password: senha }),
   });
 
+  const text = await resp.text();
+  let data;
+  try { data = JSON.parse(text); } catch (e) { data = null; }
+
+  // Tratar resposta 200 com valid: false (credenciais erradas)
+  if (data && data.valid === false) {
+    throw new Error('Credenciais inválidas. Verifique o RA e a senha do Studeo do aluno.');
+  }
+
   if (!resp.ok) {
-    const text = await resp.text();
     throw new Error(`Login falhou (${resp.status}): ${text}`);
   }
 
-  const data = await resp.json();
-  if (!data.token) throw new Error('Token não retornado pelo Studeo');
+  if (!data || !data.token) throw new Error('Token não retornado pelo Studeo. Verifique as credenciais.');
   return data.token;
 }
 

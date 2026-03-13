@@ -3,10 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — Painel Assessoria</title>
+  <title>Pedidos — Painel Assessoria</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/painel.css">
+  <style>
+    .badge-aguardando_pagamento { background: rgba(245,158,11,0.12); color: #d97706; }
+    .badge-pago { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-em_andamento { background: rgba(59,130,246,0.12); color: #2563eb; }
+    .badge-concluido { background: rgba(139,92,246,0.12); color: #7c3aed; }
+    .badge-cancelado { background: rgba(239,68,68,0.12); color: #ef4444; }
+
+    .pedido-detail { padding: 24px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .detail-item label { display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-400); margin-bottom: 4px; }
+    .detail-item p { font-size: 0.95rem; color: var(--gray-800); }
+    .detail-full { grid-column: 1 / -1; }
+    .detail-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gray-100); }
+    .btn-status-action {
+      padding: 8px 18px; border: none; border-radius: 8px; font-weight: 600;
+      font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-status-action.to-andamento { background: rgba(59,130,246,0.12); color: #2563eb; }
+    .btn-status-action.to-andamento:hover { background: rgba(59,130,246,0.2); }
+    .btn-status-action.to-concluido { background: rgba(139,92,246,0.12); color: #7c3aed; }
+    .btn-status-action.to-concluido:hover { background: rgba(139,92,246,0.2); }
+    .btn-status-action.to-cancelado { background: rgba(239,68,68,0.12); color: #ef4444; }
+    .btn-status-action.to-cancelado:hover { background: rgba(239,68,68,0.2); }
+    .btn-status-action.to-pago { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .btn-status-action.to-pago:hover { background: rgba(34,197,94,0.2); }
+
+    .valor-text { font-weight: 800; color: var(--dark); font-size: 1.1rem; }
+
+    @media (max-width: 640px) {
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
@@ -19,13 +51,13 @@
         </div>
         <div class="sidebar-brand-text">
           Assessoria<br>
-          <small>Painel de Gestão</small>
+          <small>Painel de Gest&atilde;o</small>
         </div>
       </div>
 
       <nav class="sidebar-nav">
         <div class="sidebar-nav-label">Menu</div>
-        <a href="app.html" class="sidebar-link active">
+        <a href="app.html" class="sidebar-link">
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           Dashboard
         </a>
@@ -39,7 +71,7 @@
         </a>
         <a href="modulos.html" class="sidebar-link">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Módulos
+          M&oacute;dulos
         </a>
         <a href="financeiro.html" class="sidebar-link">
           <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -49,7 +81,7 @@
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           Rastreio
         </a>
-        <a href="pedidos.html" class="sidebar-link">
+        <a href="pedidos.html" class="sidebar-link active">
           <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           Pedidos
         </a>
@@ -78,27 +110,31 @@
           <button class="mobile-toggle" id="mobile-toggle">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
-          <h1>Dashboard</h1>
-        </div>
-        <div class="topbar-actions">
-          <a href="atividades.html" class="btn btn-gold">+ Nova Atividade</a>
+          <h1>Pedidos de Extens&atilde;o</h1>
         </div>
       </div>
 
       <!-- Stats -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon blue">👥</div>
+          <div class="stat-icon blue">📦</div>
           <div class="stat-info">
-            <h3 id="count-alunos">0</h3>
-            <p>Total de Alunos</p>
+            <h3 id="count-total">0</h3>
+            <p>Total de Pedidos</p>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon orange">⏳</div>
           <div class="stat-info">
-            <h3 id="count-pendentes">0</h3>
-            <p>Pendentes</p>
+            <h3 id="count-aguardando">0</h3>
+            <p>Aguardando Pgto</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">💳</div>
+          <div class="stat-info">
+            <h3 id="count-pagos">0</h3>
+            <p>Pagos</p>
           </div>
         </div>
         <div class="stat-card">
@@ -108,53 +144,37 @@
             <p>Em Andamento</p>
           </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon green">✅</div>
-          <div class="stat-info">
-            <h3 id="count-entregues">0</h3>
-            <p>Entregues</p>
-          </div>
-        </div>
       </div>
 
-      <!-- Financial Summary -->
-      <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 32px;">
-        <div class="stat-card">
-          <div class="stat-icon green">💰</div>
-          <div class="stat-info">
-            <h3 id="dash-receita" style="font-size:1.3rem;">R$ 0.00</h3>
-            <p>Recebido</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon orange">📋</div>
-          <div class="stat-info">
-            <h3 id="dash-pendente-fin" style="font-size:1.3rem;">R$ 0.00</h3>
-            <p>A Receber</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Activities -->
+      <!-- Table -->
       <div class="panel">
-        <div class="panel-header">
-          <h2>Últimas Atividades</h2>
-          <a href="atividades.html" class="btn btn-sm btn-outline">Ver todas →</a>
+        <div class="filters-bar">
+          <input type="text" id="filter-busca" placeholder="Buscar por nome, email, curso...">
+          <select id="filter-status">
+            <option value="">Todos os status</option>
+            <option value="aguardando_pagamento">Aguardando Pagamento</option>
+            <option value="pago">Pago</option>
+            <option value="em_andamento">Em Andamento</option>
+            <option value="concluido">Conclu&iacute;do</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
         </div>
         <div class="panel-body">
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Aluno</th>
-                  <th>Tipo</th>
-                  <th>Descrição</th>
+                  <th>Cliente</th>
+                  <th>Curso</th>
+                  <th>CH</th>
+                  <th>Valor</th>
                   <th>Status</th>
                   <th>Data</th>
+                  <th>A&ccedil;&otilde;es</th>
                 </tr>
               </thead>
-              <tbody id="recent-activities">
-                <tr><td colspan="5" class="empty-state">Carregando...</td></tr>
+              <tbody id="pedidos-table">
+                <tr><td colspan="7" class="empty-state">Carregando...</td></tr>
               </tbody>
             </table>
           </div>
@@ -163,19 +183,30 @@
     </main>
   </div>
 
+  <!-- MODAL: Detalhes do Pedido -->
+  <div class="modal-overlay" id="modal-pedido">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-header">
+        <h3 id="modal-pedido-title">Detalhes do Pedido</h3>
+        <button class="modal-close" onclick="closeModal('modal-pedido')">&times;</button>
+      </div>
+      <div class="pedido-detail" id="pedido-detail">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/pedidos.js"></script>
   <script>
-    // Mobile sidebar toggle
     document.getElementById('mobile-toggle').addEventListener('click', function () {
       document.getElementById('sidebar').classList.toggle('open');
     });
     document.getElementById('sidebar-overlay').addEventListener('click', function () {
       document.getElementById('sidebar').classList.remove('open');
     });
-    // Avatar initial
     document.addEventListener('DOMContentLoaded', async function () {
       var user = await getUser();
       if (user) {
