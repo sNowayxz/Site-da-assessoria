@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Importar Alunos — Painel Assessoria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/painel.css">
+  <style>
+    .import-box {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    .import-box h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: var(--dark); }
+    .import-box p  { font-size: 0.9rem; color: var(--gray-400); margin-bottom: 16px; }
+
+    .paste-area {
+      width: 100%; min-height: 200px; max-height: 360px;
+      font-family: 'Courier New', monospace; font-size: 0.85rem;
+      border: 2px dashed var(--gray-100); border-radius: 10px;
+      padding: 14px; resize: vertical; outline: none;
+      color: var(--dark); background: var(--gray-50);
+      transition: border-color 0.2s;
+    }
+    .paste-area:focus { border-color: var(--gold); }
+
+    .format-hint {
+      display: flex; gap: 24px; margin: 12px 0;
+      font-size: 0.82rem; color: var(--gray-400);
+    }
+    .format-hint code {
+      background: var(--gray-50); padding: 2px 7px; border-radius: 5px;
+      font-size: 0.82rem; color: var(--dark);
+    }
+
+    .import-actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; align-items: center; }
+    .btn-parse {
+      padding: 10px 22px; background: var(--gray-100); color: var(--dark);
+      border: none; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-parse:hover { background: var(--gray-200); }
+    .btn-import {
+      padding: 10px 28px; background: var(--gold); color: var(--dark);
+      border: none; border-radius: 10px; font-weight: 700; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-import:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(240,192,48,0.35); }
+    .btn-import:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Preview table */
+    .preview-section { margin-top: 20px; }
+    .preview-count {
+      font-size: 0.88rem; color: var(--gray-400); margin-bottom: 10px;
+    }
+    .preview-count strong { color: var(--dark); }
+
+    /* Progress */
+    .progress-bar-wrap {
+      background: var(--gray-100); border-radius: 100px; height: 10px;
+      margin: 12px 0; overflow: hidden; display: none;
+    }
+    .progress-bar-fill {
+      height: 100%; background: var(--gold); border-radius: 100px;
+      transition: width 0.3s; width: 0%;
+    }
+    .progress-label { font-size: 0.88rem; color: var(--gray-400); }
+
+    /* Results */
+    .result-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--gray-50); font-size: 0.88rem; }
+    .result-row:last-child { border-bottom: none; }
+    .result-ra { font-family: monospace; font-size: 0.82rem; color: var(--gray-400); min-width: 130px; }
+    .result-nome { flex: 1; font-weight: 500; }
+    .result-ok  { color: #16a34a; font-weight: 700; }
+    .result-err { color: #ef4444; font-size: 0.8rem; }
+
+    .summary-box {
+      display: flex; gap: 20px; padding: 16px 20px; border-radius: 10px;
+      background: var(--gray-50); margin-top: 16px; flex-wrap: wrap;
+    }
+    .summary-item { text-align: center; }
+    .summary-item .num { font-size: 1.6rem; font-weight: 800; }
+    .summary-item .lbl { font-size: 0.78rem; color: var(--gray-400); }
+    .num-ok   { color: #16a34a; }
+    .num-err  { color: #ef4444; }
+    .num-tot  { color: var(--dark); }
+
+    .alert-info {
+      background: rgba(240,192,48,0.1); border-left: 4px solid var(--gold);
+      border-radius: 8px; padding: 12px 16px; font-size: 0.88rem;
+      color: var(--gray-800); margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">
+          <img src="../logo.png" alt="Logo" onerror="this.style.display='none'">
+        </div>
+        <div class="sidebar-brand-text">
+          Assessoria<br>
+          <small>Painel de Gestão</small>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-label">Menu</div>
+        <a href="app.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+        <a href="alunos.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Alunos
+        </a>
+        <a href="atividades.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Atividades
+        </a>
+        <a href="modulos.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Módulos
+        </a>
+        <a href="financeiro.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Financeiro
+        </a>
+        <a href="rastreio.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Rastreio
+        </a>
+        <a href="pedidos.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Pedidos
+        </a>
+        <a href="importar.html" class="sidebar-link active">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar
+        </a>
+        <div class="sidebar-nav-label">Sistema</div>
+        <button class="sidebar-link" id="btn-logout">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair
+        </button>
+      </nav>
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="user-avatar">A</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="user-name">Assessor</div>
+          <div class="sidebar-user-role">Assessor</div>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="mobile-toggle" id="mobile-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <h1>Importar Alunos Mensalistas</h1>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="alert-info">
+        📋 Cole a lista de logins no formato <code>RA&nbsp;&nbsp;Senha</code> (separado por tab ou espaço). O sistema vai verificar cada login no Studeo, extrair o nome do aluno e cadastrá-lo automaticamente como mensalista.
+      </div>
+
+      <!-- Paste Box -->
+      <div class="import-box">
+        <h2>1. Cole os logins</h2>
+        <div class="format-hint">
+          <span>Formato aceito: <code>23136944-5&nbsp;&nbsp;MinhaS3nha</code> ou <code>23136944-5,MinhaS3nha</code></span>
+          <span>Um por linha</span>
+        </div>
+        <textarea class="paste-area" id="paste-area" placeholder="23136944-5&#9;Andre8524&#10;23356734-5&#9;Papiron123&#10;23114835-5&#9;Duarte6408&#10;..."></textarea>
+
+        <div class="import-actions">
+          <button class="btn-parse" id="btn-parse">🔍 Analisar Lista</button>
+          <button class="btn-import" id="btn-import" disabled>⬆️ Importar Alunos</button>
+          <span id="parse-count" style="font-size:0.88rem;color:var(--gray-400);"></span>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-section" id="preview-section" style="display:none;">
+          <p class="preview-count" id="preview-count"></p>
+          <div class="table-wrap" style="max-height:220px;overflow-y:auto;">
+            <table>
+              <thead><tr><th>#</th><th>RA</th><th>Senha</th></tr></thead>
+              <tbody id="preview-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="import-box" id="progress-box" style="display:none;">
+        <h2>2. Importando...</h2>
+        <p id="progress-label" class="progress-label">Aguarde, verificando credenciais no Studeo...</p>
+        <div class="progress-bar-wrap" style="display:block;">
+          <div class="progress-bar-fill" id="progress-bar"></div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="import-box" id="results-box" style="display:none;">
+        <h2>3. Resultado</h2>
+
+        <div class="summary-box" id="summary-box"></div>
+
+        <div style="margin-top:20px;">
+          <div class="table-wrap" style="max-height:400px;overflow-y:auto;">
+            <table>
+              <thead><tr><th>RA</th><th>Nome</th><th>Status</th></tr></thead>
+              <tbody id="results-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn-parse" onclick="reiniciar()">🔄 Nova Importação</button>
+          <a href="rastreio.html" class="btn-import" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+            🔍 Ir para Rastreio
+          </a>
+          <a href="alunos.html" class="btn-parse" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+            👥 Ver Alunos
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/importar.js"></script>
+  <script>
+    document.getElementById('mobile-toggle').addEventListener('click', function () {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+    document.getElementById('sidebar-overlay').addEventListener('click', function () {
+      document.getElementById('sidebar').classList.remove('open');
+    });
+    document.addEventListener('DOMContentLoaded', async function () {
+      var user = await getUser();
+      if (user) {
+        var name = getUserName(user);
+        document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+        document.getElementById('user-name').textContent = name;
+      }
+    });
+  </script>
+</body>
+</html>

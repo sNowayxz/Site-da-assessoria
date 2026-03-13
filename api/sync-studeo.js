@@ -128,6 +128,19 @@ function normalizarData(val) {
   }
 }
 
+// Decodifica JWT e extrai nome do aluno
+function extractNameFromJWT(token) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    let payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (payload.length % 4) payload += '=';
+    const decoded = JSON.parse(Buffer.from(payload, 'base64').toString('utf-8'));
+    return decoded.name || decoded.nomeAluno || decoded.nome
+      || decoded.given_name || decoded.preferred_username || null;
+  } catch { return null; }
+}
+
 async function studeoLogin(ra, senha) {
   const raClean = String(ra).replace(/[\s.\-]/g, '').trim();
 
