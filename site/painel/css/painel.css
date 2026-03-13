@@ -66,15 +66,16 @@ img { max-width: 100%; display: block; }
 }
 
 .login-logo {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: var(--gray-50);
+  width: 96px;
+  height: 96px;
+  border-radius: 16px;
+  background: var(--white);
   padding: 4px;
   margin: 0 auto 20px;
-  box-shadow: 0 0 30px rgba(240,192,48,0.15);
+  box-shadow: 0 0 30px rgba(240,192,48,0.2);
+  border: 2px solid var(--gray-100);
 }
-.login-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+.login-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
 
 .login-card h1 {
   font-size: 1.5rem;
@@ -195,14 +196,15 @@ img { max-width: 100%; display: block; }
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .sidebar-logo {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   background: var(--white);
   padding: 2px;
   flex-shrink: 0;
+  overflow: hidden;
 }
-.sidebar-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+.sidebar-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
 .sidebar-brand-text {
   color: var(--white);
   font-size: 0.95rem;
