@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     currentEditId = null;
     document.getElementById('modal-title').textContent = 'Novo Aluno';
     document.getElementById('form-aluno').reset();
+    toggleStudeoSenha();
     openModal('modal-aluno');
   });
 
@@ -27,10 +28,24 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Filters
   document.getElementById('filter-curso').addEventListener('input', filterAlunos);
   document.getElementById('filter-tipo').addEventListener('change', filterAlunos);
+
+  // Show/hide studeo_senha based on tipo
+  var tipoSelect = document.getElementById('tipo');
+  if (tipoSelect) {
+    tipoSelect.addEventListener('change', toggleStudeoSenha);
+  }
 });
 
+function toggleStudeoSenha() {
+  var tipo = document.getElementById('tipo').value;
+  var group = document.getElementById('studeo-senha-group');
+  if (group) {
+    group.style.display = tipo === 'mensalista' ? 'block' : 'none';
+  }
+}
+
 async function loadAlunos() {
-  var { data, error } = await supabase
+  var { data, error } = await sb
     .from('alunos')
     .select('*')
     .order('nome');
@@ -48,11 +63,12 @@ function renderAlunos(alunos) {
   }
 
   tbody.innerHTML = alunos.map(function (a) {
+    var hasStudeo = a.studeo_senha ? ' 🔗' : '';
     return '<tr>' +
       '<td>' + escapeHtml(a.ra) + '</td>' +
       '<td>' + escapeHtml(a.nome) + '</td>' +
       '<td>' + escapeHtml(a.curso || '—') + '</td>' +
-      '<td><span class="badge badge-' + a.tipo + '">' + (a.tipo === 'mensalista' ? 'Mensalista' : 'Avulso') + '</span></td>' +
+      '<td><span class="badge badge-' + a.tipo + '">' + (a.tipo === 'mensalista' ? 'Mensalista' + hasStudeo : 'Avulso') + '</span></td>' +
       '<td>' + escapeHtml(a.telefone || '—') + '</td>' +
       '<td class="actions">' +
         '<button class="btn-icon" onclick="editAluno(\'' + a.id + '\')" title="Editar">✏️</button>' +
@@ -85,6 +101,14 @@ async function handleSaveAluno(e) {
     observacoes: form.observacoes.value.trim()
   };
 
+  // Adicionar studeo_senha se for mensalista
+  if (form.tipo.value === 'mensalista' && form.studeo_senha) {
+    var senha = form.studeo_senha.value.trim();
+    if (senha) {
+      data.studeo_senha = senha;
+    }
+  }
+
   try {
     if (currentEditId) {
       await sb.from('alunos').update(data).eq('id', currentEditId);
@@ -111,6 +135,12 @@ async function editAluno(id) {
   form.tipo.value = aluno.tipo;
   form.telefone.value = aluno.telefone || '';
   form.observacoes.value = aluno.observacoes || '';
+
+  // Studeo senha
+  if (form.studeo_senha) {
+    form.studeo_senha.value = aluno.studeo_senha || '';
+  }
+  toggleStudeoSenha();
   openModal('modal-aluno');
 }
 
