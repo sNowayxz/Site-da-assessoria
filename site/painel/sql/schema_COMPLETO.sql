@@ -327,4 +327,32 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 -- Após criar o usuário no Authentication do Supabase, pegue o UUID e rode:
 -- INSERT INTO assessores (id, nome, role) VALUES ('SEU_USER_UUID_AQUI', 'Admin', 'admin');
 
+
+-- ═══ 14. TABELA AUDIT LOG ═══
+
+CREATE TABLE IF NOT EXISTS audit_log (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id),
+  user_email TEXT,
+  action TEXT NOT NULL,
+  table_name TEXT,
+  record_id TEXT,
+  details JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action);
+CREATE INDEX IF NOT EXISTS idx_audit_log_table ON audit_log(table_name);
+CREATE INDEX IF NOT EXISTS idx_audit_log_created ON audit_log(created_at DESC);
+
+ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "Auth pode ver audit_log" ON audit_log FOR SELECT TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "Auth pode inserir audit_log" ON audit_log FOR INSERT TO authenticated WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
 -- ═══ FIM ═══

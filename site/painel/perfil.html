@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil — Painel Assessoria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/painel.css">
+  <style>
+    .profile-card { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 32px; max-width: 600px; }
+    .profile-avatar-lg { width: 80px; height: 80px; border-radius: 50%; background: var(--gold-glow); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 2rem; font-weight: 800; margin-bottom: 20px; }
+    .profile-section { margin-bottom: 24px; }
+    .profile-section h3 { font-size: 0.9rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+    .profile-success { display: none; padding: 10px 14px; border-radius: 8px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: #16a34a; font-size: 0.88rem; margin-top: 12px; }
+    .profile-success.show { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo"><img src="../logo.png" alt="Logo" onerror="this.style.display='none'"></div>
+        <div class="sidebar-brand-text">Assessoria<br><small>Painel de Gestão</small></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-label">Menu</div>
+        <a href="app.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard</a>
+        <a href="alunos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Alunos</a>
+        <a href="atividades.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Atividades</a>
+        <a href="modulos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Módulos</a>
+        <a href="financeiro.html" class="sidebar-link"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Financeiro</a>
+        <a href="rastreio.html" class="sidebar-link"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Rastreio</a>
+        <a href="pedidos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> Pedidos</a>
+        <a href="importar.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Importar</a>
+        <a href="agenda.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg> Agenda</a>
+        <div class="sidebar-nav-label">Sistema</div>
+        <a href="perfil.html" class="sidebar-link active"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Perfil</a>
+        <button class="sidebar-link" id="btn-logout"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sair</button>
+      </nav>
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="user-avatar">A</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name" id="user-name">Assessor</div><div class="sidebar-user-role">Assessor</div></div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main-content">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="mobile-toggle" id="mobile-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <h1>Meu Perfil</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="theme-toggle" id="btn-theme" title="Alternar tema">🌙</button>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="profile-avatar-lg" id="profile-avatar">A</div>
+
+        <div class="profile-section">
+          <h3>Informações</h3>
+          <form id="form-profile">
+            <div class="form-group">
+              <label for="profile-nome">Nome</label>
+              <input type="text" id="profile-nome" placeholder="Seu nome">
+            </div>
+            <div class="form-group">
+              <label for="profile-email">E-mail</label>
+              <input type="email" id="profile-email" disabled>
+            </div>
+            <button type="submit" class="btn btn-gold" style="margin-top:8px;">Salvar Alterações</button>
+            <div class="profile-success" id="profile-success">Perfil atualizado com sucesso!</div>
+          </form>
+        </div>
+
+        <div class="profile-section">
+          <h3>Alterar Senha</h3>
+          <form id="form-senha">
+            <div class="form-group">
+              <label for="profile-nova-senha">Nova Senha</label>
+              <input type="password" id="profile-nova-senha" placeholder="Mínimo 6 caracteres" minlength="6">
+            </div>
+            <div class="form-group">
+              <label for="profile-confirma-senha">Confirmar Senha</label>
+              <input type="password" id="profile-confirma-senha" placeholder="Repita a senha">
+            </div>
+            <button type="submit" class="btn btn-outline" style="margin-top:8px;">Alterar Senha</button>
+            <div class="profile-success" id="senha-success">Senha alterada com sucesso!</div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    document.getElementById('mobile-toggle').addEventListener('click', function () { document.getElementById('sidebar').classList.toggle('open'); });
+    document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      var user = await requireAuth();
+      if (!user) return;
+
+      var name = getUserName(user);
+      document.getElementById('user-name').textContent = name;
+      document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('profile-avatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('profile-email').value = user.email || '';
+      document.getElementById('profile-nome').value = user.user_metadata?.nome || name;
+
+      document.getElementById('btn-logout').addEventListener('click', handleLogout);
+
+      // Update profile
+      document.getElementById('form-profile').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var nome = document.getElementById('profile-nome').value.trim();
+        if (!nome) return;
+
+        await sb.auth.updateUser({ data: { nome: nome } });
+
+        // Update assessor table
+        try { await sb.from('assessores').update({ nome: nome }).eq('id', user.id); } catch(e) {}
+
+        document.getElementById('profile-success').classList.add('show');
+        document.getElementById('user-name').textContent = nome;
+        document.getElementById('user-avatar').textContent = nome.charAt(0).toUpperCase();
+        document.getElementById('profile-avatar').textContent = nome.charAt(0).toUpperCase();
+        setTimeout(function() { document.getElementById('profile-success').classList.remove('show'); }, 3000);
+      });
+
+      // Change password
+      document.getElementById('form-senha').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var nova = document.getElementById('profile-nova-senha').value;
+        var confirma = document.getElementById('profile-confirma-senha').value;
+        if (nova !== confirma) { alert('As senhas não coincidem'); return; }
+        if (nova.length < 6) { alert('A senha deve ter pelo menos 6 caracteres'); return; }
+
+        var { error } = await sb.auth.updateUser({ password: nova });
+        if (error) { alert('Erro: ' + error.message); return; }
+
+        document.getElementById('form-senha').reset();
+        document.getElementById('senha-success').classList.add('show');
+        setTimeout(function() { document.getElementById('senha-success').classList.remove('show'); }, 3000);
+      });
+    });
+  </script>
+</body>
+</html>

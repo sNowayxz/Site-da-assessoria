@@ -1021,3 +1021,169 @@ tbody tr:last-child td {
 [data-theme="dark"] .badge-pago { background: rgba(34,197,94,0.15); color: #4ade80; }
 [data-theme="dark"] .badge-atrasado { background: rgba(239,68,68,0.15); color: #f87171; }
 [data-theme="dark"] .badge-cancelado { background: rgba(107,114,128,0.15); color: #9ca3af; }
+
+/* ═══════════════════════════════════════════
+   PAGINATION
+   ═══════════════════════════════════════════ */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--gray-100);
+}
+.page-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--gray-600);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.page-btn:hover:not(:disabled):not(.active) {
+  border-color: var(--gold);
+  color: var(--dark);
+}
+.page-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--dark);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.page-dots {
+  padding: 6px 4px;
+  color: var(--gray-400);
+  font-size: 0.82rem;
+}
+.page-info {
+  margin-left: 12px;
+  font-size: 0.78rem;
+  color: var(--gray-400);
+}
+[data-theme="dark"] .page-btn {
+  background: #161b22;
+  border-color: #30363d;
+  color: #8b949e;
+}
+[data-theme="dark"] .page-btn.active {
+  background: var(--gold);
+  color: var(--dark);
+  border-color: var(--gold);
+}
+[data-theme="dark"] .pagination {
+  border-top-color: #21262d;
+}
+
+/* ═══════════════════════════════════════════
+   GLOBAL SEARCH
+   ═══════════════════════════════════════════ */
+.global-search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 360px;
+}
+.global-search-input {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: var(--gray-800);
+  background: var(--white);
+  outline: none;
+  transition: border-color var(--transition);
+  font-family: inherit;
+}
+.global-search-input:focus { border-color: var(--gold); }
+.global-search-input::placeholder { color: var(--gray-400); }
+.global-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+.global-search-results {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 500;
+  max-height: 320px;
+  overflow-y: auto;
+}
+[data-theme="dark"] .global-search-results {
+  background: #1c2128;
+  border-color: #30363d;
+}
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover { background: var(--gold-glow); }
+[data-theme="dark"] .search-result-item { border-bottom-color: #21262d; }
+.search-result-type {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gold);
+  background: var(--gold-glow);
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.search-result-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--gray-800);
+  flex-shrink: 0;
+}
+[data-theme="dark"] .search-result-name { color: #e6edf3; }
+.search-result-detail {
+  font-size: 0.78rem;
+  color: var(--gray-400);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.search-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--gray-400);
+  font-size: 0.88rem;
+}
+.search-kbd {
+  font-size: 0.7rem;
+  background: var(--gray-100);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--gray-400);
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+[data-theme="dark"] .search-kbd { background: #30363d; }

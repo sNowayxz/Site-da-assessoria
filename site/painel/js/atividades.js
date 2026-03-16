@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('filter-status').addEventListener('change', filterAtividades);
   document.getElementById('filter-tipo').addEventListener('change', filterAtividades);
   document.getElementById('filter-aluno').addEventListener('input', filterAtividades);
+  var dtInicio = document.getElementById('filter-data-inicio');
+  var dtFim = document.getElementById('filter-data-fim');
+  if (dtInicio) dtInicio.addEventListener('change', filterAtividades);
+  if (dtFim) dtFim.addEventListener('change', filterAtividades);
 });
 
 async function loadAlunosSelect() {
@@ -101,15 +105,27 @@ function filterAtividades() {
   var status = document.getElementById('filter-status').value;
   var tipo = document.getElementById('filter-tipo').value;
   var aluno = document.getElementById('filter-aluno').value.toLowerCase();
+  var dtInicio = document.getElementById('filter-data-inicio') ? document.getElementById('filter-data-inicio').value : '';
+  var dtFim = document.getElementById('filter-data-fim') ? document.getElementById('filter-data-fim').value : '';
 
   var filtered = _atividades.filter(function (a) {
     var alunoData = a.alunos || {};
     var matchStatus = !status || a.status === status;
     var matchTipo = !tipo || a.tipo === tipo;
     var matchAluno = !aluno || (alunoData.nome || '').toLowerCase().includes(aluno) || (alunoData.ra || '').toLowerCase().includes(aluno);
-    return matchStatus && matchTipo && matchAluno;
+    var matchDate = true;
+    if (dtInicio) {
+      var created = (a.created_at || '').slice(0, 10);
+      matchDate = matchDate && created >= dtInicio;
+    }
+    if (dtFim) {
+      var created = (a.created_at || '').slice(0, 10);
+      matchDate = matchDate && created <= dtFim;
+    }
+    return matchStatus && matchTipo && matchAluno && matchDate;
   });
   renderAtividades(filtered);
+  updateCounters(filtered);
 }
 
 async function handleSaveAtividade(e) {

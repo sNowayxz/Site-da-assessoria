@@ -27,6 +27,12 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('filter-status-pag').addEventListener('change', filterPagamentos);
   document.getElementById('filter-tipo-pag').addEventListener('change', filterPagamentos);
   document.getElementById('filter-aluno-pag').addEventListener('input', filterPagamentos);
+
+  // Gerar mensalidades automáticas
+  document.getElementById('btn-gerar-mensalidades').addEventListener('click', gerarMensalidades);
+
+  // Date filter
+  document.getElementById('filter-mes-pag').addEventListener('change', filterPagamentos);
 });
 
 async function loadAlunosFinanceiro() {
@@ -105,14 +111,22 @@ function filterPagamentos() {
   var status = document.getElementById('filter-status-pag').value;
   var tipo = document.getElementById('filter-tipo-pag').value;
   var aluno = document.getElementById('filter-aluno-pag').value.toLowerCase();
+  var mes = document.getElementById('filter-mes-pag').value; // "2025-03" format
 
   var filtered = _pagamentos.filter(function (p) {
     var alunoData = p.alunos || {};
+    var matchDate = true;
+    if (mes) {
+      var dt = p.dt_vencimento || p.created_at || '';
+      matchDate = dt.startsWith(mes);
+    }
     return (!status || p.status === status) &&
            (!tipo || p.tipo === tipo) &&
-           (!aluno || (alunoData.nome || '').toLowerCase().includes(aluno));
+           (!aluno || (alunoData.nome || '').toLowerCase().includes(aluno)) &&
+           matchDate;
   });
   renderPagamentos(filtered);
+  updateFinancialCounters(filtered);
 }
 
 async function handleSavePagamento(e) {
@@ -187,6 +201,68 @@ function formatTipoPag(t) {
 function formatStatusPag(s) {
   var map = { pendente: 'Pendente', pago: 'Pago', atrasado: 'Atrasado', cancelado: 'Cancelado' };
   return map[s] || s;
+}
+
+async function gerarMensalidades() {
+  if (!confirm('Gerar pagamentos mensais para todos os mensalistas com valor configurado?\n\nIsso criará uma cobrança para o mês atual.')) return;
+
+  try {
+    var { data: mensalistas } = await sb.from('alunos')
+      .select('id, nome, ra, mensalista_valor, mensalista_vencimento')
+      .eq('tipo', 'mensalista')
+      .not('mensalista_valor', 'is', null);
+
+    if (!mensalistas || !mensalistas.length) {
+      if (typeof showToast === 'function') showToast('Nenhum mensalista com valor configurado', 'warning');
+      else alert('Nenhum mensalista com valor configurado. Configure o valor na página de Alunos.');
+      return;
+    }
+
+    var now = new Date();
+    var mesRef = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    mesRef = mesRef.charAt(0).toUpperCase() + mesRef.slice(1);
+    var anoMes = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+    // Verificar se já existem mensalidades para este mês
+    var { data: existentes } = await sb.from('pagamentos')
+      .select('aluno_id')
+      .eq('tipo', 'mensalidade')
+      .ilike('referencia', '%' + mesRef + '%');
+
+    var jaGerados = (existentes || []).map(function(e) { return e.aluno_id; });
+    var novos = mensalistas.filter(function(m) { return jaGerados.indexOf(m.id) === -1; });
+
+    if (!novos.length) {
+      if (typeof showToast === 'function') showToast('Mensalidades já foram geradas para ' + mesRef, 'info');
+      else alert('Mensalidades já foram geradas para ' + mesRef);
+      return;
+    }
+
+    var pagamentos = novos.map(function(m) {
+      var dia = m.mensalista_vencimento || 10;
+      var vencimento = anoMes + '-' + String(dia).padStart(2, '0');
+      return {
+        aluno_id: m.id,
+        valor: m.mensalista_valor,
+        tipo: 'mensalidade',
+        status: 'pendente',
+        referencia: mesRef,
+        dt_vencimento: vencimento,
+        observacoes: 'Gerado automaticamente'
+      };
+    });
+
+    var { error } = await sb.from('pagamentos').insert(pagamentos);
+    if (error) throw error;
+
+    if (typeof showToast === 'function') showToast(novos.length + ' mensalidades geradas para ' + mesRef, 'success');
+    else alert(novos.length + ' mensalidades geradas para ' + mesRef + '!');
+
+    await loadPagamentos();
+  } catch (err) {
+    if (typeof showToast === 'function') showToast('Erro: ' + err.message, 'error');
+    else alert('Erro: ' + err.message);
+  }
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }

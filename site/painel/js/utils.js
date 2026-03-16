@@ -182,6 +182,75 @@ function exportTableToCSV(tableId, filename) {
 }
 
 
+// ─── Global Search ───
+function initGlobalSearch() {
+  var searchBox = document.getElementById('global-search');
+  var resultsBox = document.getElementById('global-search-results');
+  if (!searchBox || !resultsBox) return;
+
+  var debounce;
+  searchBox.addEventListener('input', function () {
+    clearTimeout(debounce);
+    var q = searchBox.value.trim();
+    if (q.length < 2) { resultsBox.style.display = 'none'; return; }
+    debounce = setTimeout(function () { doGlobalSearch(q, resultsBox); }, 300);
+  });
+
+  searchBox.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { resultsBox.style.display = 'none'; searchBox.blur(); }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!searchBox.contains(e.target) && !resultsBox.contains(e.target)) {
+      resultsBox.style.display = 'none';
+    }
+  });
+}
+
+async function doGlobalSearch(q, resultsBox) {
+  if (!window.sb) return;
+  var lower = q.toLowerCase();
+  var results = [];
+
+  try {
+    var { data: alunos } = await sb.from('alunos').select('id, nome, ra, curso').ilike('nome', '%' + q + '%').limit(5);
+    (alunos || []).forEach(function (a) {
+      results.push({ type: 'Aluno', name: a.nome, detail: a.ra + ' — ' + (a.curso || ''), url: 'alunos.html' });
+    });
+
+    if (!alunos || !alunos.length) {
+      var { data: alunosRa } = await sb.from('alunos').select('id, nome, ra, curso').ilike('ra', '%' + q + '%').limit(5);
+      (alunosRa || []).forEach(function (a) {
+        results.push({ type: 'Aluno', name: a.nome, detail: a.ra + ' — ' + (a.curso || ''), url: 'alunos.html' });
+      });
+    }
+
+    var { data: ativs } = await sb.from('atividades').select('id, descricao, tipo, status, alunos(nome)').ilike('descricao', '%' + q + '%').limit(5);
+    (ativs || []).forEach(function (a) {
+      var alunoNome = a.alunos ? a.alunos.nome : '';
+      results.push({ type: 'Atividade', name: a.descricao || a.tipo, detail: alunoNome + ' — ' + (a.status || ''), url: 'atividades.html' });
+    });
+  } catch (e) {
+    console.warn('[search]', e.message);
+  }
+
+  if (!results.length) {
+    resultsBox.innerHTML = '<div class="search-empty">Nenhum resultado para "' + q + '"</div>';
+  } else {
+    resultsBox.innerHTML = results.map(function (r) {
+      return '<a href="' + r.url + '" class="search-result-item">' +
+        '<span class="search-result-type">' + r.type + '</span>' +
+        '<span class="search-result-name">' + r.name + '</span>' +
+        '<span class="search-result-detail">' + r.detail + '</span>' +
+        '</a>';
+    }).join('');
+  }
+  resultsBox.style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', initGlobalSearch);
+
+
 // ─── Supabase Realtime (notificações) ───
 function subscribeToChanges(table, onInsert, onUpdate) {
   if (!window.sb) return;
@@ -198,4 +267,115 @@ function subscribeToChanges(table, onInsert, onUpdate) {
   } catch (e) {
     console.warn('[realtime] Não foi possível assinar:', e.message);
   }
+}
+
+
+// ─── Keyboard Shortcuts ───
+document.addEventListener('keydown', function (e) {
+  // Ignore if typing in input/textarea/select
+  var tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+    if (e.key === 'Escape') {
+      e.target.blur();
+      // Close any open modal
+      var openModal = document.querySelector('.modal-overlay.open');
+      if (openModal) openModal.classList.remove('open');
+    }
+    return;
+  }
+
+  // "/" → Focus global search
+  if (e.key === '/') {
+    e.preventDefault();
+    var search = document.getElementById('global-search');
+    if (search) search.focus();
+  }
+
+  // "n" → Open new item modal (context-dependent)
+  if (e.key === 'n' || e.key === 'N') {
+    var btn = document.getElementById('btn-novo-aluno') ||
+              document.getElementById('btn-nova-atividade') ||
+              document.getElementById('btn-novo-pagamento') ||
+              document.getElementById('btn-novo-modulo');
+    if (btn) { e.preventDefault(); btn.click(); }
+  }
+
+  // "Escape" → Close modal
+  if (e.key === 'Escape') {
+    var openModal = document.querySelector('.modal-overlay.open');
+    if (openModal) openModal.classList.remove('open');
+    var searchResults = document.getElementById('global-search-results');
+    if (searchResults) searchResults.style.display = 'none';
+  }
+
+  // "d" → Go to Dashboard
+  if (e.key === 'd') { window.location.href = 'app.html'; }
+
+  // "?" → Show shortcuts help
+  if (e.key === '?') {
+    e.preventDefault();
+    showShortcutsHelp();
+  }
+});
+
+function showShortcutsHelp() {
+  // Check if modal already exists
+  var existing = document.getElementById('modal-shortcuts');
+  if (existing) { existing.classList.add('open'); return; }
+
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'modal-shortcuts';
+  overlay.innerHTML = '<div class="modal" style="max-width:400px;">' +
+    '<div class="modal-header"><h3>Atalhos de Teclado</h3><button class="modal-close" onclick="document.getElementById(\'modal-shortcuts\').classList.remove(\'open\')">&times;</button></div>' +
+    '<div class="modal-body">' +
+    '<div style="display:flex;flex-direction:column;gap:12px;">' +
+    shortcutRow('/', 'Buscar') +
+    shortcutRow('N', 'Novo item') +
+    shortcutRow('Esc', 'Fechar modal') +
+    shortcutRow('D', 'Ir ao Dashboard') +
+    shortcutRow('?', 'Mostrar atalhos') +
+    '</div></div></div>';
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
+  document.body.appendChild(overlay);
+}
+
+function shortcutRow(key, desc) {
+  return '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+    '<span style="font-size:0.9rem;color:var(--gray-600);">' + desc + '</span>' +
+    '<kbd style="background:var(--gray-100);padding:4px 10px;border-radius:6px;font-family:monospace;font-size:0.85rem;font-weight:600;color:var(--gray-800);border:1px solid var(--gray-200);">' + key + '</kbd>' +
+    '</div>';
+}
+
+
+// ─── Pagination ───
+var ITEMS_PER_PAGE = 20;
+
+function paginateArray(arr, page) {
+  var start = (page - 1) * ITEMS_PER_PAGE;
+  return arr.slice(start, start + ITEMS_PER_PAGE);
+}
+
+function renderPagination(containerId, totalItems, currentPage, onPageChange) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+
+  var totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+  var html = '<div class="pagination">';
+  html += '<button class="page-btn" ' + (currentPage <= 1 ? 'disabled' : '') + ' onclick="' + onPageChange + '(' + (currentPage - 1) + ')">‹</button>';
+
+  for (var i = 1; i <= totalPages; i++) {
+    if (totalPages > 7 && i > 3 && i < totalPages - 2 && Math.abs(i - currentPage) > 1) {
+      if (i === 4 || i === totalPages - 3) html += '<span class="page-dots">...</span>';
+      continue;
+    }
+    html += '<button class="page-btn' + (i === currentPage ? ' active' : '') + '" onclick="' + onPageChange + '(' + i + ')">' + i + '</button>';
+  }
+
+  html += '<button class="page-btn" ' + (currentPage >= totalPages ? 'disabled' : '') + ' onclick="' + onPageChange + '(' + (currentPage + 1) + ')">›</button>';
+  html += '<span class="page-info">' + totalItems + ' registros</span>';
+  html += '</div>';
+  container.innerHTML = html;
 }

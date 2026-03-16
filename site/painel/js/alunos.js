@@ -71,6 +71,7 @@ function renderAlunos(alunos) {
       '<td><span class="badge badge-' + a.tipo + '">' + (a.tipo === 'mensalista' ? 'Mensalista' + hasStudeo : 'Avulso') + '</span></td>' +
       '<td>' + escapeHtml(a.telefone || '—') + '</td>' +
       '<td class="actions">' +
+        (a.telefone ? '<a class="btn-icon" href="https://wa.me/55' + a.telefone.replace(/\D/g,'') + '" target="_blank" rel="noopener" title="WhatsApp">💬</a>' : '') +
         '<button class="btn-icon" onclick="editAluno(\'' + a.id + '\')" title="Editar">✏️</button>' +
         '<button class="btn-icon btn-danger" onclick="deleteAluno(\'' + a.id + '\')" title="Excluir">🗑️</button>' +
       '</td>' +
