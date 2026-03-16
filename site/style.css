@@ -27,7 +27,7 @@
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; font-size: 125%; }
 body {
   font-family: 'Source Sans 3', sans-serif;
   color: var(--gray-800);
