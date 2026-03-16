@@ -159,11 +159,17 @@
       <div class="charts-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px;">
         <div class="panel" style="padding:20px;">
           <h2 style="font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:16px;">Atividades por Status</h2>
-          <canvas id="chart-status" height="200"></canvas>
+          <div style="position:relative;height:240px;">
+            <canvas id="chart-status"></canvas>
+          </div>
+          <p id="chart-status-empty" style="display:none;text-align:center;color:var(--gray-400);padding:40px 0;font-size:0.9rem;">Nenhuma atividade registrada</p>
         </div>
         <div class="panel" style="padding:20px;">
           <h2 style="font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:16px;">Receita Mensal</h2>
-          <canvas id="chart-receita" height="200"></canvas>
+          <div style="position:relative;height:240px;">
+            <canvas id="chart-receita"></canvas>
+          </div>
+          <p id="chart-receita-empty" style="display:none;text-align:center;color:var(--gray-400);padding:40px 0;font-size:0.9rem;">Nenhum pagamento registrado</p>
         </div>
       </div>
 

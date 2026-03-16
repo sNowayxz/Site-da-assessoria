@@ -82,10 +82,27 @@ function renderRecentActivities(atividades) {
 }
 
 function renderStatusChart(pendentes, andamento, entregues) {
-  var ctx = document.getElementById('chart-status');
-  if (!ctx) return;
+  var canvas = document.getElementById('chart-status');
+  if (!canvas) return;
+
+  var container = canvas.parentElement;
+  var emptyMsg = document.getElementById('chart-status-empty');
+
+  // Se tudo zero, mostra mensagem vazia
+  if (!pendentes && !andamento && !entregues) {
+    canvas.style.display = 'none';
+    if (emptyMsg) emptyMsg.style.display = 'block';
+    return;
+  }
+
+  // Tem dados — garante canvas visível
+  canvas.style.display = 'block';
+  if (emptyMsg) emptyMsg.style.display = 'none';
+
+  if (typeof Chart === 'undefined') return;
+
   var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  new Chart(ctx, {
+  new Chart(canvas, {
     type: 'doughnut',
     data: {
       labels: ['Pendentes', 'Em Andamento', 'Entregues'],
@@ -111,21 +128,40 @@ function renderStatusChart(pendentes, andamento, entregues) {
 }
 
 async function renderReceitaChart() {
-  var ctx = document.getElementById('chart-receita');
-  if (!ctx) return;
+  var canvas = document.getElementById('chart-receita');
+  if (!canvas) return;
+
   var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
   try {
-    var { data: pagamentos } = await sb.from('pagamentos').select('valor, status, dt_pagamento, created_at');
+    var { data: pagamentos, error } = await sb.from('pagamentos').select('valor, status, dt_pagamento, created_at');
+    if (error) { console.warn('Erro pagamentos chart:', error.message); return; }
+
     var pagos = (pagamentos || []).filter(function(p) { return p.status === 'pago'; });
 
-    // Agrupar por mês
+    // Se não tem nenhum pagamento pago, mostra estado vazio
+    if (!pagos.length) {
+      canvas.style.display = 'none';
+      var emptyEl = document.getElementById('chart-receita-empty');
+      if (emptyEl) emptyEl.style.display = 'block';
+      return;
+    }
+
+    canvas.style.display = 'block';
+    var emptyEl2 = document.getElementById('chart-receita-empty');
+    if (emptyEl2) emptyEl2.style.display = 'none';
+
+    if (typeof Chart === 'undefined') return;
+
+    // Agrupar por mês (últimos 6 meses)
     var meses = {};
+    var keys = [];
     var now = new Date();
     for (var i = 5; i >= 0; i--) {
       var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
       meses[key] = 0;
+      keys.push(key);
     }
 
     pagos.forEach(function(p) {
@@ -138,14 +174,14 @@ async function renderReceitaChart() {
       }
     });
 
-    var labels = Object.keys(meses).map(function(k) {
+    var monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    var labels = keys.map(function(k) {
       var parts = k.split('-');
-      var monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
       return monthNames[parseInt(parts[1]) - 1] + '/' + parts[0].slice(2);
     });
-    var values = Object.values(meses);
+    var values = keys.map(function(k) { return meses[k]; });
 
-    new Chart(ctx, {
+    new Chart(canvas, {
       type: 'bar',
       data: {
         labels: labels,
@@ -179,7 +215,7 @@ async function renderReceitaChart() {
       }
     });
   } catch (e) {
-    // Tabela pagamentos pode não existir
+    console.warn('Erro ao renderizar chart receita:', e);
   }
 }
 
