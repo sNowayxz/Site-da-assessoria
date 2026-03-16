@@ -234,13 +234,13 @@ document.addEventListener('DOMContentLoaded', function () {
       qr1Container.innerHTML = '<div id="qr1-code"></div>';
       qr2Container.innerHTML = '<div id="qr2-code"></div>';
 
-      var opts = { width: 136, height: 136, colorDark: '#1a1a2e', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M };
+      var opts = { width: 136, height: 136, colorDark: '#1a1a2e', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.L };
 
       new QRCode(document.getElementById('qr1-code'), Object.assign({}, opts, {
-        text: 'https://wa.me/5543999066267?text=Olá!%20Gostaria%20de%20solicitar%20um%20orçamento.'
+        text: 'https://wa.me/5543999066267'
       }));
       new QRCode(document.getElementById('qr2-code'), Object.assign({}, opts, {
-        text: 'https://wa.me/5518981591286?text=Olá!%20Gostaria%20de%20solicitar%20um%20orçamento.'
+        text: 'https://wa.me/5518981591286'
       }));
       qrGenerated = true;
     } catch (e) {
