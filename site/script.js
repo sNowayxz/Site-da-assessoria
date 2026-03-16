@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var particlesActive = true;
 
   function createParticle() {
-    if (!particlesActive || particleCount >= MAX_PARTICLES) return;
+    if (!particlesContainer || !particlesActive || particleCount >= MAX_PARTICLES) return;
     var p = document.createElement('div');
     p.className = 'particle';
     var size = Math.random() * 4 + 2;
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var particleInterval = setInterval(createParticle, 2500);
 
   // Pause particles when hero not visible
-  if ('IntersectionObserver' in window) {
+  if ('IntersectionObserver' in window && heroSection) {
     new IntersectionObserver(function (entries) {
       particlesActive = entries[0].isIntersecting;
     }, { threshold: 0.1 }).observe(heroSection);
