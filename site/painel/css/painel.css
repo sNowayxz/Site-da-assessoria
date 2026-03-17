@@ -270,6 +270,30 @@ img { max-width: 100%; display: block; }
   stroke-linejoin: round;
 }
 
+/* Sidebar sub-links (nested items) */
+.sidebar-sub {
+  display: flex;
+  flex-direction: column;
+  padding-left: 20px;
+}
+.sidebar-sub .sidebar-link {
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  color: var(--gray-500, #6b7280);
+}
+.sidebar-sub .sidebar-link svg {
+  width: 16px;
+  height: 16px;
+}
+.sidebar-sub .sidebar-link:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--gray-300);
+}
+.sidebar-sub .sidebar-link.active {
+  background: var(--gold-glow);
+  color: var(--gold);
+}
+
 .sidebar-user {
   padding: 16px 20px;
   border-top: 1px solid rgba(255,255,255,0.06);
