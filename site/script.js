@@ -389,11 +389,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (!nome || !texto) return;
 
+      // Rate limit: 1 depoimento a cada 5 minutos
+      var lastSent = parseInt(localStorage.getItem('dep-last-sent') || '0');
+      var now = Date.now();
+      if (now - lastSent < 300000) {
+        msg.textContent = 'Aguarde 5 minutos antes de enviar outra avaliação.';
+        msg.style.color = '#f59e0b';
+        msg.style.display = 'block';
+        return;
+      }
+
       supaFetch('depoimentos', {
         method: 'POST',
         body: { nome: nome, curso: curso, texto: texto, nota: currentRating, aprovado: false }
       }).then(function(res) {
         if (res && !res.error) {
+          localStorage.setItem('dep-last-sent', String(Date.now()));
           msg.textContent = 'Obrigado! Sua avaliação será revisada e publicada em breve.';
           msg.style.color = '#22c55e';
           msg.style.display = 'block';
@@ -412,5 +423,71 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   }
+
+  // ════════════════════════════════════
+  // SCROLL PROGRESS BAR
+  // ════════════════════════════════════
+  var progressBar = document.getElementById('scroll-progress');
+  if (progressBar) {
+    window.addEventListener('scroll', function () {
+      var scrollTop = window.scrollY;
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      var progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      progressBar.style.width = progress + '%';
+    });
+  }
+
+  // ════════════════════════════════════
+  // SCROLL TO TOP BUTTON
+  // ════════════════════════════════════
+  var scrollTopBtn = document.getElementById('scroll-top');
+  if (scrollTopBtn) {
+    window.addEventListener('scroll', function () {
+      scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+    });
+    scrollTopBtn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // ════════════════════════════════════
+  // LOADING SKELETONS FOR DEPOIMENTOS
+  // ════════════════════════════════════
+  // Replace loading text with skeleton cards
+  var depGridSkeleton = document.getElementById('depoimentos-grid');
+  if (depGridSkeleton && depGridSkeleton.querySelector('.depoimento-loading')) {
+    var skeletonHtml = '';
+    for (var sk = 0; sk < 3; sk++) {
+      skeletonHtml += '<div class="skeleton skeleton-card"></div>';
+    }
+    depGridSkeleton.innerHTML = skeletonHtml;
+  }
+
+  // ════════════════════════════════════
+  // REAL-TIME STUDENT COUNT
+  // ════════════════════════════════════
+  (function loadRealCount() {
+    var SUPA_URL_COUNT = 'https://lztfoprapoyicldunhzw.supabase.co';
+    var SUPA_KEY_COUNT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6dGZvcHJhcG95aWNsZHVuaHp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzY0MzIsImV4cCI6MjA4ODkxMjQzMn0.8Qyq2bVA0oK8gji9hG2AWG-gQ3oH4nWm3QOqQ59S9IA';
+
+    fetch(SUPA_URL_COUNT + '/rest/v1/alunos?select=id', {
+      headers: { 'apikey': SUPA_KEY_COUNT, 'Authorization': 'Bearer ' + SUPA_KEY_COUNT, 'Prefer': 'count=exact' }
+    }).then(function(r) {
+      var count = r.headers.get('content-range');
+      if (count) {
+        var total = parseInt(count.split('/')[1]);
+        if (total && total > 0) {
+          // Update the "Alunos Atendidos" stat if count is higher than default
+          var statEls = document.querySelectorAll('.stat-number[data-target]');
+          statEls.forEach(function(el) {
+            var label = el.parentElement.querySelector('.stat-label');
+            if (label && label.textContent.indexOf('Alunos') !== -1 && total > parseInt(el.getAttribute('data-target'))) {
+              el.setAttribute('data-target', total);
+            }
+          });
+        }
+      }
+    }).catch(function() { /* silent fail */ });
+  })();
 
 });

@@ -1,39 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemapns.org/schemas/sitemap/0.9">
   <url>
     <loc>https://site-da-assessoria.vercel.app/</loc>
-    <lastmod>2026-03-13</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://site-da-assessoria.vercel.app/extensao/</loc>
-    <lastmod>2026-03-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://site-da-assessoria.vercel.app/extensao/pedido.html</loc>
-    <lastmod>2026-03-13</lastmod>
+    <loc>https://site-da-assessoria.vercel.app/sobre/</loc>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://site-da-assessoria.vercel.app/extensao/status.html</loc>
-    <lastmod>2026-03-13</lastmod>
+    <loc>https://site-da-assessoria.vercel.app/extensao/</loc>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://site-da-assessoria.vercel.app/termos.html</loc>
-    <lastmod>2026-03-13</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://site-da-assessoria.vercel.app/privacidade.html</loc>
-    <lastmod>2026-03-13</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.8</priority>
   </url>
 </urlset>

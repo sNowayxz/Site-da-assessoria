@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /painel/
+Disallow: /aluno/
 Disallow: /api/
 
 Sitemap: https://site-da-assessoria.vercel.app/sitemap.xml

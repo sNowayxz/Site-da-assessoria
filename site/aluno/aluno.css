@@ -245,6 +245,26 @@ button { font-family: inherit; cursor: pointer; }
   margin-top: auto;
 }
 
+/* Loading Skeleton */
+.aluno-skeleton {
+  background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-50) 50%, var(--gray-100) 75%);
+  background-size: 200% 100%;
+  animation: aluno-shimmer 1.5s infinite;
+  border-radius: var(--radius);
+  height: 60px;
+}
+@keyframes aluno-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.aluno-skeleton-stat {
+  height: 80px;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-50) 50%, var(--gray-100) 75%);
+  background-size: 200% 100%;
+  animation: aluno-shimmer 1.5s infinite;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .aluno-stats { grid-template-columns: repeat(2, 1fr); }

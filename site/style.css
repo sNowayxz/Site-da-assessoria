@@ -1083,3 +1083,115 @@ a { text-decoration: none; color: inherit; }
   .depoimento-form-row { flex-direction: column; }
   .depoimentos-grid { grid-template-columns: 1fr; }
 }
+
+/* ═══ SCROLL PROGRESS BAR ═══ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  z-index: 1001;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+/* ═══ HERO URGENCY ═══ */
+.hero-urgency {
+  color: var(--gold-light);
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin-bottom: 32px;
+  opacity: 0.9;
+  animation: urgencyPulse 2s ease-in-out infinite;
+}
+@keyframes urgencyPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* ═══ SCROLL TO TOP ═══ */
+.scroll-top {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  background: var(--dark);
+  color: var(--gold);
+  border: 2px solid rgba(240, 192, 48, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.scroll-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.scroll-top:hover {
+  background: var(--gold);
+  color: var(--dark);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+
+/* ═══ WHATSAPP FAB TOOLTIP ═══ */
+.whatsapp-float::after {
+  content: 'Fale conosco!';
+  position: absolute;
+  right: 68px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--dark);
+  color: var(--white);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.whatsapp-float:hover::after {
+  opacity: 1;
+}
+
+/* ═══ LOADING SKELETON ═══ */
+.skeleton {
+  background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-50) 50%, var(--gray-100) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-card {
+  height: 180px;
+  border-radius: var(--radius-lg);
+}
+
+/* ═══ STAGGER ANIMATION ═══ */
+.servico-card:nth-child(1).visible { animation-delay: 0s; }
+.servico-card:nth-child(2).visible { animation-delay: 0.1s; }
+.servico-card:nth-child(3).visible { animation-delay: 0.2s; }
+.servico-card:nth-child(4).visible { animation-delay: 0.3s; }
+.servico-card:nth-child(5).visible { animation-delay: 0.4s; }
+.servico-card:nth-child(6).visible { animation-delay: 0.5s; }
+
+.depoimento-card:nth-child(1).visible { animation-delay: 0s; }
+.depoimento-card:nth-child(2).visible { animation-delay: 0.1s; }
+.depoimento-card:nth-child(3).visible { animation-delay: 0.15s; }
+.depoimento-card:nth-child(4).visible { animation-delay: 0.2s; }
+.depoimento-card:nth-child(5).visible { animation-delay: 0.25s; }
+.depoimento-card:nth-child(6).visible { animation-delay: 0.3s; }

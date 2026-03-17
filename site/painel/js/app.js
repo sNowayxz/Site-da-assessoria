@@ -102,7 +102,7 @@ function renderStatusChart(pendentes, andamento, entregues) {
   if (typeof Chart === 'undefined') return;
 
   var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  new Chart(canvas, {
+  chartStatusInstance = new Chart(canvas, {
     type: 'doughnut',
     data: {
       labels: ['Pendentes', 'Em Andamento', 'Entregues'],
@@ -181,7 +181,7 @@ async function renderReceitaChart() {
     });
     var values = keys.map(function(k) { return meses[k]; });
 
-    new Chart(canvas, {
+    chartReceitaInstance = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: labels,
@@ -234,3 +234,189 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+// ═══════════════════════════════════════════
+// PERIOD SELECTOR
+// ═══════════════════════════════════════════
+var currentPeriod = 7;
+var chartStatusInstance = null;
+var chartReceitaInstance = null;
+
+document.addEventListener('DOMContentLoaded', function () {
+  var periodSelector = document.getElementById('period-selector');
+  if (periodSelector) {
+    periodSelector.addEventListener('click', function (e) {
+      var btn = e.target.closest('.period-btn');
+      if (!btn) return;
+      periodSelector.querySelectorAll('.period-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentPeriod = parseInt(btn.getAttribute('data-period'));
+      refreshCharts();
+    });
+  }
+
+  // Notification badge
+  checkNotifications();
+
+  // Dynamic favicon
+  updateFaviconBadge();
+});
+
+async function refreshCharts() {
+  // Destroy existing charts
+  if (chartStatusInstance) { chartStatusInstance.destroy(); chartStatusInstance = null; }
+  if (chartReceitaInstance) { chartReceitaInstance.destroy(); chartReceitaInstance = null; }
+
+  var dateFilter = '';
+  if (currentPeriod > 0) {
+    var since = new Date();
+    since.setDate(since.getDate() - currentPeriod);
+    dateFilter = '&created_at=gte.' + since.toISOString();
+  }
+
+  try {
+    var { count: pendentes } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'pendente');
+    var { count: emAndamento } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'em_andamento');
+    var { count: entregues } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'entregue');
+
+    renderStatusChart(pendentes || 0, emAndamento || 0, entregues || 0);
+    await renderReceitaChart();
+  } catch (e) {
+    console.warn('Erro ao atualizar charts:', e);
+  }
+}
+
+async function checkNotifications() {
+  try {
+    var { count } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'pendente');
+    var badge = document.getElementById('notif-badge');
+    if (badge && count > 0) {
+      badge.textContent = count;
+      badge.style.display = 'flex';
+    }
+  } catch (e) { /* silent */ }
+}
+
+function updateFaviconBadge() {
+  try {
+    var badge = document.getElementById('notif-badge');
+    if (!badge) return;
+    var count = parseInt(badge.textContent) || 0;
+    if (count <= 0) return;
+
+    var favicon = document.querySelector('link[rel="icon"]');
+    if (!favicon) return;
+
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      var canvas = document.createElement('canvas');
+      canvas.width = 32;
+      canvas.height = 32;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, 32, 32);
+
+      // Draw badge
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(24, 8, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 10px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(count > 9 ? '9+' : String(count), 24, 8);
+
+      favicon.href = canvas.toDataURL('image/png');
+    };
+    img.src = favicon.href;
+  } catch (e) { /* silent */ }
+}
+
+// ═══════════════════════════════════════════
+// KANBAN BOARD
+// ═══════════════════════════════════════════
+async function loadKanban() {
+  try {
+    var { data: atividades } = await sb
+      .from('atividades')
+      .select('id, tipo, descricao, status, created_at, alunos(nome)')
+      .in('status', ['pendente', 'em_andamento', 'entregue'])
+      .order('created_at', { ascending: false })
+      .limit(30);
+
+    if (!atividades) return;
+
+    var columns = { pendente: [], em_andamento: [], entregue: [] };
+    atividades.forEach(function (a) {
+      if (columns[a.status]) columns[a.status].push(a);
+    });
+
+    ['pendente', 'em_andamento', 'entregue'].forEach(function (status) {
+      var container = document.getElementById('kanban-cards-' + status);
+      var countEl = document.getElementById('kanban-count-' + status);
+      if (!container) return;
+
+      if (countEl) countEl.textContent = columns[status].length;
+
+      container.innerHTML = columns[status].slice(0, 10).map(function (a) {
+        var aluno = a.alunos ? a.alunos.nome : '—';
+        return '<div class="kanban-card" draggable="true" data-id="' + a.id + '">' +
+          '<div class="kanban-card-title">' + escapeHtml(a.descricao || a.tipo) + '</div>' +
+          '<div class="kanban-card-meta">' + escapeHtml(aluno) + ' · ' + formatDate(a.created_at) + '</div>' +
+          '</div>';
+      }).join('');
+    });
+
+    initKanbanDragDrop();
+  } catch (e) {
+    console.warn('Erro kanban:', e);
+  }
+}
+
+function initKanbanDragDrop() {
+  var cards = document.querySelectorAll('.kanban-card');
+  var columns = document.querySelectorAll('.kanban-column');
+
+  cards.forEach(function (card) {
+    card.addEventListener('dragstart', function (e) {
+      e.dataTransfer.setData('text/plain', card.getAttribute('data-id'));
+      card.classList.add('dragging');
+    });
+    card.addEventListener('dragend', function () {
+      card.classList.remove('dragging');
+      columns.forEach(function (col) { col.classList.remove('drag-over'); });
+    });
+  });
+
+  columns.forEach(function (column) {
+    column.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      column.classList.add('drag-over');
+    });
+    column.addEventListener('dragleave', function () {
+      column.classList.remove('drag-over');
+    });
+    column.addEventListener('drop', async function (e) {
+      e.preventDefault();
+      column.classList.remove('drag-over');
+      var id = e.dataTransfer.getData('text/plain');
+      var newStatus = column.getAttribute('data-status');
+
+      try {
+        await sb.from('atividades').update({ status: newStatus }).eq('id', id);
+        showToast('Status atualizado para ' + formatStatus(newStatus), 'success');
+        loadKanban();
+        loadDashboard();
+      } catch (err) {
+        showToast('Erro ao atualizar status', 'error');
+      }
+    });
+  });
+}
+
+// Call loadKanban after loadDashboard
+document.addEventListener('DOMContentLoaded', function () {
+  setTimeout(loadKanban, 500);
+});
