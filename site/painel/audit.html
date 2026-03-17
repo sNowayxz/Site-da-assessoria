@@ -6,6 +6,7 @@
   <title>Audit Log — Painel Assessoria</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <base href="/painel/">
   <link rel="stylesheet" href="css/painel.css">
   <style>
     .audit-filters {
@@ -26,7 +27,7 @@
     }
     .audit-filters input, .audit-filters select {
       padding: 9px 12px; border: 2px solid var(--gray-200); border-radius: 8px;
-      font-size: 0.88rem; font-family: inherit; background: var(--white); color: var(--dark);
+      font-size: 0.88rem; font-family: inherit; background: var(--white); color: var(--gray-800);
       transition: border-color 0.2s; min-width: 140px;
     }
     .audit-filters input:focus, .audit-filters select:focus { outline: none; border-color: var(--gold); }
@@ -72,7 +73,7 @@
       background: var(--white); color: var(--gray-600); font-size: 0.78rem;
       font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s;
     }
-    .btn-details:hover { border-color: var(--gold); color: var(--dark); }
+    .btn-details:hover { border-color: var(--gold); color: var(--gray-800); }
 
     .empty-state {
       text-align: center; padding: 48px 24px; color: var(--gray-400); font-size: 0.95rem;
@@ -82,7 +83,7 @@
       background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;
       padding: 16px; font-size: 0.82rem; line-height: 1.6; overflow-x: auto;
       max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
-      font-family: 'Courier New', Courier, monospace; color: var(--dark);
+      font-family: 'Courier New', Courier, monospace; color: var(--gray-800);
     }
 
     [data-theme="dark"] .audit-filters { background: #1c2128; }

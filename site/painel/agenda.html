@@ -9,10 +9,10 @@
   <link rel="stylesheet" href="css/painel.css">
   <style>
     .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-    .calendar-header h2 { font-size: 1.2rem; font-weight: 700; color: var(--dark); }
+    .calendar-header h2 { font-size: 1.2rem; font-weight: 700; color: var(--gray-800); }
     .calendar-nav { display: flex; gap: 8px; }
     .calendar-nav button { padding: 8px 16px; border: 2px solid var(--gray-200); border-radius: 8px; background: var(--white); color: var(--gray-600); font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-    .calendar-nav button:hover { border-color: var(--gold); color: var(--dark); }
+    .calendar-nav button:hover { border-color: var(--gold); color: var(--gray-800); }
 
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--gray-200); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
     .calendar-day-header { background: var(--dark); color: var(--gold); padding: 10px; text-align: center; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; }
@@ -48,7 +48,7 @@
     .day-event-time { font-size: 0.78rem; color: var(--gray-400); min-width: 45px; font-weight: 600; }
     .day-event-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
     .day-event-info { flex: 1; }
-    .day-event-title { font-weight: 600; font-size: 0.9rem; color: var(--dark); }
+    .day-event-title { font-weight: 600; font-size: 0.9rem; color: var(--gray-800); }
     .day-event-desc { font-size: 0.8rem; color: var(--gray-400); margin-top: 2px; }
     .btn-delete-event { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1rem; padding: 4px 8px; opacity: 0.5; transition: opacity 0.2s; border-radius: 4px; }
     .btn-delete-event:hover { opacity: 1; background: rgba(239,68,68,0.08); }
@@ -60,7 +60,7 @@
     .form-group label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--gray-500); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
     .form-group input, .form-group select, .form-group textarea {
       width: 100%; padding: 10px 12px; border: 2px solid var(--gray-200); border-radius: 8px;
-      font-size: 0.9rem; font-family: inherit; background: var(--white); color: var(--dark);
+      font-size: 0.9rem; font-family: inherit; background: var(--white); color: var(--gray-800);
       transition: border-color 0.2s;
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
@@ -78,6 +78,11 @@
     [data-theme="dark"] .calendar-day .day-num { color: #e6edf3; }
     [data-theme="dark"] .cal-event.manual { background: rgba(139,92,246,0.15); color: #a78bfa; }
     [data-theme="dark"] .form-group input, [data-theme="dark"] .form-group select, [data-theme="dark"] .form-group textarea { background: #1c2128; color: #e6edf3; border-color: #30363d; }
+    [data-theme="dark"] .calendar-header h2 { color: #e6edf3; }
+    [data-theme="dark"] .calendar-nav button { background: #1c2128; border-color: #30363d; color: #8b949e; }
+    [data-theme="dark"] .day-event-title { color: #e6edf3; }
+    [data-theme="dark"] .filter-btn { background: #1c2128; border-color: #30363d; }
+    [data-theme="dark"] .btn-cancel { background: #1c2128; border-color: #30363d; color: #c9d1d9; }
 
     .cal-event[draggable="true"] { cursor: grab; }
     .cal-event.dragging { opacity: 0.4; }

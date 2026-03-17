@@ -6,6 +6,7 @@ var currentChannel = 'geral';
 var currentUserId = null;
 var currentUserName = '';
 var realtimeSubscription = null;
+var _assessorNamesCache = {};
 
 // ─── Init ───
 document.addEventListener('DOMContentLoaded', async function () {
@@ -28,19 +29,40 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
   });
 
+  // Pre-load assessor names
+  await loadAssessorNames();
+
   await loadMessages(currentChannel);
   subscribeRealtime();
 });
 
+// ─── Load Assessor Names Cache ───
+async function loadAssessorNames() {
+  try {
+    var { data } = await sb.from('assessores').select('id, nome');
+    if (data) {
+      for (var i = 0; i < data.length; i++) {
+        _assessorNamesCache[data[i].id] = data[i].nome;
+      }
+    }
+  } catch (e) {
+    console.warn('[chat] Erro ao carregar nomes:', e.message);
+  }
+}
+
+function getSenderName(senderId) {
+  if (senderId === currentUserId) return currentUserName;
+  return _assessorNamesCache[senderId] || 'Desconhecido';
+}
+
 // ─── Load Messages ───
 async function loadMessages(channel) {
   var messagesEl = document.getElementById('chat-messages');
-  var emptyEl = document.getElementById('chat-empty');
 
   try {
     var { data, error } = await sb
       .from('mensagens')
-      .select('*, assessores(nome)')
+      .select('*')
       .eq('channel', channel)
       .order('created_at', { ascending: true })
       .limit(100);
@@ -69,7 +91,7 @@ function renderMessages(messages) {
   for (var i = 0; i < messages.length; i++) {
     var msg = messages[i];
     var isOwn = msg.sender_id === currentUserId;
-    var senderName = (msg.assessores && msg.assessores.nome) ? msg.assessores.nome : 'Desconhecido';
+    var senderName = getSenderName(msg.sender_id);
     var createdAt = new Date(msg.created_at);
     var dateStr = createdAt.toLocaleDateString('pt-BR');
     var timeStr = createdAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -178,14 +200,22 @@ function subscribeRealtime() {
 }
 
 // ─── Handle New Message from Realtime ───
-async function handleNewMessage(msg) {
-  // Fetch sender name
-  var senderName = 'Desconhecido';
-  try {
-    var { data } = await sb.from('assessores').select('nome').eq('id', msg.sender_id).single();
-    if (data && data.nome) senderName = data.nome;
-  } catch (e) {
-    console.warn('[chat] Could not fetch sender name:', e.message);
+function handleNewMessage(msg) {
+  var senderName = getSenderName(msg.sender_id);
+
+  // If name not cached, try to fetch it (fire-and-forget, use fallback for now)
+  if (!_assessorNamesCache[msg.sender_id] && msg.sender_id !== currentUserId) {
+    sb.from('assessores').select('nome').eq('id', msg.sender_id).single().then(function (res) {
+      if (res.data && res.data.nome) {
+        _assessorNamesCache[msg.sender_id] = res.data.nome;
+        // Update the sender label in the DOM if it says 'Desconhecido'
+        var bubble = document.querySelector('.chat-bubble[data-sender="' + msg.id + '"]');
+        if (bubble) {
+          var senderEl = bubble.querySelector('.chat-sender');
+          if (senderEl) senderEl.textContent = res.data.nome;
+        }
+      }
+    }).catch(function () {});
   }
 
   var messagesEl = document.getElementById('chat-messages');
@@ -211,6 +241,7 @@ async function handleNewMessage(msg) {
 
   var bubbleDiv = document.createElement('div');
   bubbleDiv.className = isOwn ? 'chat-bubble own' : 'chat-bubble other';
+  bubbleDiv.setAttribute('data-sender', msg.id);
 
   var html = '';
   if (!isOwn) {

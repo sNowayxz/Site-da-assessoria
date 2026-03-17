@@ -199,7 +199,7 @@ img { max-width: 100%; display: block; }
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: var(--white);
+  background: transparent;
   padding: 2px;
   flex-shrink: 0;
   overflow: hidden;
@@ -893,8 +893,11 @@ tbody tr:last-child td {
 }
 
 [data-theme="dark"] .sidebar-brand { border-bottom-color: #21262d; }
+[data-theme="dark"] .sidebar-brand-text { color: #e6edf3; }
+[data-theme="dark"] .sidebar-brand-text small { color: #8b949e; }
 [data-theme="dark"] .sidebar-user { border-top-color: #21262d; }
-[data-theme="dark"] .sidebar-logo { background: #1c2128; border: 1px solid #30363d; }
+[data-theme="dark"] .sidebar-user-name { color: #e6edf3; }
+[data-theme="dark"] .sidebar-logo { background: transparent; border: none; }
 
 [data-theme="dark"] .stat-card {
   background: #1c2128;
@@ -1406,3 +1409,23 @@ tbody tr:last-child td {
   margin-bottom: 16px;
 }
 [data-theme="dark"] .admin-section h2 { color: #e6edf3; }
+
+/* ═══ RELATÓRIOS DARK MODE ═══ */
+[data-theme="dark"] .kpi-card {
+  background: #1c2128;
+  border-color: #30363d;
+}
+[data-theme="dark"] .kpi-card h3 { color: #e6edf3; }
+[data-theme="dark"] .kpi-card p { color: #8b949e; }
+[data-theme="dark"] .charts-grid .panel h2,
+[data-theme="dark"] .tables-grid .panel h2 { color: #e6edf3; }
+[data-theme="dark"] .export-btns button {
+  background: #161b22;
+  border-color: #30363d;
+  color: #c9d1d9;
+}
+[data-theme="dark"] .export-btns button:hover {
+  background: var(--gold);
+  color: #1a1a2e;
+  border-color: var(--gold);
+}

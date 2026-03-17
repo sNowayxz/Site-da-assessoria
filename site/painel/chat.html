@@ -6,6 +6,7 @@
   <title>Chat — Painel Assessoria</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <base href="/painel/">
   <link rel="stylesheet" href="css/painel.css">
   <style>
     .chat-container {
@@ -39,7 +40,7 @@
       color: var(--gray-600);
     }
     .chat-tab.active {
-      color: var(--dark);
+      color: var(--gray-800);
       border-bottom-color: var(--gold);
     }
 
@@ -77,11 +78,11 @@
       margin-bottom: 2px;
     }
     .chat-bubble.own .chat-sender {
-      color: var(--dark);
+      color: var(--gold);
     }
     .chat-text {
       font-size: 0.9rem;
-      color: var(--dark);
+      color: var(--gray-800);
       line-height: 1.4;
     }
     .chat-time {
@@ -108,7 +109,7 @@
       font-size: 0.9rem;
       font-family: inherit;
       background: var(--white);
-      color: var(--dark);
+      color: var(--gray-800);
       transition: border-color 0.2s;
     }
     .chat-input-area input:focus {
@@ -161,34 +162,16 @@
     [data-theme="dark"] .chat-tab {
       color: #8b949e;
     }
-    [data-theme="dark"] .chat-tab.active {
-      color: #e6edf3;
-    }
-    [data-theme="dark"] .chat-bubble.own {
-      background: rgba(240,192,48,0.1);
-      border-color: rgba(240,192,48,0.25);
-    }
-    [data-theme="dark"] .chat-bubble.other {
-      background: #21262d;
-      border-color: #30363d;
-    }
-    [data-theme="dark"] .chat-sender {
-      color: #8b949e;
-    }
-    [data-theme="dark"] .chat-bubble.own .chat-sender {
-      color: #e6edf3;
-    }
+    [data-theme="dark"] .chat-tab.active { color: var(--gold); }
+    [data-theme="dark"] .chat-bubble.other { background: #21262d; border-color: #30363d; }
+    [data-theme="dark"] .chat-bubble.own { background: rgba(240,192,48,0.1); border-color: rgba(240,192,48,0.2); }
+    [data-theme="dark"] .chat-input-area { background: #1c2128; border-top-color: #30363d; }
+    [data-theme="dark"] .chat-input-area input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .chat-date-separator { color: #8b949e; }
+    [data-theme="dark"] .chat-sender { color: #8b949e; }
+    [data-theme="dark"] .chat-bubble.own .chat-sender { color: var(--gold); }
     [data-theme="dark"] .chat-text {
       color: #e6edf3;
-    }
-    [data-theme="dark"] .chat-input-area {
-      background: #1c2128;
-      border-top-color: #30363d;
-    }
-    [data-theme="dark"] .chat-input-area input {
-      background: #0d1117;
-      color: #e6edf3;
-      border-color: #30363d;
     }
     [data-theme="dark"] .chat-input-area input:focus {
       border-color: var(--gold);
