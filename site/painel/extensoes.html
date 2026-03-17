@@ -77,6 +77,56 @@
     @media (max-width: 768px) {
       .sheet-frame { min-height: 400px; }
     }
+
+    /* ─── Assessor View: Project List ─── */
+    .ext-projects {
+      padding: 24px;
+    }
+    .ext-project-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--white, #fff);
+      border: 1px solid var(--gray-200, #e5e7eb);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .ext-project-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+    .ext-project-info { flex: 1; }
+    .ext-project-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--dark, #1a1a2e);
+    }
+    .ext-project-meta {
+      font-size: 0.8rem;
+      color: var(--gray-400, #8892a4);
+      margin-top: 4px;
+    }
+    .ext-project-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .ext-badge-pendente { background: rgba(245,158,11,0.12); color: #d97706; }
+    .ext-badge-em_andamento { background: rgba(59,130,246,0.12); color: #2563eb; }
+    .ext-badge-concluido { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .ext-badge-cancelado { background: rgba(107,114,128,0.12); color: #6b7280; }
+    .ext-empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--gray-400);
+      font-size: 0.95rem;
+    }
+    [data-theme="dark"] .ext-project-card { background: #1c2128; border-color: #30363d; }
+    [data-theme="dark"] .ext-project-name { color: #e6edf3; }
   </style>
 </head>
 <body>
@@ -203,6 +253,7 @@
         </div>
       </div>
 
+      <!-- ADMIN VIEW: Google Sheets -->
       <div class="sheet-container" id="sheet-container">
         <div class="sheet-toolbar">
           <button class="tab-btn active" onclick="switchTab(0, this)">📋 Alunos</button>
@@ -217,6 +268,18 @@
           src="https://docs.google.com/spreadsheets/d/1yeFlBBZSMHqTziM7QBB3IVkMJQgXqTbvDEz9SvXXKDw/edit?gid=0&rm=minimal"
           allowfullscreen>
         </iframe>
+      </div>
+
+      <!-- ASSESSOR VIEW: Project List -->
+      <div id="assessor-view" class="role-hidden">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>📋 Projetos dos Meus Alunos</h2>
+          </div>
+          <div class="panel-body ext-projects" id="ext-projects-list">
+            <div class="ext-empty">Carregando...</div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -243,7 +306,6 @@
       btn.textContent = container.classList.contains('fullscreen') ? '✕' : '⛶';
     }
 
-    // ESC to exit fullscreen
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         var container = document.getElementById('sheet-container');
@@ -259,13 +321,91 @@
     document.getElementById('sidebar-overlay').addEventListener('click', function () {
       document.getElementById('sidebar').classList.remove('open');
     });
+
     document.addEventListener('DOMContentLoaded', async function () {
-      var user = await getUser();
-      if (user) {
-        var name = getUserName(user);
-        document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+      var result = await requireRole(['admin', 'assessor']);
+      if (!result) return;
+      var user = result.user;
+      var role = result.role;
+      setupSidebarPermissions(role);
+
+      var name = getUserName(user);
+      document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('user-name').textContent = name;
+
+      if (role === 'admin') {
+        // Admin: show spreadsheet (already visible)
+        document.getElementById('sheet-container').classList.remove('role-hidden');
+      } else {
+        // Assessor: hide spreadsheet, show project list
+        document.getElementById('sheet-container').classList.add('role-hidden');
+        document.getElementById('assessor-view').classList.remove('role-hidden');
+        loadAssessorProjects(user.id);
       }
     });
+
+    // ─── Assessor: Load their students' extension projects ───
+    async function loadAssessorProjects(userId) {
+      var container = document.getElementById('ext-projects-list');
+      try {
+        // Get assessor's students
+        var { data: alunos, error } = await sb.from('alunos')
+          .select('id, nome, ra, curso')
+          .eq('assessor_id', userId)
+          .order('nome');
+
+        if (error) throw error;
+
+        if (!alunos || !alunos.length) {
+          container.innerHTML = '<div class="ext-empty">Nenhum aluno atribu&iacute;do a voc&ecirc;.</div>';
+          return;
+        }
+
+        // Get activities for these students (extension-type)
+        var alunoIds = alunos.map(function(a) { return a.id; });
+        var { data: atividades } = await sb.from('atividades')
+          .select('id, aluno_id, tipo, descricao, status, dt_entrega')
+          .in('aluno_id', alunoIds)
+          .order('created_at', { ascending: false });
+
+        var html = '';
+        alunos.forEach(function(aluno) {
+          var alunoAtivs = (atividades || []).filter(function(a) { return a.aluno_id === aluno.id; });
+          var statusCounts = { pendente: 0, em_andamento: 0, entregue: 0 };
+          alunoAtivs.forEach(function(a) {
+            if (statusCounts[a.status] !== undefined) statusCounts[a.status]++;
+          });
+
+          var badgeClass = 'ext-badge-pendente';
+          var badgeText = 'Sem atividades';
+          if (alunoAtivs.length > 0) {
+            if (statusCounts.entregue === alunoAtivs.length) {
+              badgeClass = 'ext-badge-concluido';
+              badgeText = 'Tudo entregue';
+            } else if (statusCounts.em_andamento > 0) {
+              badgeClass = 'ext-badge-em_andamento';
+              badgeText = statusCounts.em_andamento + ' em andamento';
+            } else {
+              badgeClass = 'ext-badge-pendente';
+              badgeText = statusCounts.pendente + ' pendente(s)';
+            }
+          }
+
+          html += '<div class="ext-project-card">' +
+            '<div class="ext-project-info">' +
+              '<div class="ext-project-name">' + aluno.nome + '</div>' +
+              '<div class="ext-project-meta">RA: ' + aluno.ra + ' &middot; ' + (aluno.curso || 'Sem curso') + ' &middot; ' + alunoAtivs.length + ' atividade(s)</div>' +
+            '</div>' +
+            '<span class="ext-project-badge ' + badgeClass + '">' + badgeText + '</span>' +
+          '</div>';
+        });
+
+        container.innerHTML = html || '<div class="ext-empty">Nenhum projeto encontrado.</div>';
+      } catch (e) {
+        console.error('[extensoes]', e);
+        container.innerHTML = '<div class="ext-empty">Erro ao carregar projetos.</div>';
+      }
+    }
   </script>
 
 </body>

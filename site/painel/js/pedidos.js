@@ -11,8 +11,11 @@ var STATUS_LABELS = {
 };
 
 document.addEventListener('DOMContentLoaded', async function () {
-  var user = await requireAuth();
-  if (!user) return;
+  var result = await requireRole(['admin']);
+  if (!result) return;
+  var user = result.user;
+  var role = result.role;
+  setupSidebarPermissions(role);
 
   document.getElementById('user-name').textContent = getUserName(user);
   document.getElementById('btn-logout').addEventListener('click', handleLogout);

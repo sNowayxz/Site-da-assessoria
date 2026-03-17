@@ -1386,3 +1386,23 @@ tbody tr:last-child td {
 @media (max-width: 768px) {
   .kanban-container { grid-template-columns: 1fr; }
 }
+
+
+/* ═══════════════════════════════════════════
+   ROLE-BASED ACCESS
+   ═══════════════════════════════════════════ */
+.role-hidden {
+  display: none !important;
+}
+
+/* Admin management table in perfil */
+.admin-section {
+  margin-top: 32px;
+}
+.admin-section h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 16px;
+}
+[data-theme="dark"] .admin-section h2 { color: #e6edf3; }

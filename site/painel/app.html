@@ -305,7 +305,7 @@
     document.getElementById('sidebar-overlay').addEventListener('click', function () {
       document.getElementById('sidebar').classList.remove('open');
     });
-    // Avatar initial
+    // Avatar initial — role check done in app.js
     document.addEventListener('DOMContentLoaded', async function () {
       var user = await getUser();
       if (user) {

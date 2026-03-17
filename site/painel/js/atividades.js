@@ -7,11 +7,19 @@ var _atividades = [];
 var _alunosList = [];
 
 document.addEventListener('DOMContentLoaded', async function () {
-  var user = await requireAuth();
-  if (!user) return;
+  var result = await requireRole(['admin', 'assessor']);
+  if (!result) return;
+  var user = result.user;
+  var role = result.role;
+  setupSidebarPermissions(role);
 
   document.getElementById('user-name').textContent = getUserName(user);
   document.getElementById('btn-logout').addEventListener('click', handleLogout);
+
+  // Hide delete buttons for assessor
+  if (role === 'assessor') {
+    window._atividadesRole = 'assessor';
+  }
 
   // Carregar alunos para o select
   await loadAlunosSelect();
@@ -95,7 +103,7 @@ function renderAtividades(atividades) {
       '<td class="actions">' +
         '<button class="btn-icon btn-status" onclick="cycleStatus(\'' + a.id + '\', \'' + a.status + '\')" title="Avançar Status">⏭️</button>' +
         '<button class="btn-icon" onclick="editAtividade(\'' + a.id + '\')" title="Editar">✏️</button>' +
-        '<button class="btn-icon btn-danger" onclick="deleteAtividade(\'' + a.id + '\')" title="Excluir">🗑️</button>' +
+        (window._atividadesRole !== 'assessor' ? '<button class="btn-icon btn-danger" onclick="deleteAtividade(\'' + a.id + '\')" title="Excluir">🗑️</button>' : '') +
       '</td>' +
       '</tr>';
   }).join('');

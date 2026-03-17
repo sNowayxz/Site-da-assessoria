@@ -307,12 +307,20 @@
 
     // ── Init ──
     document.addEventListener('DOMContentLoaded', async function () {
-      var user = await requireAuth();
-      if (!user) return;
+      var result = await requireRole(['admin', 'assessor', 'visualizador']);
+      if (!result) return;
+      var user = result.user;
+      var role = result.role;
+      setupSidebarPermissions(role);
       currentUserId = user.id;
       document.getElementById('user-name').textContent = getUserName(user);
       document.getElementById('user-avatar').textContent = getUserName(user).charAt(0).toUpperCase();
       document.getElementById('btn-logout').addEventListener('click', handleLogout);
+
+      // Hide action buttons for visualizador
+      if (role === 'visualizador') {
+        document.querySelectorAll('.btn-gold, #btn-novo-evento, #btn-add-evento-dia, .btn-delete-event').forEach(function(el) { el.style.display = 'none'; });
+      }
 
       var now = new Date();
       currentYear = now.getFullYear();

@@ -439,6 +439,70 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// ─── Role-Based Sidebar Permissions ───
+
+var PAGE_ACCESS = {
+  admin: ['app', 'agenda', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'perfil'],
+  assessor: ['app', 'agenda', 'alunos', 'atividades', 'extensoes', 'perfil'],
+  visualizador: ['app', 'agenda', 'perfil']
+};
+
+function setupSidebarPermissions(role) {
+  if (!role) return;
+  var allowed = PAGE_ACCESS[role] || [];
+
+  // Hide sidebar links that aren't allowed
+  document.querySelectorAll('.sidebar-link[href]').forEach(function (link) {
+    var href = link.getAttribute('href');
+    if (!href || href === '#') return;
+    var page = href.replace('.html', '');
+    if (allowed.indexOf(page) === -1) {
+      link.classList.add('role-hidden');
+    }
+  });
+
+  // Also hide sub-links containers if all children are hidden
+  document.querySelectorAll('.sidebar-sub').forEach(function (sub) {
+    var visibleLinks = sub.querySelectorAll('.sidebar-link:not(.role-hidden)');
+    if (!visibleLinks.length) {
+      sub.classList.add('role-hidden');
+    }
+  });
+
+  // Hide empty categories (label + links div)
+  document.querySelectorAll('.sidebar-category-links').forEach(function (cat) {
+    var visibleLinks = cat.querySelectorAll('.sidebar-link:not(.role-hidden)');
+    if (!visibleLinks.length) {
+      cat.classList.add('role-hidden');
+      var label = cat.previousElementSibling;
+      if (label && label.classList.contains('sidebar-nav-label')) {
+        label.classList.add('role-hidden');
+      }
+    }
+  });
+
+  // Update role label in sidebar
+  var roleEl = document.querySelector('.sidebar-user-role');
+  if (roleEl && typeof getRoleLabel === 'function') {
+    roleEl.textContent = getRoleLabel(role);
+  }
+
+  // Hide action buttons for visualizador
+  if (role === 'visualizador') {
+    document.querySelectorAll('.btn-gold, .btn-novo, [id^="btn-novo"], [id^="btn-nova"]').forEach(function (btn) {
+      btn.classList.add('role-hidden');
+    });
+  }
+
+  // Hide delete buttons for non-admin
+  if (role !== 'admin') {
+    document.querySelectorAll('.btn-danger, .btn-icon.btn-danger').forEach(function (btn) {
+      btn.classList.add('role-hidden');
+    });
+  }
+}
+
+
 // ─── Pagination ───
 var ITEMS_PER_PAGE = 20;
 

@@ -161,6 +161,72 @@
           </form>
         </div>
       </div>
+
+      <!-- ADMIN ONLY: Gerenciar Assessores -->
+      <div class="admin-section role-hidden" id="admin-section">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>👥 Gerenciar Assessores</h2>
+            <button class="btn btn-gold btn-sm" id="btn-novo-assessor">+ Novo Assessor</button>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Criado em</th>
+                    <th>A&ccedil;&otilde;es</th>
+                  </tr>
+                </thead>
+                <tbody id="assessores-list">
+                  <tr><td colspan="5" class="empty-state">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal: Novo Assessor -->
+      <div class="modal-overlay" id="modal-novo-assessor">
+        <div class="modal">
+          <div class="modal-header">
+            <h3>Novo Assessor</h3>
+            <button class="modal-close" onclick="document.getElementById('modal-novo-assessor').classList.remove('open')">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-novo-assessor">
+              <div class="form-group">
+                <label for="new-assessor-nome">Nome</label>
+                <input type="text" id="new-assessor-nome" required placeholder="Nome completo">
+              </div>
+              <div class="form-group">
+                <label for="new-assessor-email">E-mail</label>
+                <input type="email" id="new-assessor-email" required placeholder="email@exemplo.com">
+              </div>
+              <div class="form-group">
+                <label for="new-assessor-senha">Senha Tempor&aacute;ria</label>
+                <input type="text" id="new-assessor-senha" required minlength="6" placeholder="M&iacute;nimo 6 caracteres">
+              </div>
+              <div class="form-group">
+                <label for="new-assessor-role">Permiss&atilde;o</label>
+                <select id="new-assessor-role">
+                  <option value="assessor">Assessor</option>
+                  <option value="visualizador">Visualizador</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-cancel" onclick="document.getElementById('modal-novo-assessor').classList.remove('open')">Cancelar</button>
+            <button class="btn-save" id="btn-salvar-assessor">Criar Assessor</button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -173,8 +239,11 @@
     document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });
 
     document.addEventListener('DOMContentLoaded', async function () {
-      var user = await requireAuth();
-      if (!user) return;
+      var result = await requireRole(['admin', 'assessor', 'visualizador']);
+      if (!result) return;
+      var user = result.user;
+      var role = result.role;
+      setupSidebarPermissions(role);
 
       var name = getUserName(user);
       document.getElementById('user-name').textContent = name;
@@ -185,6 +254,15 @@
 
       document.getElementById('btn-logout').addEventListener('click', handleLogout);
 
+      // Visualizador: disable editing
+      if (role === 'visualizador') {
+        document.getElementById('profile-nome').disabled = true;
+        document.querySelectorAll('.profile-section button[type="submit"]').forEach(function(btn) {
+          btn.classList.add('role-hidden');
+        });
+        document.getElementById('form-senha').closest('.profile-section').classList.add('role-hidden');
+      }
+
       // Update profile
       document.getElementById('form-profile').addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -192,8 +270,6 @@
         if (!nome) return;
 
         await sb.auth.updateUser({ data: { nome: nome } });
-
-        // Update assessor table
         try { await sb.from('assessores').update({ nome: nome }).eq('id', user.id); } catch(e) {}
 
         document.getElementById('profile-success').classList.add('show');
@@ -208,17 +284,136 @@
         e.preventDefault();
         var nova = document.getElementById('profile-nova-senha').value;
         var confirma = document.getElementById('profile-confirma-senha').value;
-        if (nova !== confirma) { alert('As senhas não coincidem'); return; }
-        if (nova.length < 6) { alert('A senha deve ter pelo menos 6 caracteres'); return; }
+        if (nova !== confirma) { showToast('As senhas não coincidem', 'error'); return; }
+        if (nova.length < 6) { showToast('A senha deve ter pelo menos 6 caracteres', 'error'); return; }
 
         var { error } = await sb.auth.updateUser({ password: nova });
-        if (error) { alert('Erro: ' + error.message); return; }
+        if (error) { showToast('Erro: ' + error.message, 'error'); return; }
 
         document.getElementById('form-senha').reset();
         document.getElementById('senha-success').classList.add('show');
         setTimeout(function() { document.getElementById('senha-success').classList.remove('show'); }, 3000);
       });
+
+      // ─── ADMIN: Gerenciar Assessores ───
+      if (role === 'admin') {
+        document.getElementById('admin-section').classList.remove('role-hidden');
+        loadAssessores();
+
+        document.getElementById('btn-novo-assessor').addEventListener('click', function () {
+          document.getElementById('modal-novo-assessor').classList.add('open');
+        });
+
+        document.getElementById('btn-salvar-assessor').addEventListener('click', createAssessor);
+      }
     });
+
+    // ─── Load assessores list ───
+    async function loadAssessores() {
+      var tbody = document.getElementById('assessores-list');
+      try {
+        var { data, error } = await sb.from('assessores').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Nenhum assessor cadastrado</td></tr>';
+          return;
+        }
+
+        // Get emails from auth (we need to match by id)
+        // Since we can't list auth users from frontend, we store nome in assessores
+        tbody.innerHTML = data.map(function (a) {
+          var roleLabels = { admin: '👑 Admin', assessor: '📋 Assessor', visualizador: '👁️ Visualizador' };
+          var roleBadge = roleLabels[a.role] || a.role;
+          var dt = a.created_at ? new Date(a.created_at).toLocaleDateString('pt-BR') : '—';
+
+          return '<tr data-id="' + a.id + '">' +
+            '<td class="aluno-name">' + (a.nome || '—') + '</td>' +
+            '<td class="text-muted">' + (a.id.substring(0, 8) + '...') + '</td>' +
+            '<td>' +
+              '<select class="role-select" onchange="changeRole(\'' + a.id + '\', this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid var(--gray-200);font-size:0.82rem;font-family:inherit;">' +
+                '<option value="admin"' + (a.role === 'admin' ? ' selected' : '') + '>👑 Admin</option>' +
+                '<option value="assessor"' + (a.role === 'assessor' ? ' selected' : '') + '>📋 Assessor</option>' +
+                '<option value="visualizador"' + (a.role === 'visualizador' ? ' selected' : '') + '>👁️ Visualizador</option>' +
+              '</select>' +
+            '</td>' +
+            '<td class="text-muted">' + dt + '</td>' +
+            '<td class="actions">' +
+              '<button class="btn-icon btn-danger" onclick="deleteAssessor(\'' + a.id + '\')" title="Remover">🗑️</button>' +
+            '</td>' +
+          '</tr>';
+        }).join('');
+      } catch (e) {
+        console.error('[perfil] loadAssessores:', e);
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar assessores</td></tr>';
+      }
+    }
+
+    // ─── Change role ───
+    async function changeRole(id, newRole) {
+      try {
+        var { error } = await sb.from('assessores').update({ role: newRole }).eq('id', id);
+        if (error) throw error;
+        showToast('Role atualizado!', 'success');
+      } catch (e) {
+        showToast('Erro: ' + e.message, 'error');
+        loadAssessores(); // reload to revert UI
+      }
+    }
+
+    // ─── Delete assessor ───
+    async function deleteAssessor(id) {
+      if (!confirm('Remover este assessor? O usuário não poderá mais acessar o painel.')) return;
+      try {
+        // Delete from assessores table (auth user remains but can't access)
+        var { error } = await sb.from('assessores').delete().eq('id', id);
+        if (error) throw error;
+        showToast('Assessor removido!', 'success');
+        loadAssessores();
+      } catch (e) {
+        showToast('Erro: ' + e.message, 'error');
+      }
+    }
+
+    // ─── Create assessor via Edge Function ───
+    async function createAssessor() {
+      var nome = document.getElementById('new-assessor-nome').value.trim();
+      var email = document.getElementById('new-assessor-email').value.trim();
+      var senha = document.getElementById('new-assessor-senha').value;
+      var role = document.getElementById('new-assessor-role').value;
+
+      if (!nome || !email || !senha) {
+        showToast('Preencha todos os campos', 'error');
+        return;
+      }
+      if (senha.length < 6) {
+        showToast('Senha deve ter pelo menos 6 caracteres', 'error');
+        return;
+      }
+
+      var btn = document.getElementById('btn-salvar-assessor');
+      btn.disabled = true;
+      btn.textContent = 'Criando...';
+
+      try {
+        var { data, error } = await sb.functions.invoke('create-assessor', {
+          body: { nome: nome, email: email, password: senha, role: role }
+        });
+
+        if (error) throw error;
+        if (data && data.error) throw new Error(data.error);
+
+        showToast('Assessor criado com sucesso!', 'success');
+        document.getElementById('modal-novo-assessor').classList.remove('open');
+        document.getElementById('form-novo-assessor').reset();
+        loadAssessores();
+      } catch (e) {
+        showToast('Erro: ' + (e.message || 'Falha ao criar assessor'), 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Criar Assessor';
+      }
+    }
   </script>
 </body>
 </html>

@@ -3,14 +3,22 @@
    ═══════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', async function () {
-  var user = await requireAuth();
-  if (!user) return;
+  var result = await requireRole(['admin', 'assessor', 'visualizador']);
+  if (!result) return;
+  var user = result.user;
+  var role = result.role;
+  setupSidebarPermissions(role);
 
   // User info
   document.getElementById('user-name').textContent = getUserName(user);
 
   // Logout
   document.getElementById('btn-logout').addEventListener('click', handleLogout);
+
+  // Hide action buttons for visualizador
+  if (role === 'visualizador') {
+    document.querySelectorAll('.btn-gold, .btn-export, .kanban-card[draggable]').forEach(function(el) { el.style.display = 'none'; });
+  }
 
   // Load dashboard data
   await loadDashboard();

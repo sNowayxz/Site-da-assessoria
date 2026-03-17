@@ -5,11 +5,19 @@
 var currentEditId = null;
 
 document.addEventListener('DOMContentLoaded', async function () {
-  var user = await requireAuth();
-  if (!user) return;
+  var result = await requireRole(['admin', 'assessor']);
+  if (!result) return;
+  var user = result.user;
+  var role = result.role;
+  setupSidebarPermissions(role);
 
   document.getElementById('user-name').textContent = getUserName(user);
   document.getElementById('btn-logout').addEventListener('click', handleLogout);
+
+  // Hide delete buttons for assessor
+  if (role === 'assessor') {
+    window._alunosRole = 'assessor';
+  }
 
   // Load
   await loadAlunos();
@@ -73,7 +81,7 @@ function renderAlunos(alunos) {
       '<td class="actions">' +
         (a.telefone ? '<a class="btn-icon" href="https://wa.me/55' + a.telefone.replace(/\D/g,'') + '" target="_blank" rel="noopener" title="WhatsApp">💬</a>' : '') +
         '<button class="btn-icon" onclick="editAluno(\'' + a.id + '\')" title="Editar">✏️</button>' +
-        '<button class="btn-icon btn-danger" onclick="deleteAluno(\'' + a.id + '\')" title="Excluir">🗑️</button>' +
+        (window._alunosRole !== 'assessor' ? '<button class="btn-icon btn-danger" onclick="deleteAluno(\'' + a.id + '\')" title="Excluir">🗑️</button>' : '') +
       '</td>' +
       '</tr>';
   }).join('');
