@@ -763,14 +763,8 @@ a { text-decoration: none; color: inherit; }
 .info-item svg { stroke: var(--gold); flex-shrink: 0; }
 
 .contact-grid {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
+  max-width: 440px;
   margin: 0 auto;
-}
-.contact-grid .contact-card {
-  width: 100%;
-  max-width: 420px;
 }
 .contact-card {
   background: var(--white);
@@ -1050,7 +1044,7 @@ a { text-decoration: none; color: inherit; }
   .servicos-grid { grid-template-columns: 1fr; }
   .sobre-grid { grid-template-columns: 1fr; gap: 32px; }
   .cards-grid { grid-template-columns: 1fr; gap: 20px; }
-  .contact-grid { grid-template-columns: 1fr; gap: 24px; }
+  .contact-grid { max-width: 100%; }
   .contato-info-bar { flex-direction: column; gap: 12px; align-items: center; }
   .trust-bar { flex-direction: column; gap: 16px; align-items: center; }
 
