@@ -152,6 +152,53 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // ════════════════════════════════════
+  // SECTION REVEAL ON SCROLL
+  // ════════════════════════════════════
+  var revealSections = document.querySelectorAll('.section');
+  revealSections.forEach(function (s) { s.classList.add('section-reveal'); });
+
+  if ('IntersectionObserver' in window) {
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+
+    revealSections.forEach(function (s) { revealObserver.observe(s); });
+  } else {
+    revealSections.forEach(function (s) { s.classList.add('revealed'); });
+  }
+
+  // ════════════════════════════════════
+  // HERO PARALLAX (subtle)
+  // ════════════════════════════════════
+  var heroBg = document.querySelector('.hero-bg');
+  var heroGrid = document.querySelector('.hero-grid');
+  var heroContent = document.querySelector('.hero-content');
+  var parallaxTicking = false;
+
+  if (heroBg && window.innerWidth > 768) {
+    window.addEventListener('scroll', function () {
+      if (!parallaxTicking) {
+        requestAnimationFrame(function () {
+          var scrollY = window.scrollY;
+          if (scrollY < window.innerHeight) {
+            heroBg.style.transform = 'translateY(' + (scrollY * 0.3) + 'px)';
+            if (heroGrid) heroGrid.style.transform = 'translateY(' + (scrollY * 0.15) + 'px)';
+            if (heroContent) heroContent.style.transform = 'translateY(' + (scrollY * 0.12) + 'px)';
+            heroContent.style.opacity = 1 - (scrollY / (window.innerHeight * 0.9));
+          }
+          parallaxTicking = false;
+        });
+        parallaxTicking = true;
+      }
+    });
+  }
+
   // Timeline animation
   if ('IntersectionObserver' in window) {
     var timeline = document.querySelector('.timeline');
