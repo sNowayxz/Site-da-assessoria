@@ -271,7 +271,7 @@ img { max-width: 100%; display: block; }
 }
 
 /* Collapsible sidebar categories */
-.sidebar-nav-label[data-category] {
+.sidebar-nav-label[data-category]:not([data-always-open="true"]) {
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -279,14 +279,8 @@ img { max-width: 100%; display: block; }
   user-select: none;
   transition: color 0.2s;
 }
-.sidebar-nav-label[data-category]:hover {
+.sidebar-nav-label[data-category]:not([data-always-open="true"]):hover {
   color: var(--gray-300);
-}
-.sidebar-nav-label[data-always-open="true"] {
-  cursor: default;
-}
-.sidebar-nav-label[data-always-open="true"]:hover {
-  color: var(--gray-400);
 }
 .sidebar-chevron {
   width: 14px;
@@ -304,13 +298,13 @@ img { max-width: 100%; display: block; }
 }
 .sidebar-category-links {
   overflow: hidden;
-  max-height: 500px;
-  transition: max-height 0.3s ease, opacity 0.2s ease;
+  transition: max-height 0.3s ease, opacity 0.25s ease;
   opacity: 1;
 }
 .sidebar-category-links.collapsed {
-  max-height: 0;
+  max-height: 0 !important;
   opacity: 0;
+  pointer-events: none;
 }
 
 /* Sidebar sub-links (nested items) */

@@ -369,6 +369,22 @@ document.addEventListener('DOMContentLoaded', function () {
     stored = stored.filter(function (c) { return c !== activeCategory; });
   }
 
+  // Helper: set expanded max-height based on actual content
+  function expandSection(el) {
+    el.classList.remove('collapsed');
+    el.style.maxHeight = el.scrollHeight + 'px';
+    el.style.pointerEvents = '';
+  }
+
+  function collapseSection(el) {
+    // Force current height first so transition works
+    el.style.maxHeight = el.scrollHeight + 'px';
+    // Force reflow
+    el.offsetHeight; // eslint-disable-line no-unused-expressions
+    el.classList.add('collapsed');
+    el.style.maxHeight = '0px';
+  }
+
   labels.forEach(function (label) {
     var cat = label.getAttribute('data-category');
     var alwaysOpen = label.getAttribute('data-always-open') === 'true';
@@ -376,22 +392,45 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (alwaysOpen || !linksDiv || !linksDiv.classList.contains('sidebar-category-links')) return;
 
-    // Apply initial collapsed state
+    // Apply initial state (no transition on first load)
     if (stored.indexOf(cat) !== -1) {
       label.classList.add('collapsed');
       linksDiv.classList.add('collapsed');
+      linksDiv.style.maxHeight = '0px';
+    } else {
+      linksDiv.style.maxHeight = linksDiv.scrollHeight + 'px';
     }
+
+    // After initial setup, listen for transitionend to clean up
+    linksDiv.addEventListener('transitionend', function (e) {
+      if (e.propertyName === 'max-height' && !linksDiv.classList.contains('collapsed')) {
+        // After expanding, set to 'none' so content can grow dynamically
+        linksDiv.style.maxHeight = 'none';
+      }
+    });
 
     // Toggle on click
     label.addEventListener('click', function () {
-      var isCollapsed = label.classList.toggle('collapsed');
-      linksDiv.classList.toggle('collapsed');
+      var isCurrentlyCollapsed = label.classList.contains('collapsed');
 
+      if (isCurrentlyCollapsed) {
+        // Expand
+        label.classList.remove('collapsed');
+        expandSection(linksDiv);
+      } else {
+        // Collapse
+        label.classList.add('collapsed');
+        collapseSection(linksDiv);
+      }
+
+      // Persist state
       var current = [];
       try { current = JSON.parse(localStorage.getItem('sidebar-collapsed') || '[]'); } catch (e) {}
-      if (isCollapsed) {
+      if (!isCurrentlyCollapsed) {
+        // Was open, now collapsing
         if (current.indexOf(cat) === -1) current.push(cat);
       } else {
+        // Was collapsed, now expanding
         current = current.filter(function (c) { return c !== cat; });
       }
       localStorage.setItem('sidebar-collapsed', JSON.stringify(current));
