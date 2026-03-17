@@ -704,11 +704,14 @@ a { text-decoration: none; color: inherit; }
 .info-item svg { stroke: var(--gold); flex-shrink: 0; }
 
 .contact-grid {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  justify-content: center;
   gap: 32px;
-  max-width: 420px;
   margin: 0 auto;
+}
+.contact-grid .contact-card {
+  width: 100%;
+  max-width: 420px;
 }
 .contact-card {
   background: var(--white);
