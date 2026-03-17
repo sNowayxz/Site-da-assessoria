@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Filtros
   document.getElementById('filter-status').addEventListener('change', filterAtividades);
   document.getElementById('filter-tipo').addEventListener('change', filterAtividades);
-  document.getElementById('filter-aluno').addEventListener('input', filterAtividades);
+  document.getElementById('filter-aluno').addEventListener('input', debounce(filterAtividades, 300));
   var dtInicio = document.getElementById('filter-data-inicio');
   var dtFim = document.getElementById('filter-data-fim');
   if (dtInicio) dtInicio.addEventListener('change', filterAtividades);
@@ -139,6 +139,8 @@ function filterAtividades() {
 async function handleSaveAtividade(e) {
   e.preventDefault();
   var form = e.target;
+  var submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Salvando...'; }
   var data = {
     aluno_id: form.aluno_id.value,
     tipo: form.tipo.value,
@@ -159,10 +161,13 @@ async function handleSaveAtividade(e) {
       if (error) throw error;
     }
     logAudit(currentEditAtivId ? 'update_atividade' : 'create_atividade', 'atividades', currentEditAtivId || 'new', { tipo: data.tipo, descricao: data.descricao });
+    showToast(currentEditAtivId ? 'Atividade atualizada!' : 'Atividade criada!', 'success');
     closeModal('modal-atividade');
     await loadAtividades();
   } catch (err) {
-    alert('Erro: ' + err.message);
+    showToast('Erro: ' + err.message, 'error');
+  } finally {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Salvar'; }
   }
 }
 
@@ -187,6 +192,7 @@ async function deleteAtividade(id) {
   var { error } = await sb.from('atividades').delete().eq('id', id);
   if (error) { alert('Erro: ' + error.message); return; }
   logAudit('delete_atividade', 'atividades', id, {});
+  showToast('Atividade excluída!', 'success');
   await loadAtividades();
 }
 
@@ -204,29 +210,3 @@ async function cycleStatus(id, currentStatus) {
   logAudit('status_change', 'atividades', id, { from: currentStatus, to: next });
   await loadAtividades();
 }
-
-function formatTipo(t) {
-  var map = { atividade: 'Atividade', mapa: 'Mapa', tcc: 'TCC', relatorio: 'Relatório', extensao: 'Extensão', pacote: 'Pacote' };
-  return map[t] || t;
-}
-
-function formatStatus(s) {
-  var map = { pendente: 'Pendente', em_andamento: 'Em Andamento', entregue: 'Entregue', revisao: 'Revisão' };
-  return map[s] || s;
-}
-
-function formatDate(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString('pt-BR');
-}
-
-function escapeHtml(text) {
-  if (!text) return '';
-  var div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// Modal helpers
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }

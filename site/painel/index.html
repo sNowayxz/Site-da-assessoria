@@ -57,21 +57,6 @@
         <button type="submit" class="btn-primary" id="btn-login">Entrar</button>
       </form>
 
-      <!-- Separador -->
-      <div style="display:flex;align-items:center;gap:12px;margin:16px 0 12px;">
-        <div style="flex:1;height:1px;background:var(--gray-200);"></div>
-        <span style="font-size:0.82rem;color:var(--gray-400);font-weight:500;">ou</span>
-        <div style="flex:1;height:1px;background:var(--gray-200);"></div>
-      </div>
-
-      <!-- Login sem senha (Magic Link) -->
-      <div id="magic-link-section">
-        <button type="button" id="btn-magic-link" class="btn-primary" style="background:var(--gray-900);width:100%;">
-          🔗 Entrar sem senha (link por e-mail)
-        </button>
-        <div id="magic-link-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.2);color:var(--gold);font-size:0.85rem;text-align:center;"></div>
-      </div>
-
       <div class="login-footer">
         <button type="button" id="btn-forgot" style="background:none;border:none;color:var(--gold);font-size:0.85rem;font-weight:600;cursor:pointer;margin-bottom:12px;">Esqueci minha senha</button>
         <br>
@@ -112,46 +97,6 @@
         }
       });
 
-      // ─── Magic Link (login sem senha) ───
-      document.getElementById('btn-magic-link').addEventListener('click', async function() {
-        var email = document.getElementById('email').value.trim();
-        if (!email) {
-          alert('Digite seu e-mail no campo acima para receber o link de acesso.');
-          document.getElementById('email').focus();
-          return;
-        }
-
-        var btn = this;
-        var msgEl = document.getElementById('magic-link-msg');
-        btn.disabled = true;
-        btn.textContent = 'Enviando...';
-
-        try {
-          var { error } = await sb.auth.signInWithOtp({
-            email: email,
-            options: {
-              emailRedirectTo: window.location.origin + '/painel/app.html'
-            }
-          });
-          if (error) throw error;
-
-          msgEl.style.display = 'block';
-          msgEl.style.background = 'rgba(34,197,94,0.08)';
-          msgEl.style.borderColor = 'rgba(34,197,94,0.2)';
-          msgEl.style.color = '#16a34a';
-          msgEl.innerHTML = '✅ Link de acesso enviado para <strong>' + email + '</strong>.<br>Verifique seu e-mail e clique no link para entrar.';
-        } catch(err) {
-          msgEl.style.display = 'block';
-          msgEl.style.background = 'rgba(239,68,68,0.08)';
-          msgEl.style.borderColor = 'rgba(239,68,68,0.2)';
-          msgEl.style.color = '#ef4444';
-          msgEl.textContent = 'Erro: ' + err.message;
-        } finally {
-          btn.disabled = false;
-          btn.innerHTML = '🔗 Entrar sem senha (link por e-mail)';
-        }
-      });
-
       // Carregar preferência salva
       var rememberBox = document.getElementById('remember-me');
       var savedRemember = localStorage.getItem('remember-me');
@@ -163,7 +108,6 @@
       document.getElementById('btn-mfa-back').addEventListener('click', function() {
         mfaSection.style.display = 'none';
         form.style.display = 'block';
-        document.getElementById('magic-link-section').style.display = 'block';
         errorEl.classList.remove('show');
       });
 
@@ -232,7 +176,6 @@
           if (aalData && aalData.nextLevel === 'aal2' && aalData.currentLevel === 'aal1') {
             // Precisa verificar 2FA
             form.style.display = 'none';
-            document.getElementById('magic-link-section').style.display = 'none';
             mfaSection.style.display = 'block';
             document.getElementById('mfa-code').value = '';
             document.getElementById('mfa-code').focus();

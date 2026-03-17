@@ -699,3 +699,42 @@ function exportReportToPDF(title, filename, chartCanvasIds) {
     showToast('PDF com graficos exportado!', 'success');
   });
 }
+
+
+// ─── Shared Helpers (centralizados) ───
+
+function escapeHtml(text) {
+  if (!text) return '';
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function formatTipo(t) {
+  var map = { atividade: 'Atividade', mapa: 'Mapa', tcc: 'TCC', relatorio: 'Relatório', extensao: 'Extensão', pacote: 'Pacote', avulso: 'Avulso', mensalidade: 'Mensalidade' };
+  return map[t] || t || '';
+}
+
+function formatStatus(s) {
+  var map = { pendente: 'Pendente', em_andamento: 'Em Andamento', entregue: 'Entregue', revisao: 'Revisão', pago: 'Pago', atrasado: 'Atrasado', cancelado: 'Cancelado' };
+  return map[s] || s || '';
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('pt-BR');
+}
+
+// Debounce genérico
+function debounce(fn, delay) {
+  var timer;
+  return function () {
+    var ctx = this;
+    var args = arguments;
+    clearTimeout(timer);
+    timer = setTimeout(function () { fn.apply(ctx, args); }, delay);
+  };
+}

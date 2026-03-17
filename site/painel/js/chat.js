@@ -229,11 +229,3 @@ function scrollToBottom() {
   var messagesEl = document.getElementById('chat-messages');
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
-
-// ─── Escape HTML ───
-function escapeHtml(text) {
-  if (!text) return '';
-  var div = document.createElement('div');
-  div.appendChild(document.createTextNode(text));
-  return div.innerHTML;
-}

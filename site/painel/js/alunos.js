@@ -101,6 +101,8 @@ function filterAlunos() {
 async function handleSaveAluno(e) {
   e.preventDefault();
   var form = e.target;
+  var submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Salvando...'; }
   var data = {
     ra: form.ra.value.trim(),
     nome: form.nome.value.trim(),
@@ -125,10 +127,13 @@ async function handleSaveAluno(e) {
       await sb.from('alunos').insert(data);
     }
     logAudit(currentEditId ? 'update_aluno' : 'create_aluno', 'alunos', currentEditId || 'new', { nome: data.nome, ra: data.ra });
+    showToast(currentEditId ? 'Aluno atualizado!' : 'Aluno cadastrado!', 'success');
     closeModal('modal-aluno');
     await loadAlunos();
   } catch (err) {
-    alert('Erro: ' + err.message);
+    showToast('Erro: ' + err.message, 'error');
+  } finally {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Salvar'; }
   }
 }
 
@@ -158,15 +163,6 @@ async function deleteAluno(id) {
   if (!confirm('Tem certeza que deseja excluir este aluno? As atividades vinculadas também serão excluídas.')) return;
   await sb.from('alunos').delete().eq('id', id);
   logAudit('delete_aluno', 'alunos', id, {});
+  showToast('Aluno excluído!', 'success');
   await loadAlunos();
-}
-
-// Modal helpers
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-function escapeHtml(text) {
-  var div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }

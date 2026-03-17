@@ -27,10 +27,17 @@ document.addEventListener('DOMContentLoaded', async function () {
 async function loadDashboard() {
   try {
     // Contadores de atividades
-    var { count: totalAlunos } = await sb.from('alunos').select('*', { count: 'exact', head: true });
-    var { count: pendentes } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'pendente');
-    var { count: emAndamento } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'em_andamento');
-    var { count: entregues } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'entregue');
+    // Queries em paralelo para performance
+    var counters = await Promise.all([
+      sb.from('alunos').select('*', { count: 'exact', head: true }),
+      sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'pendente'),
+      sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'em_andamento'),
+      sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'entregue')
+    ]);
+    var totalAlunos = counters[0].count;
+    var pendentes = counters[1].count;
+    var emAndamento = counters[2].count;
+    var entregues = counters[3].count;
 
     document.getElementById('count-alunos').textContent = totalAlunos || 0;
     document.getElementById('count-pendentes').textContent = pendentes || 0;
@@ -39,8 +46,12 @@ async function loadDashboard() {
 
     // Receita financeira (se tabela existir)
     try {
-      var { data: pagos } = await sb.from('pagamentos').select('valor').eq('status', 'pago');
-      var { data: pendPag } = await sb.from('pagamentos').select('valor').eq('status', 'pendente');
+      var finResults = await Promise.all([
+        sb.from('pagamentos').select('valor').eq('status', 'pago'),
+        sb.from('pagamentos').select('valor').eq('status', 'pendente')
+      ]);
+      var pagos = finResults[0].data;
+      var pendPag = finResults[1].data;
 
       var totalRecebido = (pagos || []).reduce(function (sum, p) { return sum + (parseFloat(p.valor) || 0); }, 0);
       var totalPendenteFin = (pendPag || []).reduce(function (sum, p) { return sum + (parseFloat(p.valor) || 0); }, 0);
@@ -110,6 +121,7 @@ function renderStatusChart(pendentes, andamento, entregues) {
   if (typeof Chart === 'undefined') return;
 
   var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (chartStatusInstance) { chartStatusInstance.destroy(); chartStatusInstance = null; }
   chartStatusInstance = new Chart(canvas, {
     type: 'doughnut',
     data: {
@@ -189,6 +201,7 @@ async function renderReceitaChart() {
     });
     var values = keys.map(function(k) { return meses[k]; });
 
+    if (chartReceitaInstance) { chartReceitaInstance.destroy(); chartReceitaInstance = null; }
     chartReceitaInstance = new Chart(canvas, {
       type: 'bar',
       data: {
@@ -227,21 +240,6 @@ async function renderReceitaChart() {
   }
 }
 
-function formatStatus(s) {
-  var map = { pendente: 'Pendente', em_andamento: 'Em Andamento', entregue: 'Entregue', revisao: 'Revisão' };
-  return map[s] || s;
-}
-
-function formatDate(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString('pt-BR');
-}
-
-function escapeHtml(text) {
-  var div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
 
 // ═══════════════════════════════════════════
 // PERIOD SELECTOR

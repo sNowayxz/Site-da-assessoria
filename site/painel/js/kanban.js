@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Filter listeners
   document.getElementById('filter-assessor').addEventListener('change', filterKanban);
   document.getElementById('filter-tipo').addEventListener('change', filterKanban);
-  document.getElementById('filter-aluno').addEventListener('input', filterKanban);
+  document.getElementById('filter-aluno').addEventListener('input', debounce(filterKanban, 300));
 
   // Form submit
   document.getElementById('form-atividade').addEventListener('submit', saveAtividade);
@@ -296,26 +296,3 @@ async function saveAtividade(e) {
     showToast('Erro: ' + err.message, 'error');
   }
 }
-
-
-// ─── Helpers ───
-
-function formatTipo(t) {
-  var map = { atividade: 'Atividade', mapa: 'Mapa', tcc: 'TCC', relatorio: 'Relat\u00f3rio', extensao: 'Extens\u00e3o', pacote: 'Pacote' };
-  return map[t] || t || 'Atividade';
-}
-
-function formatStatus(s) {
-  var map = { pendente: 'Pendente', em_andamento: 'Em Andamento', entregue: 'Entregue', revisao: 'Revis\u00e3o' };
-  return map[s] || s;
-}
-
-function escapeHtml(text) {
-  if (!text) return '';
-  var div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }

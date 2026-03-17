@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   document.getElementById('filter-status-pag').addEventListener('change', filterPagamentos);
   document.getElementById('filter-tipo-pag').addEventListener('change', filterPagamentos);
-  document.getElementById('filter-aluno-pag').addEventListener('input', filterPagamentos);
+  document.getElementById('filter-aluno-pag').addEventListener('input', debounce(filterPagamentos, 300));
 
   // Gerar mensalidades automáticas
   document.getElementById('btn-gerar-mensalidades').addEventListener('click', gerarMensalidades);
@@ -95,12 +95,12 @@ function renderPagamentos(pagamentos) {
 
     return '<tr>' +
       '<td><span class="aluno-name">' + escapeHtml(aluno.nome || '—') + '</span></td>' +
-      '<td><span class="badge badge-tipo">' + formatTipoPag(p.tipo) + '</span></td>' +
+      '<td><span class="badge badge-tipo">' + formatTipo(p.tipo) + '</span></td>' +
       '<td><strong>R$ ' + (Number(p.valor) || 0).toFixed(2) + '</strong></td>' +
       '<td>' + escapeHtml(p.referencia || '—') + '</td>' +
       '<td>' + vencimento + '</td>' +
       '<td>' + pgto + '</td>' +
-      '<td><span class="badge badge-' + p.status + '">' + formatStatusPag(p.status) + '</span></td>' +
+      '<td><span class="badge badge-' + p.status + '">' + formatStatus(p.status) + '</span></td>' +
       '<td class="actions">' +
         (p.status !== 'pago' ? '<button class="btn-icon btn-status" onclick="marcarPago(\'' + p.id + '\')" title="Marcar como Pago">✅</button>' : '') +
         '<button class="btn-icon" onclick="editPagamento(\'' + p.id + '\')" title="Editar">✏️</button>' +
@@ -135,6 +135,8 @@ function filterPagamentos() {
 async function handleSavePagamento(e) {
   e.preventDefault();
   var form = e.target;
+  var submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Salvando...'; }
   var editId = form.dataset.editId;
   var data = {
     aluno_id: form.aluno_id.value,
@@ -158,10 +160,13 @@ async function handleSavePagamento(e) {
       if (error) throw error;
     }
     logAudit(editId ? 'update_pagamento' : 'create_pagamento', 'pagamentos', editId || 'new', { valor: data.valor, tipo: data.tipo });
+    showToast(editId ? 'Pagamento atualizado!' : 'Pagamento registrado!', 'success');
     closeModal('modal-pagamento');
     await loadPagamentos();
   } catch (err) {
-    alert('Erro: ' + err.message);
+    showToast('Erro: ' + err.message, 'error');
+  } finally {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Salvar'; }
   }
 }
 
@@ -196,17 +201,8 @@ async function deletePagamento(id) {
   var { error } = await sb.from('pagamentos').delete().eq('id', id);
   if (error) { alert('Erro: ' + error.message); return; }
   logAudit('delete_pagamento', 'pagamentos', id, {});
+  showToast('Pagamento excluído!', 'success');
   await loadPagamentos();
-}
-
-function formatTipoPag(t) {
-  var map = { avulso: 'Avulso', mensalidade: 'Mensalidade', pacote: 'Pacote' };
-  return map[t] || t;
-}
-
-function formatStatusPag(s) {
-  var map = { pendente: 'Pendente', pago: 'Pago', atrasado: 'Atrasado', cancelado: 'Cancelado' };
-  return map[s] || s;
 }
 
 async function gerarMensalidades() {
@@ -269,14 +265,4 @@ async function gerarMensalidades() {
     if (typeof showToast === 'function') showToast('Erro: ' + err.message, 'error');
     else alert('Erro: ' + err.message);
   }
-}
-
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-function escapeHtml(text) {
-  if (!text) return '';
-  var div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
