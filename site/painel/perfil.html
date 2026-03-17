@@ -243,6 +243,7 @@
       if (!result) return;
       var user = result.user;
       var role = result.role;
+      console.log('[perfil] Role detectado:', role, '| User ID:', user.id);
       setupSidebarPermissions(role);
 
       var name = getUserName(user);
@@ -380,7 +381,7 @@
       var nome = document.getElementById('new-assessor-nome').value.trim();
       var email = document.getElementById('new-assessor-email').value.trim();
       var senha = document.getElementById('new-assessor-senha').value;
-      var role = document.getElementById('new-assessor-role').value;
+      var newRole = document.getElementById('new-assessor-role').value;
 
       if (!nome || !email || !senha) {
         showToast('Preencha todos os campos', 'error');
@@ -396,18 +397,43 @@
       btn.textContent = 'Criando...';
 
       try {
-        var { data, error } = await sb.functions.invoke('create-assessor', {
-          body: { nome: nome, email: email, password: senha, role: role }
+        console.log('[perfil] Criando assessor:', { nome: nome, email: email, role: newRole });
+
+        var response = await sb.functions.invoke('create-assessor', {
+          body: { nome: nome, email: email, password: senha, role: newRole }
         });
 
-        if (error) throw error;
-        if (data && data.error) throw new Error(data.error);
+        console.log('[perfil] Resposta Edge Function:', response);
 
-        showToast('Assessor criado com sucesso!', 'success');
+        // sb.functions.invoke retorna { data, error }
+        if (response.error) {
+          // Se error é um objeto FunctionsHttpError, pegar a mensagem do body
+          var errMsg = response.error.message || 'Erro na Edge Function';
+          if (response.error.context && response.error.context.body) {
+            try {
+              var bodyErr = JSON.parse(response.error.context.body);
+              errMsg = bodyErr.error || errMsg;
+            } catch(e2) {}
+          }
+          throw new Error(errMsg);
+        }
+
+        var result = response.data;
+        // Se data veio como string, parse
+        if (typeof result === 'string') {
+          try { result = JSON.parse(result); } catch(e2) {}
+        }
+
+        console.log('[perfil] Result parsed:', result);
+
+        if (result && result.error) throw new Error(result.error);
+
+        showToast('Assessor "' + nome + '" criado com sucesso!', 'success');
         document.getElementById('modal-novo-assessor').classList.remove('open');
         document.getElementById('form-novo-assessor').reset();
         loadAssessores();
       } catch (e) {
+        console.error('[perfil] Erro ao criar assessor:', e);
         showToast('Erro: ' + (e.message || 'Falha ao criar assessor'), 'error');
       } finally {
         btn.disabled = false;
