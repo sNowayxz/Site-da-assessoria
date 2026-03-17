@@ -280,7 +280,7 @@
     </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/auth.js"></script>
@@ -393,24 +393,28 @@
 
           var qrDiv = document.getElementById('2fa-qr-image');
 
-          // Usar biblioteca QRCode para gerar imagem a partir do URI TOTP
+          // Gerar QR Code a partir do URI TOTP
           qrDiv.innerHTML = '';
           if (data.totp && data.totp.uri) {
-            var canvas = document.createElement('canvas');
-            qrDiv.appendChild(canvas);
-            QRCode.toCanvas(canvas, data.totp.uri, { width: 200, margin: 2 }, function(err) {
-              if (err) {
-                console.error('[2fa] QRCode canvas error:', err);
-                // Fallback: tentar img src
-                qrDiv.innerHTML = '';
-                var img = document.createElement('img');
-                img.src = data.totp.qr_code || '';
-                img.alt = 'QR Code';
-                img.style.maxWidth = '200px';
-                qrDiv.appendChild(img);
+            var qrContainer = document.createElement('div');
+            qrContainer.style.cssText = 'display:inline-block;';
+            qrDiv.appendChild(qrContainer);
+            try {
+              new QRCode(qrContainer, {
+                text: data.totp.uri,
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff'
+              });
+            } catch(qrErr) {
+              console.error('[2fa] QRCode render error:', qrErr);
+              // Fallback: usar imagem SVG do Supabase
+              if (data.totp.qr_code) {
+                qrContainer.innerHTML = '<img src="' + data.totp.qr_code + '" alt="QR Code" style="max-width:200px;">';
               }
-            });
-            // Mostrar secret como texto para entrada manual (usando appendChild para não destruir o canvas)
+            }
+            // Mostrar secret como texto para entrada manual
             if (data.totp.secret) {
               var secretP = document.createElement('p');
               secretP.style.cssText = 'font-size:0.75rem;color:var(--gray-400);margin-top:8px;word-break:break-all;';
@@ -418,11 +422,7 @@
               qrDiv.appendChild(secretP);
             }
           } else if (data.totp && data.totp.qr_code) {
-            var img = document.createElement('img');
-            img.src = data.totp.qr_code;
-            img.alt = 'QR Code';
-            img.style.maxWidth = '200px';
-            qrDiv.appendChild(img);
+            qrDiv.innerHTML = '<img src="' + data.totp.qr_code + '" alt="QR Code" style="max-width:200px;">';
           } else {
             qrDiv.innerHTML = '<p style="color:var(--danger);">Erro ao gerar QR Code. Verifique se o MFA esta habilitado no projeto Supabase.</p>';
           }
