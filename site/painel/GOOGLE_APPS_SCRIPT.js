@@ -18,7 +18,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 var SHEET_ID = '1yeFlBBZSMHqTziM7QBB3IVkMJQgXqTbvDEz9SvXXKDw';
-var SHEET_NAME = 'extensões'; // Nome da aba principal
+var SHEET_NAME = null; // Usa a PRIMEIRA aba da planilha (onde estão os alunos)
 var DATA_START_ROW = 9;    // Linha onde começam os dados dos alunos
 
 // Mapeamento de colunas (A=1, B=2, ...)
@@ -47,12 +47,8 @@ var COL = {
 function doGet(e) {
   var action = (e && e.parameter && e.parameter.action) || 'list';
   var ss = SpreadsheetApp.openById(SHEET_ID);
-  var sheet = ss.getSheetByName(SHEET_NAME);
-
-  if (!sheet) {
-    // Se não encontrar pelo nome, pega a primeira aba
-    sheet = ss.getSheets()[0];
-  }
+  var sheet = SHEET_NAME ? ss.getSheetByName(SHEET_NAME) : ss.getSheets()[0];
+  if (!sheet) sheet = ss.getSheets()[0];
 
   var result;
 
@@ -79,7 +75,7 @@ function doPost(e) {
   }
 
   var ss = SpreadsheetApp.openById(SHEET_ID);
-  var sheet = ss.getSheetByName(SHEET_NAME);
+  var sheet = SHEET_NAME ? ss.getSheetByName(SHEET_NAME) : ss.getSheets()[0];
   if (!sheet) sheet = ss.getSheets()[0];
 
   var action = body.action;

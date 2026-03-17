@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   Extensões — Google Sheets Integration
+   Extensões — Google Sheets Integration v2
    ═══════════════════════════════════════════ */
 
 var API_URL = localStorage.getItem('extensoes_api_url') || '';
@@ -12,49 +12,58 @@ var _extensoes = [];
 
   if (API_URL) {
     urlInput.value = API_URL;
-    configBar.classList.add('connected');
+    configBar.classList.add('hidden');
     loadExtensoes();
+  } else {
+    configBar.classList.remove('hidden');
+    document.getElementById('extensoes-list').innerHTML =
+      '<div class="empty-card">⚙️ Configure a URL do Google Apps Script acima para começar.</div>';
   }
 })();
+
+function showConfig() {
+  var bar = document.getElementById('config-bar');
+  bar.classList.toggle('hidden');
+}
 
 function saveApiUrl() {
   var url = document.getElementById('apps-script-url').value.trim();
   if (!url) return alert('Cole a URL do Google Apps Script.');
   localStorage.setItem('extensoes_api_url', url);
   API_URL = url;
-  document.getElementById('config-bar').classList.add('connected');
+  document.getElementById('config-bar').classList.add('hidden');
   loadExtensoes();
 }
 
 // ── Fetch Data ──
 async function loadExtensoes() {
   if (!API_URL) return;
-  var tbody = document.getElementById('extensoes-table');
-  tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Carregando...</td></tr>';
+  document.getElementById('extensoes-list').innerHTML =
+    '<div class="empty-card">Carregando dados da planilha...</div>';
 
   try {
     var res = await fetch(API_URL + '?action=list');
     var json = await res.json();
     _extensoes = json.data || [];
     updateStats();
-    renderTable(_extensoes);
+    applyFilters();
   } catch (err) {
     console.error('Erro ao carregar extensões:', err);
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Erro ao conectar. Verifique a URL do Apps Script.</td></tr>';
+    document.getElementById('extensoes-list').innerHTML =
+      '<div class="empty-card">❌ Erro ao conectar. Verifique a URL do Apps Script.<br><button class="btn-reconfig" onclick="showConfig()" style="margin-top:10px">⚙️ Reconfigurar</button></div>';
   }
 }
 
 // ── Stats ──
 function updateStats() {
   var total = _extensoes.length;
-  var pagos = 0;
-  var urgentes = 0;
-  var horas = 0;
+  var pagos = 0, urgentes = 0, horas = 0;
 
   _extensoes.forEach(function (r) {
     if ((r.status_pgto || '').toUpperCase() === 'PAGO') pagos++;
-    if ((r.urgencia || '').toLowerCase().indexOf('sim') > -1 || (r.urgencia || '').toLowerCase() === 'sim') urgentes++;
-    var h = parseFloat((r.horas_contratadas || '').replace(/[^\d]/g, ''));
+    var urg = (r.urgencia || '').toLowerCase();
+    if (urg === 'sim' || urg === 'yes') urgentes++;
+    var h = parseFloat((r.horas_contratadas || '').replace(/[^\d.,]/g, '').replace(',', '.'));
     if (!isNaN(h)) horas += h;
   });
 
@@ -64,60 +73,69 @@ function updateStats() {
   document.getElementById('count-horas').textContent = horas.toLocaleString('pt-BR') + 'h';
 }
 
-// ── Render Table ──
-function renderTable(data) {
-  var tbody = document.getElementById('extensoes-table');
+// ── Render Cards ──
+function renderCards(data) {
+  var container = document.getElementById('extensoes-list');
+  document.getElementById('filter-count').textContent = data.length + ' aluno' + (data.length !== 1 ? 's' : '');
+
   if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum aluno encontrado.</td></tr>';
+    container.innerHTML = '<div class="empty-card">Nenhum aluno encontrado.</div>';
     return;
   }
 
-  tbody.innerHTML = data.map(function (r, i) {
+  container.innerHTML = data.map(function (r) {
     var nome = esc(r.nome || '—');
-    var ra = esc(r.ra || '—');
-    var assessor = esc(r.assessor || '—');
-    var hContratadas = esc(r.horas_contratadas || '0');
-    var hFeitas = esc(r.horas_feitas || '0');
-    var hRestantes = esc(r.horas_restantes || '0');
-    var valorPago = esc(r.valor_pago || 'R$ 0');
+    var ra = esc(r.ra || '');
+    var assessor = esc(r.assessor || '');
     var statusPgto = (r.status_pgto || '').toUpperCase();
-    var urgencia = r.urgencia || '';
+    var isPago = statusPgto === 'PAGO';
+    var urgencia = (r.urgencia || '').toLowerCase();
+    var isUrgente = urgencia === 'sim' || urgencia === 'yes';
 
-    // Progress bar
-    var numContratadas = parseFloat((r.horas_contratadas || '0').replace(/[^\d]/g, '')) || 1;
-    var numFeitas = parseFloat((r.horas_feitas || '0').replace(/[^\d]/g, '')) || 0;
-    var pct = Math.min(100, Math.round((numFeitas / numContratadas) * 100));
+    // Hours
+    var hContratadas = r.horas_contratadas || '0';
+    var hFeitas = r.horas_feitas || '0';
+    var numC = parseFloat(hContratadas.replace(/[^\d.,]/g, '').replace(',', '.')) || 1;
+    var numF = parseFloat((hFeitas || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+    var pct = Math.min(100, Math.round((numF / numC) * 100));
+    var barClass = pct < 30 ? 'low' : pct < 70 ? 'mid' : '';
 
-    var badgePgto = statusPgto === 'PAGO'
-      ? '<span class="badge badge-pago">PAGO</span>'
-      : '<span class="badge badge-pendente">Pendente</span>';
+    // Values
+    var valorPago = esc(r.valor_pago || '—');
+    var valorRestante = esc(r.valor_restante || '');
 
-    var badgeUrg = '';
-    if (urgencia.toLowerCase().indexOf('sim') > -1) {
-      badgeUrg = '<span class="badge badge-sim">Urgente</span>';
-    } else if (urgencia.toLowerCase().indexOf('aguardando') > -1) {
-      badgeUrg = '<span class="badge badge-aguardando">Aguardando</span>';
-    } else {
-      badgeUrg = '<span class="badge badge-nao">—</span>';
-    }
+    // Initial for avatar
+    var initial = (r.nome || '?').charAt(0).toUpperCase();
 
-    var realIndex = r._rowIndex; // original row index from Apps Script
+    // Badges
+    var badges = '';
+    if (isPago) badges += '<span class="badge badge-pago">Pago</span>';
+    else badges += '<span class="badge badge-pendente">Pendente</span>';
+    if (isUrgente) badges += '<span class="badge badge-urgente">Urgente</span>';
 
-    return '<tr onclick="openEditModal(' + realIndex + ')" style="cursor:pointer;">' +
-      '<td><strong>' + nome + '</strong></td>' +
-      '<td>' + ra + '</td>' +
-      '<td>' + assessor + '</td>' +
-      '<td>' +
-        '<div class="horas-bar">' +
-          '<span>' + hFeitas + '/' + hContratadas + '</span>' +
-          '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div>' +
+    var rowIndex = r._rowIndex;
+
+    return '<div class="ext-card" onclick="openEditModal(' + rowIndex + ')">' +
+      '<div class="ext-card-main">' +
+        '<div class="ext-avatar ' + (isPago ? 'pago' : 'pendente') + '">' + initial + '</div>' +
+        '<div class="ext-info">' +
+          '<div class="ext-name">' + nome + '</div>' +
+          '<div class="ext-sub">' +
+            (ra ? '<span>RA: ' + ra + '</span>' : '') +
+            (assessor ? '<span>' + assessor + '</span>' : '') +
+            '<span>' + esc(hFeitas) + ' / ' + esc(hContratadas) + '</span>' +
+          '</div>' +
         '</div>' +
-      '</td>' +
-      '<td class="valor-destaque">' + valorPago + '</td>' +
-      '<td>' + badgePgto + '</td>' +
-      '<td>' + badgeUrg + '</td>' +
-      '<td><button class="btn-outline-sm" onclick="event.stopPropagation();openEditModal(' + realIndex + ')">✏️</button></td>' +
-    '</tr>';
+      '</div>' +
+      '<div class="ext-card-right">' +
+        '<div class="ext-hours">' +
+          '<div class="ext-hours-text">' + pct + '%</div>' +
+          '<div class="ext-hours-bar"><div class="ext-hours-fill ' + barClass + '" style="width:' + pct + '%"></div></div>' +
+        '</div>' +
+        '<div class="ext-valor">' + valorPago + '</div>' +
+        '<div class="ext-badges">' + badges + '</div>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
@@ -141,13 +159,15 @@ function applyFilters() {
       (pgto === 'PAGO' && (r.status_pgto || '').toUpperCase() === 'PAGO') ||
       (pgto === 'pendente' && (r.status_pgto || '').toUpperCase() !== 'PAGO');
 
+    var rUrg = (r.urgencia || '').toLowerCase();
     var matchUrg = !urg ||
-      (r.urgencia || '').toLowerCase().indexOf(urg.toLowerCase()) > -1;
+      (urg === 'sim' && (rUrg === 'sim' || rUrg === 'yes')) ||
+      (urg === 'aguardando' && rUrg.indexOf('aguardando') > -1);
 
     return matchQ && matchPgto && matchUrg;
   });
 
-  renderTable(filtered);
+  renderCards(filtered);
 }
 
 // ── Modal: Edit ──
@@ -155,7 +175,7 @@ function openEditModal(rowIndex) {
   var row = _extensoes.find(function (r) { return r._rowIndex === rowIndex; });
   if (!row) return;
 
-  document.getElementById('modal-ext-title').textContent = 'Editar — ' + (row.nome || 'Aluno');
+  document.getElementById('modal-ext-title').textContent = row.nome || 'Aluno';
   document.getElementById('ext-row-index').value = rowIndex;
   document.getElementById('ext-nome').value = row.nome || '';
   document.getElementById('ext-ra').value = row.ra || '';
@@ -179,7 +199,7 @@ function openEditModal(rowIndex) {
 
 // ── Modal: Add ──
 function openAddModal() {
-  document.getElementById('modal-ext-title').textContent = 'Novo Aluno de Extensão';
+  document.getElementById('modal-ext-title').textContent = 'Novo Aluno';
   document.getElementById('ext-row-index').value = '';
   document.getElementById('form-ext').reset();
   document.getElementById('ext-urgencia').value = 'Aguardando';
@@ -192,6 +212,10 @@ function openAddModal() {
 async function handleSave(e) {
   e.preventDefault();
   if (!API_URL) return alert('Configure a URL do Apps Script primeiro.');
+
+  var btn = document.querySelector('.btn-save');
+  btn.textContent = 'Salvando...';
+  btn.disabled = true;
 
   var rowIndex = document.getElementById('ext-row-index').value;
   var rowData = {
@@ -232,6 +256,9 @@ async function handleSave(e) {
   } catch (err) {
     console.error('Erro ao salvar:', err);
     alert('Erro de conexão ao salvar.');
+  } finally {
+    btn.textContent = '💾 Salvar';
+    btn.disabled = false;
   }
 }
 
@@ -239,7 +266,7 @@ async function handleSave(e) {
 async function handleDelete() {
   var rowIndex = document.getElementById('ext-row-index').value;
   if (!rowIndex) return;
-  if (!confirm('Remover este aluno da planilha? Essa ação não pode ser desfeita.')) return;
+  if (!confirm('Remover este aluno da planilha?')) return;
 
   try {
     var res = await fetch(API_URL, {
