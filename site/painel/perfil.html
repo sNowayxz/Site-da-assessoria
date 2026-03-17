@@ -280,6 +280,7 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/auth.js"></script>
@@ -370,17 +371,39 @@
       document.getElementById('btn-enable-2fa').addEventListener('click', async function() {
         try {
           var { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp' });
+          console.log('[2fa] enroll response:', data, error);
           if (error) throw error;
 
           window._2faFactorId = data.id;
           document.getElementById('2fa-enroll').style.display = 'none';
           document.getElementById('2fa-qr').style.display = 'block';
 
-          // Show QR code
           var qrDiv = document.getElementById('2fa-qr-image');
-          qrDiv.innerHTML = '<img src="' + data.totp.qr_code + '" alt="QR Code" style="max-width:200px;">';
+
+          // Usar biblioteca QRCode para gerar imagem a partir do URI TOTP
+          if (data.totp && data.totp.uri) {
+            var canvas = document.createElement('canvas');
+            qrDiv.innerHTML = '';
+            qrDiv.appendChild(canvas);
+            QRCode.toCanvas(canvas, data.totp.uri, { width: 200, margin: 2 }, function(err) {
+              if (err) {
+                console.error('[2fa] QRCode canvas error:', err);
+                // Fallback: tentar img src
+                qrDiv.innerHTML = '<img src="' + (data.totp.qr_code || '') + '" alt="QR Code" style="max-width:200px;">';
+              }
+            });
+            // Mostrar secret como texto para entrada manual
+            if (data.totp.secret) {
+              qrDiv.innerHTML += '<p style="font-size:0.75rem;color:var(--gray-400);margin-top:8px;word-break:break-all;">Chave manual: <strong style="letter-spacing:2px;user-select:all;">' + data.totp.secret + '</strong></p>';
+            }
+          } else if (data.totp && data.totp.qr_code) {
+            qrDiv.innerHTML = '<img src="' + data.totp.qr_code + '" alt="QR Code" style="max-width:200px;">';
+          } else {
+            qrDiv.innerHTML = '<p style="color:var(--danger);">Erro ao gerar QR Code. Verifique se o MFA esta habilitado no projeto Supabase.</p>';
+          }
         } catch(e) {
-          showToast('Erro: ' + e.message, 'error');
+          console.error('[2fa] enroll error:', e);
+          showToast('Erro ao ativar 2FA: ' + e.message, 'error');
         }
       });
 

@@ -26,6 +26,16 @@
 
       <div id="login-error" class="login-error"></div>
 
+      <!-- 2FA Verification (hidden by default) -->
+      <div id="mfa-section" style="display:none;">
+        <p style="font-size:0.88rem;color:var(--gray-600);margin-bottom:16px;text-align:center;">Digite o código do seu app autenticador:</p>
+        <div class="form-group" style="text-align:center;">
+          <input type="text" id="mfa-code" maxlength="6" placeholder="000000" style="width:160px;text-align:center;font-size:1.4rem;letter-spacing:6px;padding:12px;border:2px solid var(--gray-200);border-radius:10px;margin:0 auto;" autocomplete="one-time-code">
+        </div>
+        <button type="button" id="btn-mfa-verify" class="btn-primary" style="width:100%;">Verificar Código</button>
+        <button type="button" id="btn-mfa-back" style="background:none;border:none;color:var(--gray-400);font-size:0.85rem;cursor:pointer;margin-top:8px;display:block;text-align:center;width:100%;">← Voltar ao login</button>
+      </div>
+
       <form id="form-login">
         <div class="form-group">
           <label for="email">E-mail</label>
@@ -46,6 +56,21 @@
 
         <button type="submit" class="btn-primary" id="btn-login">Entrar</button>
       </form>
+
+      <!-- Separador -->
+      <div style="display:flex;align-items:center;gap:12px;margin:16px 0 12px;">
+        <div style="flex:1;height:1px;background:var(--gray-200);"></div>
+        <span style="font-size:0.82rem;color:var(--gray-400);font-weight:500;">ou</span>
+        <div style="flex:1;height:1px;background:var(--gray-200);"></div>
+      </div>
+
+      <!-- Login sem senha (Magic Link) -->
+      <div id="magic-link-section">
+        <button type="button" id="btn-magic-link" class="btn-primary" style="background:var(--gray-900);width:100%;">
+          🔗 Entrar sem senha (link por e-mail)
+        </button>
+        <div id="magic-link-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.2);color:var(--gold);font-size:0.85rem;text-align:center;"></div>
+      </div>
 
       <div class="login-footer">
         <button type="button" id="btn-forgot" style="background:none;border:none;color:var(--gold);font-size:0.85rem;font-weight:600;cursor:pointer;margin-bottom:12px;">Esqueci minha senha</button>
@@ -87,10 +112,97 @@
         }
       });
 
+      // ─── Magic Link (login sem senha) ───
+      document.getElementById('btn-magic-link').addEventListener('click', async function() {
+        var email = document.getElementById('email').value.trim();
+        if (!email) {
+          alert('Digite seu e-mail no campo acima para receber o link de acesso.');
+          document.getElementById('email').focus();
+          return;
+        }
+
+        var btn = this;
+        var msgEl = document.getElementById('magic-link-msg');
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+
+        try {
+          var { error } = await sb.auth.signInWithOtp({
+            email: email,
+            options: {
+              emailRedirectTo: window.location.origin + '/painel/app.html'
+            }
+          });
+          if (error) throw error;
+
+          msgEl.style.display = 'block';
+          msgEl.style.background = 'rgba(34,197,94,0.08)';
+          msgEl.style.borderColor = 'rgba(34,197,94,0.2)';
+          msgEl.style.color = '#16a34a';
+          msgEl.innerHTML = '✅ Link de acesso enviado para <strong>' + email + '</strong>.<br>Verifique seu e-mail e clique no link para entrar.';
+        } catch(err) {
+          msgEl.style.display = 'block';
+          msgEl.style.background = 'rgba(239,68,68,0.08)';
+          msgEl.style.borderColor = 'rgba(239,68,68,0.2)';
+          msgEl.style.color = '#ef4444';
+          msgEl.textContent = 'Erro: ' + err.message;
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '🔗 Entrar sem senha (link por e-mail)';
+        }
+      });
+
       // Carregar preferência salva
       var rememberBox = document.getElementById('remember-me');
       var savedRemember = localStorage.getItem('remember-me');
       if (savedRemember === 'false') rememberBox.checked = false;
+
+      // ─── MFA Verification ───
+      var mfaSection = document.getElementById('mfa-section');
+
+      document.getElementById('btn-mfa-back').addEventListener('click', function() {
+        mfaSection.style.display = 'none';
+        form.style.display = 'block';
+        document.getElementById('magic-link-section').style.display = 'block';
+        errorEl.classList.remove('show');
+      });
+
+      document.getElementById('btn-mfa-verify').addEventListener('click', async function() {
+        var code = document.getElementById('mfa-code').value.trim();
+        if (code.length !== 6) { errorEl.textContent = 'Digite o código de 6 dígitos.'; errorEl.classList.add('show'); return; }
+
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Verificando...';
+        errorEl.classList.remove('show');
+
+        try {
+          var { data: factors } = await sb.auth.mfa.listFactors();
+          var totpFactor = (factors.totp || []).find(function(f) { return f.status === 'verified'; });
+          if (!totpFactor) throw new Error('Fator TOTP não encontrado');
+
+          var { data: challenge, error: chErr } = await sb.auth.mfa.challenge({ factorId: totpFactor.id });
+          if (chErr) throw chErr;
+
+          var { error: vErr } = await sb.auth.mfa.verify({ factorId: totpFactor.id, challengeId: challenge.id, code: code });
+          if (vErr) throw vErr;
+
+          window.location.href = '/painel/app.html';
+        } catch(err) {
+          errorEl.textContent = 'Código inválido. Tente novamente.';
+          errorEl.classList.add('show');
+          btn.disabled = false;
+          btn.textContent = 'Verificar Código';
+        }
+      });
+
+      // Enter key on MFA input
+      document.getElementById('mfa-code').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('btn-mfa-verify').click();
+        }
+      });
 
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -106,13 +218,27 @@
           // Salvar preferência
           localStorage.setItem('remember-me', remember ? 'true' : 'false');
 
-          await handleLogin(email, password);
+          var loginResult = await handleLogin(email, password);
 
           // Se NÃO quer manter, mover sessão para sessionStorage
           if (!remember) {
             sessionStorage.setItem('supabase-no-persist', 'true');
           } else {
             sessionStorage.removeItem('supabase-no-persist');
+          }
+
+          // Verificar se precisa de MFA
+          var { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+          if (aalData && aalData.nextLevel === 'aal2' && aalData.currentLevel === 'aal1') {
+            // Precisa verificar 2FA
+            form.style.display = 'none';
+            document.getElementById('magic-link-section').style.display = 'none';
+            mfaSection.style.display = 'block';
+            document.getElementById('mfa-code').value = '';
+            document.getElementById('mfa-code').focus();
+            btnLogin.disabled = false;
+            btnLogin.textContent = 'Entrar';
+            return;
           }
 
           window.location.href = '/painel/app.html';
