@@ -227,27 +227,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function generateQRCodes() {
     if (qrGenerated) return;
-    if (typeof QRCode === 'undefined') { drawFallbackQR('qr1'); drawFallbackQR('qr2'); return; }
+    if (typeof QRCode === 'undefined') { drawFallbackQR('qr1'); return; }
 
     try {
-      var qr1Container = document.getElementById('qr1').parentElement;
-      var qr2Container = document.getElementById('qr2').parentElement;
+      var qr1Container = document.getElementById('qr1');
+      if (!qr1Container) return;
+      qr1Container = qr1Container.parentElement;
       qr1Container.innerHTML = '<div id="qr1-code"></div>';
-      qr2Container.innerHTML = '<div id="qr2-code"></div>';
 
       var opts = { width: 136, height: 136, colorDark: '#1a1a2e', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.L };
 
       new QRCode(document.getElementById('qr1-code'), Object.assign({}, opts, {
         text: 'https://wa.me/5543999066267'
       }));
-      new QRCode(document.getElementById('qr2-code'), Object.assign({}, opts, {
-        text: 'https://wa.me/5518981591286'
-      }));
       qrGenerated = true;
     } catch (e) {
       console.warn('QR fallback:', e);
       drawFallbackQR('qr1');
-      drawFallbackQR('qr2');
     }
   }
 

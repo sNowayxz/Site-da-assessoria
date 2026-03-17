@@ -139,6 +139,14 @@ a { text-decoration: none; color: inherit; }
 }
 .navbar-links a:hover { color: var(--white); }
 .navbar-links a.active { color: var(--gold); }
+.navbar-links a.nav-highlight {
+  color: var(--gold-light);
+  font-weight: 600;
+  background: rgba(240, 192, 48, 0.08);
+  border-radius: 8px;
+  padding: 8px 16px;
+}
+.navbar-links a.nav-highlight:hover { color: var(--gold); background: rgba(240, 192, 48, 0.15); }
 
 .navbar-cta {
   display: inline-flex;
@@ -391,16 +399,17 @@ a { text-decoration: none; color: inherit; }
 
 .servico-badge {
   position: absolute;
-  top: 16px;
-  right: -32px;
+  top: 12px;
+  right: 12px;
   background: var(--gold);
   color: var(--dark);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 4px 40px;
-  transform: rotate(45deg);
+  padding: 5px 14px;
+  border-radius: 20px;
+  z-index: 1;
 }
 .servico-icon { font-size: 2rem; margin-bottom: 16px; }
 .servico-card h3 {
