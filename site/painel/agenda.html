@@ -27,16 +27,62 @@
     .cal-event.vencimento { background: rgba(239,68,68,0.12); color: #dc2626; }
     .cal-event.atividade { background: rgba(59,130,246,0.12); color: #2563eb; }
     .cal-event.entrega { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .cal-event.manual { background: rgba(139,92,246,0.12); color: #7c3aed; }
+
+    .calendar-day:not(.other-month) { cursor: pointer; }
+
+    /* Filters */
+    .agenda-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .filter-btn {
+      padding: 6px 14px; border: 2px solid var(--gray-200); border-radius: 20px;
+      background: var(--white); font-size: 0.78rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; font-family: inherit; display: flex; align-items: center; gap: 6px;
+    }
+    .filter-btn .filter-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .filter-btn.active { background: var(--gray-100); border-color: var(--gray-400); }
+    .filter-btn:not(.active) { opacity: 0.5; }
+
+    /* Day detail modal */
+    .day-event-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--gray-100); }
+    .day-event-item:last-child { border-bottom: none; }
+    .day-event-time { font-size: 0.78rem; color: var(--gray-400); min-width: 45px; font-weight: 600; }
+    .day-event-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
+    .day-event-info { flex: 1; }
+    .day-event-title { font-weight: 600; font-size: 0.9rem; color: var(--dark); }
+    .day-event-desc { font-size: 0.8rem; color: var(--gray-400); margin-top: 2px; }
+    .btn-delete-event { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1rem; padding: 4px 8px; opacity: 0.5; transition: opacity 0.2s; border-radius: 4px; }
+    .btn-delete-event:hover { opacity: 1; background: rgba(239,68,68,0.08); }
+    .day-empty { text-align: center; padding: 24px; color: var(--gray-400); font-size: 0.9rem; }
+
+    /* Form rows */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--gray-500); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px 12px; border: 2px solid var(--gray-200); border-radius: 8px;
+      font-size: 0.9rem; font-family: inherit; background: var(--white); color: var(--dark);
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none; border-color: var(--gold);
+    }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--gray-100); }
+    .btn-cancel { padding: 10px 20px; border: 2px solid var(--gray-200); border-radius: 8px; background: var(--white); color: var(--gray-600); font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-save { padding: 10px 20px; border: none; border-radius: 8px; background: var(--gold); color: var(--dark); font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-save:hover { filter: brightness(1.1); }
 
     [data-theme="dark"] .calendar-grid { background: #30363d; }
     [data-theme="dark"] .calendar-day { background: #1c2128; }
     [data-theme="dark"] .calendar-day:hover { background: rgba(240,192,48,0.05); }
     [data-theme="dark"] .calendar-day.today { background: rgba(240,192,48,0.08); }
     [data-theme="dark"] .calendar-day .day-num { color: #e6edf3; }
+    [data-theme="dark"] .cal-event.manual { background: rgba(139,92,246,0.15); color: #a78bfa; }
+    [data-theme="dark"] .form-group input, [data-theme="dark"] .form-group select, [data-theme="dark"] .form-group textarea { background: #1c2128; color: #e6edf3; border-color: #30363d; }
 
     @media (max-width: 768px) {
       .calendar-day { min-height: 60px; padding: 4px; }
       .cal-event { font-size: 0.6rem; }
+      .form-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -49,69 +95,88 @@
         <div class="sidebar-brand-text">Assessoria<br><small>Painel de Gestão</small></div>
       </div>
       <nav class="sidebar-nav">
-        <div class="sidebar-nav-label">Geral</div>
-        <a href="app.html" class="sidebar-link">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          Dashboard
-        </a>
-        <a href="agenda.html" class="sidebar-link active">
-          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
-          Agenda
-        </a>
-
-        <div class="sidebar-nav-label">Acad&ecirc;mico</div>
-        <a href="alunos.html" class="sidebar-link">
-          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Alunos
-        </a>
-        <div class="sidebar-sub">
-          <a href="importar.html" class="sidebar-link">
-            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Importar
+        <div class="sidebar-nav-label" data-category="geral" data-always-open="true">Geral</div>
+        <div class="sidebar-category-links">
+          <a href="app.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
+          </a>
+          <a href="agenda.html" class="sidebar-link active">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
+            Agenda
           </a>
         </div>
-        <a href="atividades.html" class="sidebar-link">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Atividades
-        </a>
-        <a href="modulos.html" class="sidebar-link">
-          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          M&oacute;dulos
-        </a>
-        <a href="extensoes.html" class="sidebar-link">
-          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="12" y2="14"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
-          Extens&otilde;es
-        </a>
 
-        <div class="sidebar-nav-label">Financeiro</div>
-        <a href="financeiro.html" class="sidebar-link">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <div class="sidebar-nav-label" data-category="academico">
+          Acad&ecirc;mico
+          <svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="sidebar-category-links">
+          <a href="alunos.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Alunos
+          </a>
+          <div class="sidebar-sub">
+            <a href="importar.html" class="sidebar-link">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Importar
+            </a>
+          </div>
+          <a href="atividades.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Atividades
+          </a>
+          <a href="modulos.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            M&oacute;dulos
+          </a>
+          <a href="extensoes.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="12" y2="14"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
+            Extens&otilde;es
+          </a>
+        </div>
+
+        <div class="sidebar-nav-label" data-category="financeiro">
           Financeiro
-        </a>
-        <a href="pedidos.html" class="sidebar-link">
-          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          Pedidos
-        </a>
-        <a href="relatorios.html" class="sidebar-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-          Relat&oacute;rios
-        </a>
+          <svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="sidebar-category-links">
+          <a href="financeiro.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Financeiro
+          </a>
+          <a href="pedidos.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            Pedidos
+          </a>
+          <a href="relatorios.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            Relat&oacute;rios
+          </a>
+        </div>
 
-        <div class="sidebar-nav-label">Ferramentas</div>
-        <a href="rastreio.html" class="sidebar-link">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Rastreio
-        </a>
+        <div class="sidebar-nav-label" data-category="ferramentas">
+          Ferramentas
+          <svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="sidebar-category-links">
+          <a href="rastreio.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Rastreio
+          </a>
+        </div>
 
-        <div class="sidebar-nav-label">Sistema</div>
-        <a href="perfil.html" class="sidebar-link">
-          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Perfil
-        </a>
-        <button class="sidebar-link" id="btn-logout">
-          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Sair
-        </button>
+        <div class="sidebar-nav-label" data-category="sistema" data-always-open="true">Sistema</div>
+        <div class="sidebar-category-links">
+          <a href="perfil.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Perfil
+          </a>
+          <button class="sidebar-link" id="btn-logout">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sair
+          </button>
+        </div>
       </nav>
       <div class="sidebar-user">
         <div class="sidebar-avatar" id="user-avatar">A</div>
@@ -127,23 +192,100 @@
           <h1>Agenda</h1>
         </div>
         <div class="topbar-actions">
+          <button class="btn btn-gold" id="btn-novo-evento">+ Novo Evento</button>
           <button class="theme-toggle" id="btn-theme" title="Alternar tema">🌙</button>
         </div>
       </div>
 
       <div class="calendar-header">
         <div class="calendar-nav">
-          <button id="btn-prev-month">← Anterior</button>
+          <button id="btn-prev-month">&larr; Anterior</button>
           <button id="btn-today" style="background:var(--gold);color:var(--dark);border-color:var(--gold);">Hoje</button>
-          <button id="btn-next-month">Próximo →</button>
+          <button id="btn-next-month">Pr&oacute;ximo &rarr;</button>
         </div>
-        <h2 id="calendar-title">Março 2026</h2>
+        <h2 id="calendar-title"></h2>
       </div>
 
-      <div class="calendar-grid" id="calendar-grid">
-        <!-- Filled by JS -->
+      <!-- Filters -->
+      <div class="agenda-filters" id="agenda-filters">
+        <span style="font-size:0.82rem;font-weight:600;color:var(--gray-500);">Filtrar:</span>
+        <button class="filter-btn active" data-filter="vencimento"><span class="filter-dot" style="background:#dc2626;"></span> Vencimento</button>
+        <button class="filter-btn active" data-filter="atividade"><span class="filter-dot" style="background:#2563eb;"></span> Atividade</button>
+        <button class="filter-btn active" data-filter="entrega"><span class="filter-dot" style="background:#16a34a;"></span> Entrega</button>
+        <button class="filter-btn active" data-filter="manual"><span class="filter-dot" style="background:#8b5cf6;"></span> Evento Manual</button>
       </div>
+
+      <div class="calendar-grid" id="calendar-grid"></div>
     </main>
+  </div>
+
+  <!-- MODAL: Novo Evento -->
+  <div class="modal-overlay" id="modal-novo-evento">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-header">
+        <h3 id="modal-evento-title">Novo Evento</h3>
+        <button class="modal-close" onclick="closeModal('modal-novo-evento')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>T&iacute;tulo</label>
+          <input type="text" id="evento-titulo" placeholder="T&iacute;tulo do evento">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="evento-data">
+          </div>
+          <div class="form-group">
+            <label>Hora (opcional)</label>
+            <input type="time" id="evento-hora">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo</label>
+            <select id="evento-tipo">
+              <option value="evento">Evento</option>
+              <option value="lembrete">Lembrete</option>
+              <option value="reuniao">Reuni&atilde;o</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cor</label>
+            <select id="evento-cor">
+              <option value="#8b5cf6">Roxo (padr&atilde;o)</option>
+              <option value="#dc2626">Vermelho</option>
+              <option value="#2563eb">Azul</option>
+              <option value="#16a34a">Verde</option>
+              <option value="#f59e0b">Amarelo</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descri&ccedil;&atilde;o (opcional)</label>
+          <textarea id="evento-descricao" rows="3" placeholder="Detalhes do evento..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('modal-novo-evento')">Cancelar</button>
+        <button class="btn-save" id="btn-salvar-evento">Salvar Evento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Detalhes do Dia -->
+  <div class="modal-overlay" id="modal-dia">
+    <div class="modal" style="max-width:560px;">
+      <div class="modal-header">
+        <h3 id="modal-dia-title">Eventos</h3>
+        <button class="modal-close" onclick="closeModal('modal-dia')">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-dia-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-gold" id="btn-add-evento-dia">+ Adicionar Evento</button>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -154,11 +296,20 @@
     document.getElementById('mobile-toggle').addEventListener('click', function () { document.getElementById('sidebar').classList.toggle('open'); });
     document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });
 
-    var currentYear, currentMonth;
+    var currentYear, currentMonth, currentUserId = null;
+    var allEvents = {};
+    var activeFilters = ['vencimento', 'atividade', 'entrega', 'manual'];
+    var MESES = ['Janeiro','Fevereiro','Mar\u00e7o','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
+    // ── Modal helpers ──
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    // ── Init ──
     document.addEventListener('DOMContentLoaded', async function () {
       var user = await requireAuth();
       if (!user) return;
+      currentUserId = user.id;
       document.getElementById('user-name').textContent = getUserName(user);
       document.getElementById('user-avatar').textContent = getUserName(user).charAt(0).toUpperCase();
       document.getElementById('btn-logout').addEventListener('click', handleLogout);
@@ -167,6 +318,7 @@
       currentYear = now.getFullYear();
       currentMonth = now.getMonth();
 
+      // Navigation
       document.getElementById('btn-prev-month').addEventListener('click', function () {
         currentMonth--;
         if (currentMonth < 0) { currentMonth = 11; currentYear--; }
@@ -178,20 +330,54 @@
         renderCalendar();
       });
       document.getElementById('btn-today').addEventListener('click', function () {
-        var now = new Date();
-        currentYear = now.getFullYear();
-        currentMonth = now.getMonth();
+        var n = new Date(); currentYear = n.getFullYear(); currentMonth = n.getMonth();
         renderCalendar();
+      });
+
+      // Filters
+      document.querySelectorAll('.filter-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          btn.classList.toggle('active');
+          activeFilters = [];
+          document.querySelectorAll('.filter-btn.active').forEach(function (b) {
+            activeFilters.push(b.getAttribute('data-filter'));
+          });
+          renderCalendar();
+        });
+      });
+
+      // New event modal
+      document.getElementById('btn-novo-evento').addEventListener('click', function () {
+        resetEventForm();
+        openModal('modal-novo-evento');
+      });
+      document.getElementById('btn-salvar-evento').addEventListener('click', saveEvento);
+
+      // Day modal: add event button
+      document.getElementById('btn-add-evento-dia').addEventListener('click', function () {
+        var dateStr = document.getElementById('modal-dia').getAttribute('data-date');
+        closeModal('modal-dia');
+        resetEventForm();
+        if (dateStr) document.getElementById('evento-data').value = dateStr;
+        openModal('modal-novo-evento');
       });
 
       await renderCalendar();
     });
 
-    async function renderCalendar() {
-      var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-      document.getElementById('calendar-title').textContent = meses[currentMonth] + ' ' + currentYear;
+    function resetEventForm() {
+      document.getElementById('evento-titulo').value = '';
+      document.getElementById('evento-data').value = '';
+      document.getElementById('evento-hora').value = '';
+      document.getElementById('evento-tipo').value = 'evento';
+      document.getElementById('evento-cor').value = '#8b5cf6';
+      document.getElementById('evento-descricao').value = '';
+    }
 
-      // Fetch events for the month
+    // ── Render Calendar ──
+    async function renderCalendar() {
+      document.getElementById('calendar-title').textContent = MESES[currentMonth] + ' ' + currentYear;
+
       var firstDay = new Date(currentYear, currentMonth, 1);
       var lastDay = new Date(currentYear, currentMonth + 1, 0);
       var startStr = firstDay.toISOString().slice(0, 10);
@@ -199,36 +385,46 @@
 
       var events = {};
       try {
-        // Payment due dates
+        // Payments
         var { data: pagamentos } = await sb.from('pagamentos').select('dt_vencimento, alunos(nome), status, valor').gte('dt_vencimento', startStr).lte('dt_vencimento', endStr);
         (pagamentos || []).forEach(function (p) {
           var dt = p.dt_vencimento;
           if (!events[dt]) events[dt] = [];
-          events[dt].push({ type: 'vencimento', text: (p.alunos?.nome || 'Pgto') + ' R$' + (Number(p.valor)||0).toFixed(0) });
+          events[dt].push({ type: 'vencimento', text: (p.alunos?.nome || 'Pgto') + ' R$' + (Number(p.valor)||0).toFixed(0), descricao: 'Vencimento: R$' + (Number(p.valor)||0).toFixed(2) + (p.status ? ' (' + p.status + ')' : '') });
         });
 
-        // Activity deadlines (dt_entrega)
+        // Activities
         var { data: atividades } = await sb.from('atividades').select('dt_entrega, descricao, tipo, alunos(nome)').not('dt_entrega', 'is', null).gte('dt_entrega', startStr).lte('dt_entrega', endStr);
         (atividades || []).forEach(function (a) {
           var dt = a.dt_entrega;
           if (!events[dt]) events[dt] = [];
-          events[dt].push({ type: 'entrega', text: (a.alunos?.nome || '') + ' ' + (a.descricao || a.tipo) });
+          events[dt].push({ type: 'entrega', text: (a.alunos?.nome || '') + ' ' + (a.descricao || a.tipo), descricao: a.descricao || a.tipo });
         });
 
-        // Studeo sync deadlines
+        // Studeo sync
         var { data: syncs } = await sb.from('studeo_sync').select('data_final, atividade, disciplina, respondida').eq('respondida', false).gte('data_final', startStr + 'T00:00:00').lte('data_final', endStr + 'T23:59:59');
         (syncs || []).forEach(function (s) {
           var dt = s.data_final ? s.data_final.slice(0, 10) : null;
           if (!dt) return;
           if (!events[dt]) events[dt] = [];
-          events[dt].push({ type: 'atividade', text: s.atividade });
+          events[dt].push({ type: 'atividade', text: s.atividade, descricao: s.disciplina || '' });
+        });
+
+        // Manual events
+        var { data: manuais } = await sb.from('eventos_agenda').select('*').gte('data', startStr).lte('data', endStr);
+        (manuais || []).forEach(function (m) {
+          var dt = m.data;
+          if (!events[dt]) events[dt] = [];
+          events[dt].push({ type: 'manual', text: m.titulo, id: m.id, hora: m.hora, descricao: m.descricao || '', cor: m.cor, tipo_evento: m.tipo, deletable: true });
         });
       } catch (e) { console.warn('Calendar error:', e); }
 
-      // Build calendar grid
+      allEvents = events;
+
+      // Build grid
       var grid = document.getElementById('calendar-grid');
       var html = '';
-      var dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+      var dias = ['Dom','Seg','Ter','Qua','Qui','Sex','S\u00e1b'];
       dias.forEach(function (d) { html += '<div class="calendar-day-header">' + d + '</div>'; });
 
       var startDow = firstDay.getDay();
@@ -237,28 +433,28 @@
       var today = new Date();
       var todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
 
-      // Previous month days
+      // Previous month
       for (var i = startDow - 1; i >= 0; i--) {
-        var d = prevMonth.getDate() - i;
-        html += '<div class="calendar-day other-month"><div class="day-num">' + d + '</div></div>';
+        html += '<div class="calendar-day other-month"><div class="day-num">' + (prevMonth.getDate() - i) + '</div></div>';
       }
 
-      // Current month days
+      // Current month
       for (var d = 1; d <= daysInMonth; d++) {
         var dateStr = currentYear + '-' + String(currentMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
         var isToday = dateStr === todayStr;
-        var dayEvents = events[dateStr] || [];
+        var dayEvents = (events[dateStr] || []).filter(function (ev) { return activeFilters.indexOf(ev.type) !== -1; });
 
-        html += '<div class="calendar-day' + (isToday ? ' today' : '') + '">';
+        html += '<div class="calendar-day' + (isToday ? ' today' : '') + '" data-date="' + dateStr + '">';
         html += '<div class="day-num">' + d + '</div>';
         dayEvents.slice(0, 3).forEach(function (ev) {
-          html += '<div class="cal-event ' + ev.type + '" title="' + ev.text.replace(/"/g, '&quot;') + '">' + ev.text + '</div>';
+          var style = ev.cor && ev.type === 'manual' ? ' style="background:' + ev.cor + '20;color:' + ev.cor + ';"' : '';
+          html += '<div class="cal-event ' + ev.type + '"' + style + ' title="' + ev.text.replace(/"/g, '&quot;') + '">' + ev.text + '</div>';
         });
         if (dayEvents.length > 3) html += '<div style="font-size:0.65rem;color:var(--gray-400);">+' + (dayEvents.length - 3) + ' mais</div>';
         html += '</div>';
       }
 
-      // Next month days
+      // Next month
       var totalCells = startDow + daysInMonth;
       var remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
       for (var d = 1; d <= remaining; d++) {
@@ -266,6 +462,98 @@
       }
 
       grid.innerHTML = html;
+
+      // Day click handlers
+      grid.querySelectorAll('.calendar-day:not(.other-month)').forEach(function (cell) {
+        cell.addEventListener('click', function () {
+          var ds = cell.getAttribute('data-date');
+          if (ds) openDayDetail(ds);
+        });
+      });
+    }
+
+    // ── Day Detail Modal ──
+    function openDayDetail(dateStr) {
+      var parts = dateStr.split('-');
+      var formattedDate = parts[2] + '/' + parts[1] + '/' + parts[0];
+      document.getElementById('modal-dia-title').textContent = 'Eventos \u2014 ' + formattedDate;
+      document.getElementById('modal-dia').setAttribute('data-date', dateStr);
+
+      var dayEvents = (allEvents[dateStr] || []).filter(function (ev) { return activeFilters.indexOf(ev.type) !== -1; });
+      var body = document.getElementById('modal-dia-body');
+
+      if (!dayEvents.length) {
+        body.innerHTML = '<div class="day-empty">Nenhum evento neste dia.</div>';
+      } else {
+        var typeLabels = { vencimento: 'Vencimento', atividade: 'Atividade', entrega: 'Entrega', manual: 'Evento' };
+        var typeColors = { vencimento: '#dc2626', atividade: '#2563eb', entrega: '#16a34a', manual: '#8b5cf6' };
+
+        body.innerHTML = dayEvents.map(function (ev) {
+          var color = ev.cor || typeColors[ev.type] || '#8b5cf6';
+          var label = ev.tipo_evento || typeLabels[ev.type] || ev.type;
+          var hora = ev.hora ? ev.hora.slice(0, 5) : '';
+          var deleteBtn = ev.deletable ? '<button class="btn-delete-event" onclick="deleteEvento(\'' + ev.id + '\')" title="Excluir">&times;</button>' : '';
+
+          return '<div class="day-event-item">' +
+            '<div class="day-event-time">' + (hora || '--:--') + '</div>' +
+            '<div class="day-event-info">' +
+              '<div><span class="day-event-badge" style="background:' + color + '20;color:' + color + ';">' + label + '</span></div>' +
+              '<div class="day-event-title">' + ev.text + '</div>' +
+              (ev.descricao ? '<div class="day-event-desc">' + ev.descricao + '</div>' : '') +
+            '</div>' +
+            deleteBtn +
+          '</div>';
+        }).join('');
+      }
+
+      openModal('modal-dia');
+    }
+
+    // ── Save Event ──
+    async function saveEvento() {
+      var titulo = document.getElementById('evento-titulo').value.trim();
+      var data = document.getElementById('evento-data').value;
+      if (!titulo || !data) { showToast('Preencha t\u00edtulo e data.', 'warning'); return; }
+
+      var btn = document.getElementById('btn-salvar-evento');
+      btn.textContent = 'Salvando...'; btn.disabled = true;
+
+      try {
+        var { error } = await sb.from('eventos_agenda').insert({
+          titulo: titulo,
+          data: data,
+          hora: document.getElementById('evento-hora').value || null,
+          tipo: document.getElementById('evento-tipo').value,
+          descricao: document.getElementById('evento-descricao').value,
+          cor: document.getElementById('evento-cor').value,
+          user_id: currentUserId
+        });
+
+        if (error) throw error;
+        closeModal('modal-novo-evento');
+        showToast('Evento criado!', 'success');
+        await renderCalendar();
+      } catch (e) {
+        console.error('Erro ao salvar evento:', e);
+        showToast('Erro ao salvar: ' + (e.message || e), 'error');
+      } finally {
+        btn.textContent = 'Salvar Evento'; btn.disabled = false;
+      }
+    }
+
+    // ── Delete Event ──
+    async function deleteEvento(id) {
+      if (!confirm('Excluir este evento?')) return;
+      try {
+        var { error } = await sb.from('eventos_agenda').delete().eq('id', id);
+        if (error) throw error;
+        closeModal('modal-dia');
+        showToast('Evento exclu\u00eddo.', 'success');
+        await renderCalendar();
+      } catch (e) {
+        console.error('Erro ao excluir:', e);
+        showToast('Erro ao excluir: ' + (e.message || e), 'error');
+      }
     }
   </script>
 </body>

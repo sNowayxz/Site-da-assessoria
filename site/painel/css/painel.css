@@ -270,6 +270,49 @@ img { max-width: 100%; display: block; }
   stroke-linejoin: round;
 }
 
+/* Collapsible sidebar categories */
+.sidebar-nav-label[data-category] {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  transition: color 0.2s;
+}
+.sidebar-nav-label[data-category]:hover {
+  color: var(--gray-300);
+}
+.sidebar-nav-label[data-always-open="true"] {
+  cursor: default;
+}
+.sidebar-nav-label[data-always-open="true"]:hover {
+  color: var(--gray-400);
+}
+.sidebar-chevron {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+.sidebar-nav-label.collapsed .sidebar-chevron {
+  transform: rotate(-90deg);
+}
+.sidebar-category-links {
+  overflow: hidden;
+  max-height: 500px;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  opacity: 1;
+}
+.sidebar-category-links.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
 /* Sidebar sub-links (nested items) */
 .sidebar-sub {
   display: flex;

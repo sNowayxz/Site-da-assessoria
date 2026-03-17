@@ -348,6 +348,58 @@ function shortcutRow(key, desc) {
 }
 
 
+// ─── Collapsible Sidebar Categories ───
+document.addEventListener('DOMContentLoaded', function () {
+  var labels = document.querySelectorAll('.sidebar-nav-label[data-category]');
+  if (!labels.length) return;
+
+  var stored = [];
+  try { stored = JSON.parse(localStorage.getItem('sidebar-collapsed') || '[]'); } catch (e) {}
+
+  // Find which category contains the active link — auto-expand it
+  var activeLink = document.querySelector('.sidebar-category-links .sidebar-link.active');
+  var activeCategory = null;
+  if (activeLink) {
+    var wrapper = activeLink.closest('.sidebar-category-links');
+    if (wrapper && wrapper.previousElementSibling) {
+      activeCategory = wrapper.previousElementSibling.getAttribute('data-category');
+    }
+  }
+  if (activeCategory) {
+    stored = stored.filter(function (c) { return c !== activeCategory; });
+  }
+
+  labels.forEach(function (label) {
+    var cat = label.getAttribute('data-category');
+    var alwaysOpen = label.getAttribute('data-always-open') === 'true';
+    var linksDiv = label.nextElementSibling;
+
+    if (alwaysOpen || !linksDiv || !linksDiv.classList.contains('sidebar-category-links')) return;
+
+    // Apply initial collapsed state
+    if (stored.indexOf(cat) !== -1) {
+      label.classList.add('collapsed');
+      linksDiv.classList.add('collapsed');
+    }
+
+    // Toggle on click
+    label.addEventListener('click', function () {
+      var isCollapsed = label.classList.toggle('collapsed');
+      linksDiv.classList.toggle('collapsed');
+
+      var current = [];
+      try { current = JSON.parse(localStorage.getItem('sidebar-collapsed') || '[]'); } catch (e) {}
+      if (isCollapsed) {
+        if (current.indexOf(cat) === -1) current.push(cat);
+      } else {
+        current = current.filter(function (c) { return c !== cat; });
+      }
+      localStorage.setItem('sidebar-collapsed', JSON.stringify(current));
+    });
+  });
+});
+
+
 // ─── Pagination ───
 var ITEMS_PER_PAGE = 20;
 
