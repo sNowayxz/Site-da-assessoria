@@ -157,6 +157,7 @@ async function handleSavePagamento(e) {
       var { error } = await sb.from('pagamentos').insert(data);
       if (error) throw error;
     }
+    logAudit(editId ? 'update_pagamento' : 'create_pagamento', 'pagamentos', editId || 'new', { valor: data.valor, tipo: data.tipo });
     closeModal('modal-pagamento');
     await loadPagamentos();
   } catch (err) {
@@ -186,6 +187,7 @@ async function marcarPago(id) {
   var today = new Date().toISOString().split('T')[0];
   var { error } = await sb.from('pagamentos').update({ status: 'pago', dt_pagamento: today }).eq('id', id);
   if (error) { alert('Erro: ' + error.message); return; }
+  logAudit('mark_pago', 'pagamentos', id, {});
   await loadPagamentos();
 }
 
@@ -193,6 +195,7 @@ async function deletePagamento(id) {
   if (!confirm('Excluir este pagamento?')) return;
   var { error } = await sb.from('pagamentos').delete().eq('id', id);
   if (error) { alert('Erro: ' + error.message); return; }
+  logAudit('delete_pagamento', 'pagamentos', id, {});
   await loadPagamentos();
 }
 

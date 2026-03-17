@@ -1203,7 +1203,7 @@ tbody tr:last-child td {
   color: inherit;
 }
 .search-result-item:last-child { border-bottom: none; }
-.search-result-item:hover { background: var(--gold-glow); }
+.search-result-item:hover, .search-result-item.search-result-active { background: var(--gold-glow); }
 [data-theme="dark"] .search-result-item { border-bottom-color: #21262d; }
 .search-result-type {
   font-size: 0.68rem;

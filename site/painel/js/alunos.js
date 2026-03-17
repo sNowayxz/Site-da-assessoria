@@ -124,6 +124,7 @@ async function handleSaveAluno(e) {
     } else {
       await sb.from('alunos').insert(data);
     }
+    logAudit(currentEditId ? 'update_aluno' : 'create_aluno', 'alunos', currentEditId || 'new', { nome: data.nome, ra: data.ra });
     closeModal('modal-aluno');
     await loadAlunos();
   } catch (err) {
@@ -156,6 +157,7 @@ async function editAluno(id) {
 async function deleteAluno(id) {
   if (!confirm('Tem certeza que deseja excluir este aluno? As atividades vinculadas também serão excluídas.')) return;
   await sb.from('alunos').delete().eq('id', id);
+  logAudit('delete_aluno', 'alunos', id, {});
   await loadAlunos();
 }
 

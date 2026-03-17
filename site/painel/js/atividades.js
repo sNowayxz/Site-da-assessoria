@@ -158,6 +158,7 @@ async function handleSaveAtividade(e) {
       var { error } = await sb.from('atividades').insert(data);
       if (error) throw error;
     }
+    logAudit(currentEditAtivId ? 'update_atividade' : 'create_atividade', 'atividades', currentEditAtivId || 'new', { tipo: data.tipo, descricao: data.descricao });
     closeModal('modal-atividade');
     await loadAtividades();
   } catch (err) {
@@ -185,6 +186,7 @@ async function deleteAtividade(id) {
   if (!confirm('Tem certeza que deseja excluir esta atividade?')) return;
   var { error } = await sb.from('atividades').delete().eq('id', id);
   if (error) { alert('Erro: ' + error.message); return; }
+  logAudit('delete_atividade', 'atividades', id, {});
   await loadAtividades();
 }
 
@@ -199,6 +201,7 @@ async function cycleStatus(id, currentStatus) {
   var next = nextMap[currentStatus] || 'pendente';
   var { error } = await sb.from('atividades').update({ status: next }).eq('id', id);
   if (error) { alert('Erro: ' + error.message); return; }
+  logAudit('status_change', 'atividades', id, { from: currentStatus, to: next });
   await loadAtividades();
 }
 

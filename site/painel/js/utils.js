@@ -189,46 +189,79 @@ function initGlobalSearch() {
   if (!searchBox || !resultsBox) return;
 
   var debounce;
+  var _searchSelectedIdx = -1;
+
   searchBox.addEventListener('input', function () {
     clearTimeout(debounce);
+    _searchSelectedIdx = -1;
     var q = searchBox.value.trim();
     if (q.length < 2) { resultsBox.style.display = 'none'; return; }
     debounce = setTimeout(function () { doGlobalSearch(q, resultsBox); }, 300);
   });
 
   searchBox.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { resultsBox.style.display = 'none'; searchBox.blur(); }
+    if (e.key === 'Escape') { resultsBox.style.display = 'none'; searchBox.blur(); _searchSelectedIdx = -1; return; }
+
+    var items = resultsBox.querySelectorAll('.search-result-item');
+    if (!items.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      _searchSelectedIdx = Math.min(_searchSelectedIdx + 1, items.length - 1);
+      items.forEach(function (it, i) { it.classList.toggle('search-result-active', i === _searchSelectedIdx); });
+      items[_searchSelectedIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      _searchSelectedIdx = Math.max(_searchSelectedIdx - 1, 0);
+      items.forEach(function (it, i) { it.classList.toggle('search-result-active', i === _searchSelectedIdx); });
+      items[_searchSelectedIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (_searchSelectedIdx >= 0 && items[_searchSelectedIdx]) {
+        window.location.href = items[_searchSelectedIdx].getAttribute('href');
+      } else if (items[0]) {
+        window.location.href = items[0].getAttribute('href');
+      }
+    }
   });
 
   document.addEventListener('click', function (e) {
     if (!searchBox.contains(e.target) && !resultsBox.contains(e.target)) {
       resultsBox.style.display = 'none';
+      _searchSelectedIdx = -1;
     }
   });
 }
 
 async function doGlobalSearch(q, resultsBox) {
   if (!window.sb) return;
-  var lower = q.toLowerCase();
   var results = [];
 
   try {
-    var { data: alunos } = await sb.from('alunos').select('id, nome, ra, curso').ilike('nome', '%' + q + '%').limit(5);
-    (alunos || []).forEach(function (a) {
+    // Run all searches in parallel
+    var searches = [
+      sb.from('alunos').select('id, nome, ra, curso').or('nome.ilike.%' + q + '%,ra.ilike.%' + q + '%,curso.ilike.%' + q + '%').limit(5),
+      sb.from('atividades').select('id, descricao, tipo, status, alunos(nome)').or('descricao.ilike.%' + q + '%,tipo.ilike.%' + q + '%').limit(5),
+      sb.from('modulos').select('id, nome, codigo').or('nome.ilike.%' + q + '%,codigo.ilike.%' + q + '%').limit(3)
+    ];
+
+    var responses = await Promise.all(searches);
+
+    // Alunos
+    (responses[0].data || []).forEach(function (a) {
       results.push({ type: 'Aluno', name: a.nome, detail: a.ra + ' — ' + (a.curso || ''), url: 'alunos.html' });
     });
 
-    if (!alunos || !alunos.length) {
-      var { data: alunosRa } = await sb.from('alunos').select('id, nome, ra, curso').ilike('ra', '%' + q + '%').limit(5);
-      (alunosRa || []).forEach(function (a) {
-        results.push({ type: 'Aluno', name: a.nome, detail: a.ra + ' — ' + (a.curso || ''), url: 'alunos.html' });
-      });
-    }
-
-    var { data: ativs } = await sb.from('atividades').select('id, descricao, tipo, status, alunos(nome)').ilike('descricao', '%' + q + '%').limit(5);
-    (ativs || []).forEach(function (a) {
+    // Atividades
+    (responses[1].data || []).forEach(function (a) {
       var alunoNome = a.alunos ? a.alunos.nome : '';
-      results.push({ type: 'Atividade', name: a.descricao || a.tipo, detail: alunoNome + ' — ' + (a.status || ''), url: 'atividades.html' });
+      var statusMap = { pendente: 'Pendente', em_andamento: 'Em Andamento', entregue: 'Entregue', revisao: 'Revisao' };
+      results.push({ type: 'Atividade', name: a.descricao || a.tipo, detail: alunoNome + ' — ' + (statusMap[a.status] || a.status), url: 'atividades.html' });
+    });
+
+    // Modulos
+    (responses[2].data || []).forEach(function (m) {
+      results.push({ type: 'Modulo', name: m.nome, detail: m.codigo || '', url: 'modulos.html' });
     });
   } catch (e) {
     console.warn('[search]', e.message);
@@ -442,8 +475,8 @@ document.addEventListener('DOMContentLoaded', function () {
 // ─── Role-Based Sidebar Permissions ───
 
 var PAGE_ACCESS = {
-  admin: ['app', 'agenda', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'perfil'],
-  assessor: ['app', 'agenda', 'alunos', 'atividades', 'extensoes', 'perfil'],
+  admin: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil'],
+  assessor: ['app', 'agenda', 'chat', 'alunos', 'atividades', 'extensoes', 'kanban', 'perfil'],
   visualizador: ['app', 'agenda', 'perfil']
 };
 
@@ -533,4 +566,136 @@ function renderPagination(containerId, totalItems, currentPage, onPageChange) {
   html += '<span class="page-info">' + totalItems + ' registros</span>';
   html += '</div>';
   container.innerHTML = html;
+}
+
+
+// ─── Audit Log Helper ───
+function logAudit(action, tableName, recordId, details) {
+  try {
+    var user = window._cachedUser || null;
+    var entry = {
+      action: action,
+      table_name: tableName,
+      record_id: recordId || null,
+      details: details || {}
+    };
+    if (user) {
+      entry.user_id = user.id;
+      entry.user_email = user.email || '';
+    }
+    // Fire-and-forget: don't await, don't block
+    sb.from('audit_log').insert(entry).then(function () {}).catch(function (e) {
+      console.warn('[audit] Erro ao registrar:', e.message);
+    });
+  } catch (e) {
+    console.warn('[audit] logAudit error:', e.message);
+  }
+}
+
+
+// ─── Filter Persistence ───
+function saveFilterState(pageKey, filters) {
+  try {
+    localStorage.setItem('filters-' + pageKey, JSON.stringify(filters));
+  } catch (e) {}
+}
+
+function loadFilterState(pageKey) {
+  try {
+    var saved = localStorage.getItem('filters-' + pageKey);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  return null;
+}
+
+
+// ─── Excel Export (via SheetJS) ───
+function loadXLSX(callback) {
+  if (window.XLSX) { callback(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js';
+  s.onload = callback;
+  s.onerror = function () { showToast('Erro ao carregar biblioteca Excel', 'error'); };
+  document.head.appendChild(s);
+}
+
+function exportTableToExcel(tableId, filename) {
+  loadXLSX(function () {
+    var table = document.querySelector('#' + tableId);
+    if (!table) table = document.querySelector('.table-wrap table');
+    if (!table) { showToast('Nenhuma tabela encontrada', 'error'); return; }
+    var wb = XLSX.utils.table_to_book(table, { sheet: 'Dados' });
+    XLSX.writeFile(wb, (filename || 'relatorio') + '.xlsx');
+    showToast('Excel exportado com sucesso!', 'success');
+  });
+}
+
+// Export report with charts as images in PDF
+function exportReportToPDF(title, filename, chartCanvasIds) {
+  loadJsPDF(function () {
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF('l', 'mm', 'a4');
+
+    // Header
+    doc.setFontSize(18);
+    doc.setTextColor(26, 26, 46);
+    doc.text(title || 'Relatorio', 14, 20);
+    doc.setFontSize(10);
+    doc.setTextColor(136, 146, 164);
+    doc.text('Assessoria Academica — Gerado em ' + new Date().toLocaleDateString('pt-BR') + ' as ' + new Date().toLocaleTimeString('pt-BR'), 14, 28);
+
+    var yPos = 36;
+
+    // Add chart images
+    if (chartCanvasIds && chartCanvasIds.length) {
+      chartCanvasIds.forEach(function (canvasId) {
+        var canvas = document.getElementById(canvasId);
+        if (canvas) {
+          try {
+            var imgData = canvas.toDataURL('image/png');
+            var pageW = doc.internal.pageSize.getWidth();
+            var imgW = (pageW - 28) / 2;
+            var imgH = imgW * 0.6;
+            if (yPos + imgH > doc.internal.pageSize.getHeight() - 20) {
+              doc.addPage();
+              yPos = 20;
+            }
+            doc.addImage(imgData, 'PNG', 14, yPos, imgW, imgH);
+            yPos += imgH + 10;
+          } catch (e) {
+            console.warn('[pdf] Erro ao adicionar grafico:', e.message);
+          }
+        }
+      });
+    }
+
+    // Add tables
+    var tables = document.querySelectorAll('.table-wrap table');
+    tables.forEach(function (tableEl) {
+      if (yPos > doc.internal.pageSize.getHeight() - 40) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.autoTable({
+        html: tableEl,
+        startY: yPos,
+        styles: { fontSize: 7, cellPadding: 2, lineColor: [200, 200, 200], lineWidth: 0.1 },
+        headStyles: { fillColor: [26, 26, 46], textColor: [240, 192, 48], fontStyle: 'bold', fontSize: 7 },
+        alternateRowStyles: { fillColor: [248, 249, 252] }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    });
+
+    // Footer
+    var pageCount = doc.internal.getNumberOfPages();
+    for (var i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text('Pagina ' + i + ' de ' + pageCount, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+    }
+
+    doc.save((filename || 'relatorio') + '.pdf');
+    showToast('PDF com graficos exportado!', 'success');
+  });
 }

@@ -79,6 +79,10 @@
     [data-theme="dark"] .cal-event.manual { background: rgba(139,92,246,0.15); color: #a78bfa; }
     [data-theme="dark"] .form-group input, [data-theme="dark"] .form-group select, [data-theme="dark"] .form-group textarea { background: #1c2128; color: #e6edf3; border-color: #30363d; }
 
+    .cal-event[draggable="true"] { cursor: grab; }
+    .cal-event.dragging { opacity: 0.4; }
+    .calendar-day.drag-over { outline: 2px dashed var(--gold); background: var(--gold-glow) !important; }
+
     @media (max-width: 768px) {
       .calendar-day { min-height: 60px; padding: 4px; }
       .cal-event { font-size: 0.6rem; }
@@ -104,6 +108,10 @@
           <a href="agenda.html" class="sidebar-link active">
             <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
             Agenda
+          </a>
+          <a href="chat.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Chat
           </a>
         </div>
 
@@ -134,6 +142,10 @@
             <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="12" y2="14"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
             Extens&otilde;es
           </a>
+          <a href="kanban.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="12" rx="1"/></svg>
+            Kanban
+          </a>
         </div>
 
         <div class="sidebar-nav-label" data-category="financeiro">
@@ -163,6 +175,10 @@
           <a href="rastreio.html" class="sidebar-link">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Rastreio
+          </a>
+          <a href="audit.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            Audit Log
           </a>
         </div>
 
@@ -456,7 +472,8 @@
         html += '<div class="day-num">' + d + '</div>';
         dayEvents.slice(0, 3).forEach(function (ev) {
           var style = ev.cor && ev.type === 'manual' ? ' style="background:' + ev.cor + '20;color:' + ev.cor + ';"' : '';
-          html += '<div class="cal-event ' + ev.type + '"' + style + ' title="' + ev.text.replace(/"/g, '&quot;') + '">' + ev.text + '</div>';
+          var dragAttr = ev.type === 'manual' && ev.id ? ' draggable="true" data-event-id="' + ev.id + '"' : '';
+          html += '<div class="cal-event ' + ev.type + '"' + style + dragAttr + ' title="' + ev.text.replace(/"/g, '&quot;') + '">' + ev.text + '</div>';
         });
         if (dayEvents.length > 3) html += '<div style="font-size:0.65rem;color:var(--gray-400);">+' + (dayEvents.length - 3) + ' mais</div>';
         html += '</div>';
@@ -473,11 +490,68 @@
 
       // Day click handlers
       grid.querySelectorAll('.calendar-day:not(.other-month)').forEach(function (cell) {
-        cell.addEventListener('click', function () {
+        cell.addEventListener('click', function (e) {
+          if (e.target.closest('.cal-event[draggable="true"]')) return;
           var ds = cell.getAttribute('data-date');
           if (ds) openDayDetail(ds);
         });
       });
+
+      // Drag & drop for manual events
+      initCalendarDragDrop();
+
+      function initCalendarDragDrop() {
+        var grid = document.getElementById('calendar-grid');
+
+        grid.addEventListener('dragstart', function(e) {
+          var el = e.target.closest('.cal-event[draggable="true"]');
+          if (!el) return;
+          e.stopPropagation();
+          el.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', el.getAttribute('data-event-id'));
+          e.dataTransfer.effectAllowed = 'move';
+        });
+
+        grid.addEventListener('dragend', function(e) {
+          var el = e.target.closest('.cal-event');
+          if (el) el.classList.remove('dragging');
+          grid.querySelectorAll('.calendar-day.drag-over').forEach(function(d) { d.classList.remove('drag-over'); });
+        });
+
+        grid.addEventListener('dragover', function(e) {
+          var day = e.target.closest('.calendar-day:not(.other-month)');
+          if (!day) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          day.classList.add('drag-over');
+        });
+
+        grid.addEventListener('dragleave', function(e) {
+          var day = e.target.closest('.calendar-day');
+          if (day) day.classList.remove('drag-over');
+        });
+
+        grid.addEventListener('drop', async function(e) {
+          e.preventDefault();
+          var day = e.target.closest('.calendar-day:not(.other-month)');
+          if (!day) return;
+          day.classList.remove('drag-over');
+
+          var eventId = e.dataTransfer.getData('text/plain');
+          var newDate = day.getAttribute('data-date');
+          if (!eventId || !newDate) return;
+
+          try {
+            var { error } = await sb.from('eventos_agenda').update({ data: newDate }).eq('id', eventId);
+            if (error) throw error;
+            showToast('Evento movido!', 'success');
+            if (typeof logAudit === 'function') logAudit('move_evento', 'eventos_agenda', eventId, { new_date: newDate });
+            await renderCalendar();
+          } catch(err) {
+            showToast('Erro ao mover: ' + err.message, 'error');
+          }
+        });
+      }
     }
 
     // ── Day Detail Modal ──
@@ -540,6 +614,7 @@
         if (error) throw error;
         closeModal('modal-novo-evento');
         showToast('Evento criado!', 'success');
+        if (typeof logAudit === 'function') logAudit('create_evento', 'eventos_agenda', null, { titulo: titulo });
         await renderCalendar();
       } catch (e) {
         console.error('Erro ao salvar evento:', e);
@@ -557,6 +632,7 @@
         if (error) throw error;
         closeModal('modal-dia');
         showToast('Evento exclu\u00eddo.', 'success');
+        if (typeof logAudit === 'function') logAudit('delete_evento', 'eventos_agenda', id, {});
         await renderCalendar();
       } catch (e) {
         console.error('Erro ao excluir:', e);
