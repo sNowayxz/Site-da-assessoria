@@ -59,10 +59,20 @@
 
     /* Fullscreen mode */
     .sheet-container.fullscreen {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       z-index: 9999; border-radius: 0; border: none;
+      display: flex; flex-direction: column;
+      background: var(--white, #fff);
     }
-    .sheet-container.fullscreen .sheet-frame { min-height: auto; }
+    .sheet-container.fullscreen .sheet-toolbar {
+      flex-shrink: 0;
+      background: var(--white, #fff);
+      border-bottom: 1px solid var(--gray-200, #e5e7eb);
+      padding: 12px 20px;
+    }
+    .sheet-container.fullscreen .sheet-frame {
+      flex: 1; min-height: 0; height: 0; width: 100%;
+    }
 
     @media (max-width: 768px) {
       .sheet-frame { min-height: 400px; }
@@ -191,6 +201,7 @@
     function toggleFullscreen() {
       var container = document.getElementById('sheet-container');
       container.classList.toggle('fullscreen');
+      document.body.style.overflow = container.classList.contains('fullscreen') ? 'hidden' : '';
       var btn = document.getElementById('btn-fs');
       btn.textContent = container.classList.contains('fullscreen') ? '✕' : '⛶';
     }
