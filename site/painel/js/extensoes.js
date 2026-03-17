@@ -5,8 +5,8 @@
 var API_URL = localStorage.getItem('extensoes_api_url') || '';
 var _extensoes = [];
 
-// ── Init ──
-(function init() {
+// ── Init (wait for DOM) ──
+document.addEventListener('DOMContentLoaded', function () {
   var urlInput = document.getElementById('apps-script-url');
   var configBar = document.getElementById('config-bar');
 
@@ -19,7 +19,7 @@ var _extensoes = [];
     document.getElementById('extensoes-list').innerHTML =
       '<div class="empty-card">⚙️ Configure a URL do Google Apps Script acima para começar.</div>';
   }
-})();
+});
 
 function showConfig() {
   var bar = document.getElementById('config-bar');
