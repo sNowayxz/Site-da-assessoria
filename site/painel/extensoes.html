@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extensões — Painel Assessoria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/painel.css">
+  <style>
+    .badge-pago { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-pendente { background: rgba(245,158,11,0.12); color: #d97706; }
+    .badge-sim { background: rgba(239,68,68,0.12); color: #ef4444; }
+    .badge-aguardando { background: rgba(59,130,246,0.12); color: #2563eb; }
+    .badge-nao { background: rgba(156,163,175,0.12); color: #6b7280; }
+
+    .config-bar {
+      display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+      background: rgba(245,158,11,0.08); border: 1px dashed var(--gold, #f0c030);
+      border-radius: 10px; margin-bottom: 20px; font-size: 0.85rem;
+    }
+    .config-bar input {
+      flex: 1; padding: 8px 12px; border: 1px solid var(--gray-200, #e5e7eb);
+      border-radius: 8px; font-size: 0.85rem; font-family: monospace;
+      background: var(--white, #fff); color: var(--gray-800, #1f2937);
+    }
+    .config-bar button {
+      padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600;
+      font-size: 0.8rem; cursor: pointer; background: var(--gold, #f0c030);
+      color: var(--dark, #0f172a); font-family: inherit; white-space: nowrap;
+    }
+    .config-bar.connected {
+      background: rgba(34,197,94,0.08); border-color: #16a34a;
+    }
+
+    .horas-bar {
+      display: flex; align-items: center; gap: 6px; font-size: 0.82rem;
+    }
+    .horas-bar .bar-track {
+      flex: 1; height: 6px; background: var(--gray-100, #f3f4f6);
+      border-radius: 3px; min-width: 50px; overflow: hidden;
+    }
+    .horas-bar .bar-fill {
+      height: 100%; border-radius: 3px; background: #16a34a;
+      transition: width 0.3s;
+    }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 20px 24px; }
+    .detail-item label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-400); margin-bottom: 4px; }
+    .detail-item p, .detail-item input, .detail-item select { font-size: 0.92rem; color: var(--gray-800); }
+    .detail-item input, .detail-item select {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--gray-200, #e5e7eb);
+      border-radius: 8px; font-family: inherit; font-size: 0.9rem;
+      background: var(--white, #fff); color: var(--gray-800, #1f2937);
+    }
+    .detail-full { grid-column: 1 / -1; }
+    .detail-actions {
+      display: flex; gap: 10px; flex-wrap: wrap; padding: 16px 24px;
+      border-top: 1px solid var(--gray-100, #f3f4f6);
+    }
+    .btn-save {
+      padding: 10px 24px; border: none; border-radius: 8px; font-weight: 700;
+      font-size: 0.9rem; cursor: pointer; background: var(--gold, #f0c030);
+      color: var(--dark, #0f172a); font-family: inherit; transition: all 0.2s;
+    }
+    .btn-save:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-delete {
+      padding: 10px 24px; border: none; border-radius: 8px; font-weight: 600;
+      font-size: 0.9rem; cursor: pointer; background: rgba(239,68,68,0.12);
+      color: #ef4444; font-family: inherit; margin-left: auto;
+    }
+    .btn-delete:hover { background: rgba(239,68,68,0.2); }
+    .btn-add-row {
+      padding: 10px 20px; border: none; border-radius: 8px; font-weight: 700;
+      font-size: 0.85rem; cursor: pointer; background: var(--gold, #f0c030);
+      color: var(--dark, #0f172a); font-family: inherit; display: flex;
+      align-items: center; gap: 6px;
+    }
+    .btn-add-row:hover { filter: brightness(1.1); }
+
+    .valor-destaque { font-weight: 800; color: var(--dark); }
+
+    @media (max-width: 640px) {
+      .detail-grid { grid-template-columns: 1fr; }
+      .config-bar { flex-direction: column; }
+      .config-bar input { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">
+          <img src="../logo.png" alt="Logo" onerror="this.style.display='none'">
+        </div>
+        <div class="sidebar-brand-text">
+          Assessoria<br>
+          <small>Painel de Gest&atilde;o</small>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-label">Menu</div>
+        <a href="app.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+        <a href="alunos.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Alunos
+        </a>
+        <a href="atividades.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Atividades
+        </a>
+        <a href="modulos.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          M&oacute;dulos
+        </a>
+        <a href="financeiro.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Financeiro
+        </a>
+        <a href="rastreio.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Rastreio
+        </a>
+        <a href="pedidos.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Pedidos
+        </a>
+        <a href="extensoes.html" class="sidebar-link active">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="12" y2="14"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
+          Extens&otilde;es
+        </a>
+        <a href="importar.html" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar
+        </a>
+        <a href="relatorios.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg> Relat&oacute;rios</a>
+        <a href="agenda.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg> Agenda</a>
+        <div class="sidebar-nav-label">Sistema</div>
+        <a href="perfil.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Perfil</a>
+        <button class="sidebar-link" id="btn-logout">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair
+        </button>
+      </nav>
+
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="user-avatar">A</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="user-name">Assessor</div>
+          <div class="sidebar-user-role">Assessor</div>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="mobile-toggle" id="mobile-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <h1>Extens&otilde;es</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn-add-row" onclick="openAddModal()">+ Novo Aluno</button>
+          <a href="https://docs.google.com/spreadsheets/d/1yeFlBBZSMHqTziM7QBB3IVkMJQgXqTbvDEz9SvXXKDw/edit" target="_blank" style="padding:8px 14px;border:1px solid var(--gray-200,#e5e7eb);border-radius:8px;font-size:0.82rem;text-decoration:none;color:var(--gray-600,#4b5563);font-weight:600;display:flex;align-items:center;gap:5px;">📊 Abrir Planilha</a>
+          <button class="theme-toggle" id="btn-theme" title="Alternar tema">🌙</button>
+        </div>
+      </div>
+
+      <!-- Config -->
+      <div class="config-bar" id="config-bar">
+        <span>🔗</span>
+        <span>URL do Google Apps Script:</span>
+        <input type="text" id="apps-script-url" placeholder="Cole a URL do deploy aqui...">
+        <button onclick="saveApiUrl()">Salvar</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">👥</div>
+          <div class="stat-info">
+            <h3 id="count-total">0</h3>
+            <p>Total de Alunos</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div class="stat-info">
+            <h3 id="count-pagos">0</h3>
+            <p>Pagos</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange">⚡</div>
+          <div class="stat-info">
+            <h3 id="count-urgentes">0</h3>
+            <p>Urgentes</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">⏱️</div>
+          <div class="stat-info">
+            <h3 id="count-horas">0</h3>
+            <p>Horas Contratadas</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="panel">
+        <div class="filters-bar">
+          <input type="text" id="filter-busca" placeholder="Buscar por nome, RA, assessor...">
+          <select id="filter-pagamento">
+            <option value="">Todos</option>
+            <option value="PAGO">Pagos</option>
+            <option value="pendente">Pendentes</option>
+          </select>
+          <select id="filter-urgencia">
+            <option value="">Urg&ecirc;ncia</option>
+            <option value="SIm">Urgentes</option>
+            <option value="Aguardando">Aguardando</option>
+          </select>
+        </div>
+        <div class="panel-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>RA</th>
+                  <th>Assessor</th>
+                  <th>Horas</th>
+                  <th>Valor Pago</th>
+                  <th>Pgto</th>
+                  <th>Urg&ecirc;ncia</th>
+                  <th>A&ccedil;&otilde;es</th>
+                </tr>
+              </thead>
+              <tbody id="extensoes-table">
+                <tr><td colspan="8" class="empty-state">Configure a URL do Apps Script acima para conectar.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: Editar / Novo Aluno -->
+  <div class="modal-overlay" id="modal-ext">
+    <div class="modal" style="max-width:650px;">
+      <div class="modal-header">
+        <h3 id="modal-ext-title">Detalhes do Aluno</h3>
+        <button class="modal-close" onclick="closeModal('modal-ext')">&times;</button>
+      </div>
+      <form id="form-ext" onsubmit="return handleSave(event)">
+        <input type="hidden" id="ext-row-index" value="">
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Nome</label>
+            <input type="text" id="ext-nome" required>
+          </div>
+          <div class="detail-item">
+            <label>RA / Documento</label>
+            <input type="text" id="ext-ra">
+          </div>
+          <div class="detail-item">
+            <label>Senha</label>
+            <input type="text" id="ext-senha">
+          </div>
+          <div class="detail-item">
+            <label>Assessor</label>
+            <input type="text" id="ext-assessor">
+          </div>
+          <div class="detail-item">
+            <label>Horas Contratadas</label>
+            <input type="text" id="ext-horas-contratadas">
+          </div>
+          <div class="detail-item">
+            <label>Horas Feitas</label>
+            <input type="text" id="ext-horas-feitas">
+          </div>
+          <div class="detail-item">
+            <label>Horas Restantes</label>
+            <input type="text" id="ext-horas-restantes">
+          </div>
+          <div class="detail-item">
+            <label>Valor / Hora</label>
+            <input type="text" id="ext-valor-hora">
+          </div>
+          <div class="detail-item">
+            <label>Valor Pago</label>
+            <input type="text" id="ext-valor-pago">
+          </div>
+          <div class="detail-item">
+            <label>Valor Restante</label>
+            <input type="text" id="ext-valor-restante">
+          </div>
+          <div class="detail-item">
+            <label>Status Pagamento</label>
+            <select id="ext-status-pgto">
+              <option value="">—</option>
+              <option value="PAGO">PAGO</option>
+            </select>
+          </div>
+          <div class="detail-item">
+            <label>Urg&ecirc;ncia</label>
+            <select id="ext-urgencia">
+              <option value="Aguardando">Aguardando</option>
+              <option value="SIm">Sim (Urgente)</option>
+            </select>
+          </div>
+          <div class="detail-item">
+            <label>Tipo Pagamento</label>
+            <input type="text" id="ext-tipo-pgto" placeholder="Parcela, Valida&ccedil;&atilde;o...">
+          </div>
+          <div class="detail-item">
+            <label>Data In&iacute;cio</label>
+            <input type="text" id="ext-data-inicio" placeholder="MM/AA">
+          </div>
+          <div class="detail-item">
+            <label>No Sistema</label>
+            <select id="ext-sistema">
+              <option value="Sim">Sim</option>
+              <option value="">N&atilde;o</option>
+            </select>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button type="submit" class="btn-save">💾 Salvar</button>
+          <button type="button" class="btn-delete" id="btn-ext-delete" onclick="handleDelete()" style="display:none;">🗑️ Remover</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/extensoes.js"></script>
+  <script>
+    document.getElementById('mobile-toggle').addEventListener('click', function () {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+    document.getElementById('sidebar-overlay').addEventListener('click', function () {
+      document.getElementById('sidebar').classList.remove('open');
+    });
+    document.addEventListener('DOMContentLoaded', async function () {
+      var user = await getUser();
+      if (user) {
+        var name = getUserName(user);
+        document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+      }
+    });
+  </script>
+
+</body>
+</html>
