@@ -27,8 +27,10 @@
         <a href="#servicos">Serviços</a>
         <a href="#contato">Contato</a>
         <a href="#faq">FAQ</a>
+        <a href="#depoimentos">Depoimentos</a>
         <a href="/sobre/">Sobre</a>
         <a href="/extensao/">Extensão</a>
+        <a href="/aluno/" style="color:var(--gold-light);font-weight:500;">Área do Aluno</a>
         <a href="/painel/" style="color:var(--gold);font-weight:600;">Painel</a>
       </div>
       <a href="https://wa.me/5543999066267?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20a%20assessoria." target="_blank" rel="noopener" class="navbar-cta">
@@ -246,6 +248,44 @@
     </div>
   </section>
 
+  <!-- ════════════ DEPOIMENTOS ════════════ -->
+  <section id="depoimentos" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag center">Avaliações</div>
+        <h2>O Que Nossos Alunos Dizem</h2>
+        <p>Feedback real de quem confiou na nossa assessoria.</p>
+      </div>
+
+      <div class="depoimentos-grid" id="depoimentos-grid">
+        <div class="depoimento-loading">Carregando avaliações...</div>
+      </div>
+
+      <!-- Form para enviar depoimento -->
+      <div class="depoimento-form-wrap">
+        <h3>Deixe sua Avaliação</h3>
+        <form id="form-depoimento" class="depoimento-form">
+          <div class="depoimento-form-row">
+            <input type="text" id="dep-nome" placeholder="Seu nome" required maxlength="60">
+            <input type="text" id="dep-curso" placeholder="Seu curso" maxlength="60">
+          </div>
+          <textarea id="dep-texto" placeholder="Conte sua experiência com a assessoria..." required maxlength="300" rows="3"></textarea>
+          <div class="depoimento-form-row">
+            <div class="star-rating" id="star-rating">
+              <span class="star active" data-v="1">★</span>
+              <span class="star active" data-v="2">★</span>
+              <span class="star active" data-v="3">★</span>
+              <span class="star active" data-v="4">★</span>
+              <span class="star active" data-v="5">★</span>
+            </div>
+            <button type="submit" class="cta-button" style="padding:12px 32px;font-size:0.9rem;">Enviar Avaliação</button>
+          </div>
+        </form>
+        <p id="dep-msg" style="display:none;text-align:center;margin-top:12px;font-size:0.9rem;"></p>
+      </div>
+    </div>
+  </section>
+
   <!-- ════════════ FAQ ════════════ -->
   <section id="faq" class="section">
     <div class="container">
@@ -334,6 +374,12 @@
             <p>Nosso atendimento funciona das 09h às 20h, de segunda a sábado, pelo WhatsApp.</p>
           </div>
         </div>
+      </div>
+      <div style="text-align:center;margin-top:40px;">
+        <a href="/sobre/" class="cta-button-outline" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;">
+          Conheça Nossa História
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
       </div>
     </div>
   </section>

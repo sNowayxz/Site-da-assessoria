@@ -996,3 +996,81 @@ a { text-decoration: none; color: inherit; }
   .hero-cta-group { flex-direction: column; align-items: center; }
   .sobre-stats { grid-template-columns: 1fr 1fr; gap: 12px; }
 }
+
+/* ═══ DEPOIMENTOS ═══ */
+.depoimentos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 48px;
+}
+.depoimento-card {
+  background: var(--white);
+  border: 1px solid var(--gray-100);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+.depoimento-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+.depoimento-stars { color: var(--gold); font-size: 1rem; margin-bottom: 12px; letter-spacing: 2px; }
+.depoimento-texto { color: var(--gray-600); font-size: 0.9rem; line-height: 1.7; margin-bottom: 16px; font-style: italic; }
+.depoimento-autor { font-weight: 600; color: var(--dark); font-size: 0.85rem; }
+.depoimento-curso { color: var(--gray-400); font-size: 0.8rem; }
+.depoimento-loading { text-align: center; color: var(--gray-400); padding: 40px; grid-column: 1 / -1; }
+
+.depoimento-form-wrap {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+.depoimento-form-wrap h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  color: var(--dark);
+  margin-bottom: 20px;
+}
+.depoimento-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.depoimento-form-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+.depoimento-form input, .depoimento-form textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--gray-800);
+  background: var(--white);
+  transition: var(--transition);
+}
+.depoimento-form input:focus, .depoimento-form textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-glow);
+}
+.star-rating { display: flex; gap: 4px; }
+.star-rating .star {
+  font-size: 1.5rem;
+  color: var(--gray-200);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.star-rating .star.active { color: var(--gold); }
+.star-rating .star:hover { color: var(--gold-light); }
+
+@media (max-width: 600px) {
+  .depoimento-form-row { flex-direction: column; }
+  .depoimentos-grid { grid-template-columns: 1fr; }
+}

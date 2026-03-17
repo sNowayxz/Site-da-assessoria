@@ -171,6 +171,16 @@ CREATE TABLE IF NOT EXISTS pedidos_extensao (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Colunas extras (caso tabela já exista de versão anterior)
+ALTER TABLE pedidos_extensao ADD COLUMN IF NOT EXISTS preference_id TEXT;
+ALTER TABLE pedidos_extensao ADD COLUMN IF NOT EXISTS payment_id TEXT;
+ALTER TABLE pedidos_extensao ADD COLUMN IF NOT EXISTS payment_status TEXT;
+ALTER TABLE pedidos_extensao ADD COLUMN IF NOT EXISTS telefone TEXT;
+ALTER TABLE pedidos_extensao ADD COLUMN IF NOT EXISTS ra TEXT;
+ALTER TABLE pedidos_extensao ADD COLUMN IF NOT EXISTS prazo DATE;
+ALTER TABLE pedidos_extensao ADD COLUMN IF NOT EXISTS observacoes TEXT;
+ALTER TABLE pedidos_extensao ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
 DROP TRIGGER IF EXISTS pedidos_extensao_updated_at ON pedidos_extensao;
 CREATE TRIGGER pedidos_extensao_updated_at
   BEFORE UPDATE ON pedidos_extensao
@@ -354,5 +364,88 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
   CREATE POLICY "Auth pode inserir audit_log" ON audit_log FOR INSERT TO authenticated WITH CHECK (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- ═══ 15. TABELA DEPOIMENTOS ═══
+
+CREATE TABLE IF NOT EXISTS depoimentos (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nome TEXT NOT NULL,
+  curso TEXT DEFAULT '',
+  texto TEXT NOT NULL,
+  nota INTEGER DEFAULT 5 CHECK (nota >= 1 AND nota <= 5),
+  aprovado BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_depoimentos_aprovado ON depoimentos(aprovado);
+
+ALTER TABLE depoimentos ENABLE ROW LEVEL SECURITY;
+
+-- Anon pode ver apenas aprovados
+DO $$ BEGIN
+  CREATE POLICY "Anon pode ver depoimentos aprovados" ON depoimentos FOR SELECT TO anon USING (aprovado = true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+-- Anon pode inserir depoimentos
+DO $$ BEGIN
+  CREATE POLICY "Anon pode inserir depoimentos" ON depoimentos FOR INSERT TO anon WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+-- Auth full access
+DO $$ BEGIN
+  CREATE POLICY "Auth full depoimentos SELECT" ON depoimentos FOR SELECT TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "Auth full depoimentos INSERT" ON depoimentos FOR INSERT TO authenticated WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "Auth full depoimentos UPDATE" ON depoimentos FOR UPDATE TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "Auth full depoimentos DELETE" ON depoimentos FOR DELETE TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+
+-- ═══ 16. TABELA NOTIFICAÇÕES ═══
+
+CREATE TABLE IF NOT EXISTS notificacoes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  aluno_id UUID REFERENCES alunos(id) ON DELETE CASCADE,
+  tipo TEXT NOT NULL CHECK (tipo IN ('status_atividade','pagamento','geral')),
+  mensagem TEXT NOT NULL,
+  canal TEXT NOT NULL DEFAULT 'whatsapp' CHECK (canal IN ('whatsapp','email','sistema')),
+  enviado BOOLEAN DEFAULT false,
+  erro TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_notificacoes_aluno ON notificacoes(aluno_id);
+CREATE INDEX IF NOT EXISTS idx_notificacoes_enviado ON notificacoes(enviado);
+CREATE INDEX IF NOT EXISTS idx_notificacoes_tipo ON notificacoes(tipo);
+
+ALTER TABLE notificacoes ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "Auth full notificacoes SELECT" ON notificacoes FOR SELECT TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "Auth full notificacoes INSERT" ON notificacoes FOR INSERT TO authenticated WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "Auth full notificacoes UPDATE" ON notificacoes FOR UPDATE TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- ═══ 17. POLÍTICAS ÁREA DO ALUNO (anon read-only) ═══
+
+DO $$ BEGIN
+  CREATE POLICY "Anon pode buscar aluno por RA" ON alunos FOR SELECT TO anon USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Anon pode ver atividades" ON atividades FOR SELECT TO anon USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Anon pode ver pagamentos" ON pagamentos FOR SELECT TO anon USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
 
 -- ═══ FIM ═══

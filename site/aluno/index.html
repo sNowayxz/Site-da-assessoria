@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Área do Aluno — Assessoria Acadêmica</title>
+  <meta name="theme-color" content="#1a1a2e">
+  <link rel="icon" href="../logo.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="aluno.css">
+</head>
+<body>
+
+  <nav class="aluno-nav">
+    <a href="/" class="aluno-brand">
+      <img src="../logo.png" alt="Logo" class="aluno-logo-img">
+      <span>Assessoria <strong>Acadêmica</strong></span>
+    </a>
+    <a href="/" class="aluno-back">← Voltar ao site</a>
+  </nav>
+
+  <!-- LOGIN / RA LOOKUP -->
+  <div class="aluno-container" id="login-screen">
+    <div class="aluno-login-card">
+      <div class="aluno-login-icon">🎓</div>
+      <h1>Área do Aluno</h1>
+      <p>Consulte o andamento das suas atividades acadêmicas.</p>
+      <form id="form-ra">
+        <div class="input-group">
+          <label for="input-ra">Seu RA (Registro Acadêmico)</label>
+          <input type="text" id="input-ra" placeholder="Digite seu RA" required autocomplete="off">
+        </div>
+        <button type="submit" class="btn-entrar" id="btn-entrar">
+          <span id="btn-text">Consultar</span>
+          <span id="btn-loading" style="display:none;">Buscando...</span>
+        </button>
+        <p id="login-error" class="error-msg" style="display:none;"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD DO ALUNO -->
+  <div class="aluno-container" id="dashboard-screen" style="display:none;">
+    <div class="aluno-header">
+      <div>
+        <h1 id="aluno-nome">Olá, Aluno!</h1>
+        <p id="aluno-info" class="aluno-subtitle">RA: --- | Curso: ---</p>
+      </div>
+      <button class="btn-sair" id="btn-sair">Trocar RA</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="aluno-stats">
+      <div class="aluno-stat-card">
+        <div class="aluno-stat-icon blue">📝</div>
+        <div class="aluno-stat-num" id="stat-total">0</div>
+        <div class="aluno-stat-label">Total</div>
+      </div>
+      <div class="aluno-stat-card">
+        <div class="aluno-stat-icon orange">⏳</div>
+        <div class="aluno-stat-num" id="stat-pendentes">0</div>
+        <div class="aluno-stat-label">Pendentes</div>
+      </div>
+      <div class="aluno-stat-card">
+        <div class="aluno-stat-icon purple">🔄</div>
+        <div class="aluno-stat-num" id="stat-andamento">0</div>
+        <div class="aluno-stat-label">Em Andamento</div>
+      </div>
+      <div class="aluno-stat-card">
+        <div class="aluno-stat-icon green">✅</div>
+        <div class="aluno-stat-num" id="stat-entregues">0</div>
+        <div class="aluno-stat-label">Entregues</div>
+      </div>
+    </div>
+
+    <!-- Financial summary -->
+    <div class="aluno-panel" id="panel-financeiro">
+      <h2>💰 Financeiro</h2>
+      <div class="aluno-fin-grid">
+        <div class="aluno-fin-card green">
+          <div class="aluno-fin-label">Pagos</div>
+          <div class="aluno-fin-value" id="fin-pagos">R$ 0,00</div>
+        </div>
+        <div class="aluno-fin-card orange">
+          <div class="aluno-fin-label">Pendentes</div>
+          <div class="aluno-fin-value" id="fin-pendentes">R$ 0,00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activities list -->
+    <div class="aluno-panel">
+      <h2>📋 Minhas Atividades</h2>
+      <div class="aluno-activities" id="aluno-atividades">
+        <div class="aluno-empty">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- Pagamentos list -->
+    <div class="aluno-panel">
+      <h2>💳 Meus Pagamentos</h2>
+      <div class="aluno-activities" id="aluno-pagamentos">
+        <div class="aluno-empty">Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="aluno-footer">
+    <p>&copy; 2026 Assessoria Acadêmica. Área do Aluno.</p>
+  </footer>
+
+  <script src="aluno.js"></script>
+</body>
+</html>

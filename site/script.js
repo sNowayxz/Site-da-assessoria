@@ -136,8 +136,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // ════════════════════════════════════
   // SCROLL ANIMATIONS
   // ════════════════════════════════════
+  var animObserver = null;
   if ('IntersectionObserver' in window) {
-    var animObserver = new IntersectionObserver(function (entries) {
+    animObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
@@ -310,5 +311,110 @@ document.addEventListener('DOMContentLoaded', function () {
       this.style.transition = 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
     });
   });
+
+
+  // ════════════════════════════════════
+  // DEPOIMENTOS — Load & Form
+  // ════════════════════════════════════
+  var SUPA_URL = 'https://lztfoprapoyicldunhzw.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6dGZvcHJhcG95aWNsZHVuaHp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzY0MzIsImV4cCI6MjA4ODkxMjQzMn0.8Qyq2bVA0oK8gji9hG2AWG-gQ3oH4nWm3QOqQ59S9IA';
+
+  function supaFetch(path, opts) {
+    opts = opts || {};
+    var headers = {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || 'return=representation'
+    };
+    return fetch(SUPA_URL + '/rest/v1/' + path, {
+      method: opts.method || 'GET',
+      headers: headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).then(function(r) { return r.json(); });
+  }
+
+  // Load depoimentos aprovados
+  var depGrid = document.getElementById('depoimentos-grid');
+  if (depGrid) {
+    supaFetch('depoimentos?aprovado=eq.true&order=created_at.desc&limit=6').then(function(data) {
+      if (!data || !data.length || data.error) {
+        depGrid.innerHTML = '<div class="depoimento-loading">Nenhuma avaliação ainda. Seja o primeiro!</div>';
+        return;
+      }
+      depGrid.innerHTML = data.map(function(d) {
+        var stars = '';
+        for (var i = 0; i < 5; i++) stars += i < d.nota ? '★' : '☆';
+        return '<div class="depoimento-card animate-on-scroll">' +
+          '<div class="depoimento-stars">' + stars + '</div>' +
+          '<div class="depoimento-texto">"' + escapeHtmlLanding(d.texto) + '"</div>' +
+          '<div class="depoimento-autor">' + escapeHtmlLanding(d.nome) + '</div>' +
+          (d.curso ? '<div class="depoimento-curso">' + escapeHtmlLanding(d.curso) + '</div>' : '') +
+          '</div>';
+      }).join('');
+      // Re-observe for animations
+      document.querySelectorAll('.depoimento-card.animate-on-scroll').forEach(function(el) {
+        if (animObserver) animObserver.observe(el);
+      });
+    }).catch(function() {
+      depGrid.innerHTML = '<div class="depoimento-loading">Nenhuma avaliação ainda. Seja o primeiro!</div>';
+    });
+  }
+
+  function escapeHtmlLanding(t) {
+    var d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
+  }
+
+  // Star rating interaction
+  var starRating = document.getElementById('star-rating');
+  var currentRating = 5;
+  if (starRating) {
+    starRating.addEventListener('click', function(e) {
+      var star = e.target.closest('.star');
+      if (!star) return;
+      currentRating = parseInt(star.getAttribute('data-v'));
+      starRating.querySelectorAll('.star').forEach(function(s) {
+        s.classList.toggle('active', parseInt(s.getAttribute('data-v')) <= currentRating);
+      });
+    });
+  }
+
+  // Submit depoimento
+  var formDep = document.getElementById('form-depoimento');
+  if (formDep) {
+    formDep.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var nome = document.getElementById('dep-nome').value.trim();
+      var curso = document.getElementById('dep-curso').value.trim();
+      var texto = document.getElementById('dep-texto').value.trim();
+      var msg = document.getElementById('dep-msg');
+
+      if (!nome || !texto) return;
+
+      supaFetch('depoimentos', {
+        method: 'POST',
+        body: { nome: nome, curso: curso, texto: texto, nota: currentRating, aprovado: false }
+      }).then(function(res) {
+        if (res && !res.error) {
+          msg.textContent = 'Obrigado! Sua avaliação será revisada e publicada em breve.';
+          msg.style.color = '#22c55e';
+          msg.style.display = 'block';
+          formDep.reset();
+          currentRating = 5;
+          starRating.querySelectorAll('.star').forEach(function(s) { s.classList.add('active'); });
+        } else {
+          msg.textContent = 'Erro ao enviar. Tente novamente.';
+          msg.style.color = '#ef4444';
+          msg.style.display = 'block';
+        }
+      }).catch(function() {
+        msg.textContent = 'Erro ao enviar. Tente novamente.';
+        msg.style.color = '#ef4444';
+        msg.style.display = 'block';
+      });
+    });
+  }
 
 });
