@@ -371,15 +371,19 @@
 
       document.getElementById('btn-enable-2fa').addEventListener('click', async function() {
         try {
-          // Remover fatores pendentes (não verificados) de tentativas anteriores
+          // Remover TODOS os fatores TOTP anteriores (verificados ou não) para começar limpo
           var { data: existingFactors } = await sb.auth.mfa.listFactors();
-          var unverified = (existingFactors.totp || []).filter(function(f) { return f.status === 'unverified'; });
-          for (var i = 0; i < unverified.length; i++) {
-            await sb.auth.mfa.unenroll({ factorId: unverified[i].id });
-            console.log('[2fa] Removed unverified factor:', unverified[i].id);
+          var allTotp = existingFactors.totp || [];
+          for (var i = 0; i < allTotp.length; i++) {
+            try {
+              await sb.auth.mfa.unenroll({ factorId: allTotp[i].id });
+              console.log('[2fa] Removed factor:', allTotp[i].id, allTotp[i].status);
+            } catch(ue) {
+              console.warn('[2fa] Failed to unenroll factor:', allTotp[i].id, ue.message);
+            }
           }
 
-          var { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Painel Assessoria' });
+          var { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Painel-' + Date.now() });
           console.log('[2fa] enroll response:', data, error);
           if (error) throw error;
 
