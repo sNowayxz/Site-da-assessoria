@@ -144,13 +144,29 @@ async function loadSyncData() {
 }
 
 function updateCounters(data) {
-  var total = data.length;
-  var pendentes = data.filter(function (d) { return !d.respondida; }).length;
-  var respondidas = data.filter(function (d) { return d.respondida; }).length;
+  // Atividades no prazo
+  var totalAtiv = data.length;
 
-  document.getElementById('count-atividades-sync').textContent = total;
-  document.getElementById('count-pendentes-sync').textContent = pendentes;
-  document.getElementById('count-respondidas-sync').textContent = respondidas;
+  // Alunos únicos com pendências no prazo
+  var alunosUnicos = {};
+  data.forEach(function (d) {
+    if (d.aluno_id) alunosUnicos[d.aluno_id] = true;
+  });
+  var alunosComPendencias = Object.keys(alunosUnicos).length;
+
+  // Alunos já sincronizados (que têm pelo menos 1 registro no studeo_sync)
+  var totalAlunos = (window._todosAlunos || []).length;
+
+  document.getElementById('count-atividades-sync').textContent = totalAtiv;
+  document.getElementById('count-alunos-prazo').textContent = alunosComPendencias;
+
+  // Contar sincronizados em background
+  sb.from('studeo_sync').select('aluno_id').then(function (r) {
+    var syncedIds = {};
+    (r.data || []).forEach(function (s) { syncedIds[s.aluno_id] = true; });
+    var el = document.getElementById('count-respondidas-sync');
+    if (el) el.textContent = Object.keys(syncedIds).length + '/' + totalAlunos;
+  });
 }
 
 function renderSyncData(data) {
