@@ -131,25 +131,53 @@
     .aluno-credentials {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
     }
-    .aluno-ra {
-      font-size: 0.8rem;
-      color: var(--gray-500);
+    .aluno-ra, .aluno-senha {
+      font-size: 0.88rem;
+      color: var(--gray-600);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
-    .aluno-senha {
-      font-size: 0.8rem;
-      color: var(--gray-500);
-    }
-    .aluno-senha code {
+    .copy-value {
       background: var(--gray-100);
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 0.78rem;
-      color: var(--gray-700);
-      user-select: all;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      color: var(--gray-800);
       cursor: pointer;
+      user-select: all;
+      transition: all 0.15s ease;
+      position: relative;
+      border: 1px solid transparent;
+    }
+    .copy-value:hover {
+      background: var(--gold-glow);
+      border-color: var(--gold);
+      color: var(--primary);
+    }
+    .copy-value.copied {
+      background: #d1fae5;
+      border-color: #10b981;
+      color: #065f46;
+    }
+    .copy-value.copied::after {
+      content: '✓ copiado';
+      position: absolute;
+      top: -26px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #065f46;
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      animation: fadeIn 0.2s ease;
     }
 
     /* Disciplina rows dentro do card do aluno */
@@ -276,7 +304,9 @@
     [data-theme="dark"] .disc-row { border-bottom-color: #21262d; }
     [data-theme="dark"] .disc-row:hover { background: rgba(240,192,48,0.04); }
     [data-theme="dark"] .disc-nome { color: #e6edf3; }
-    [data-theme="dark"] .aluno-senha code { background: #21262d; color: #c9d1d9; }
+    [data-theme="dark"] .copy-value { background: #21262d; color: #c9d1d9; border-color: transparent; }
+    [data-theme="dark"] .copy-value:hover { background: rgba(240,192,48,0.15); border-color: var(--gold); color: #f0c030; }
+    [data-theme="dark"] .copy-value.copied { background: #064e3b; border-color: #10b981; color: #6ee7b7; }
     [data-theme="dark"] .tabs-bar { background: #1c2128; }
     [data-theme="dark"] .tab-btn:hover:not(.active) { background: #21262d; }
     [data-theme="dark"] .filters-rastreio select { background: #1c2128; border-color: #30363d; color: #e6edf3; }

@@ -236,8 +236,8 @@ function renderSyncData(data) {
       + '<div class="aluno-info">'
       + '<h3>' + escapeHtml(aluno.nome) + '</h3>'
       + '<div class="aluno-credentials">'
-      + '<span class="aluno-ra" title="RA">👤 ' + escapeHtml(aluno.ra) + '</span>'
-      + (aluno.senha ? '<span class="aluno-senha" title="Senha Studeo">🔑 <code>' + escapeHtml(aluno.senha) + '</code></span>' : '')
+      + '<span class="aluno-ra">👤 <span class="copy-value" data-copy="' + escapeHtml(aluno.ra) + '" title="Clique para copiar RA">' + escapeHtml(aluno.ra) + '</span></span>'
+      + (aluno.senha ? '<span class="aluno-senha">🔑 <span class="copy-value" data-copy="' + escapeHtml(aluno.senha) + '" title="Clique para copiar senha">' + escapeHtml(aluno.senha) + '</span></span>' : '')
       + '</div>'
       + '</div>'
       + '<span class="badge badge-pendente">' + totalPendentes + ' pendência' + (totalPendentes !== 1 ? 's' : '') + '</span>'
@@ -282,6 +282,26 @@ function renderSyncData(data) {
   });
 
   container.innerHTML = html;
+
+  // Click-to-copy nos valores de RA e senha
+  container.querySelectorAll('.copy-value').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var text = el.getAttribute('data-copy');
+      navigator.clipboard.writeText(text).then(function () {
+        el.classList.add('copied');
+        setTimeout(function () { el.classList.remove('copied'); }, 1500);
+      }).catch(function () {
+        // Fallback: select text
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      });
+    });
+  });
 
   // Animar entrada dos cards
   container.querySelectorAll('.aluno-card').forEach(function (card, i) {
