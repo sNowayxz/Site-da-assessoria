@@ -742,6 +742,10 @@ function setupSidebarPermissions(role) {
       btn.classList.add('role-hidden');
     });
   }
+
+  // Mostrar layout após processar permissões (evita flash)
+  var layout = document.querySelector('.layout');
+  if (layout) layout.classList.add('ready');
 }
 
 

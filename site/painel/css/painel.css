@@ -253,9 +253,15 @@ img { max-width: 100%; display: block; }
 /* ═══════════════════════════════════════════
    LAYOUT — Sidebar + Main
    ═══════════════════════════════════════════ */
+/* Evitar flash de conteúdo antes do JS processar permissões */
 .layout {
   display: flex;
   min-height: 100vh;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.layout.ready {
+  opacity: 1;
 }
 
 /* SIDEBAR */
