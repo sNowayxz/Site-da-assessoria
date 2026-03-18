@@ -807,27 +807,35 @@ function setupSidebarPermissions(role) {
 }
 
 // ─── Sidebar Avatar (global) ───
+// Usa setTimeout para rodar DEPOIS do código da página setar a letra inicial
 function loadSidebarAvatar() {
   if (!window.sb) return;
-  var avatarEl = document.getElementById('user-avatar');
-  if (!avatarEl) return;
 
-  // Check cache first
-  var cached = sessionStorage.getItem('sidebar-avatar-url');
-  if (cached) {
-    avatarEl.innerHTML = '<img src="' + cached + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-    return;
+  function applyAvatar(url) {
+    var el = document.getElementById('user-avatar');
+    if (!el) return;
+    el.innerHTML = '<img src="' + url + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+    el.setAttribute('data-has-avatar', 'true');
   }
 
-  sb.auth.getUser().then(function(res) {
-    if (!res.data || !res.data.user) return;
-    sb.from('assessores').select('avatar_url').eq('id', res.data.user.id).single().then(function(r) {
-      if (r.data && r.data.avatar_url) {
-        sessionStorage.setItem('sidebar-avatar-url', r.data.avatar_url);
-        avatarEl.innerHTML = '<img src="' + r.data.avatar_url + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-      }
+  // Delay to run after page code sets textContent on user-avatar
+  setTimeout(function() {
+    var cached = sessionStorage.getItem('sidebar-avatar-url');
+    if (cached) {
+      applyAvatar(cached);
+      return;
+    }
+
+    sb.auth.getUser().then(function(res) {
+      if (!res.data || !res.data.user) return;
+      sb.from('assessores').select('avatar_url').eq('id', res.data.user.id).single().then(function(r) {
+        if (r.data && r.data.avatar_url) {
+          sessionStorage.setItem('sidebar-avatar-url', r.data.avatar_url);
+          applyAvatar(r.data.avatar_url);
+        }
+      }).catch(function() {});
     }).catch(function() {});
-  }).catch(function() {});
+  }, 200);
 }
 
 
