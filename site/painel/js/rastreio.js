@@ -4,7 +4,6 @@
 
 var SYNC_API_URL = 'https://site-da-assessoria.vercel.app/api/sync-studeo';
 var syncInProgress = false;
-var currentTab = 'todas';
 
 document.addEventListener('DOMContentLoaded', async function () {
   var result = await requireRole(['admin']);
@@ -47,15 +46,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
   });
 
-  // Tab listeners
-  document.querySelectorAll('.tab-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      currentTab = btn.getAttribute('data-tab');
-      renderSyncData(window._syncData || []);
-    });
-  });
 });
 
 function getActiveGrupo() {
