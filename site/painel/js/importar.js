@@ -103,7 +103,7 @@ async function iniciarImportacao() {
     );
 
     try {
-      var resp = await fetch('/api/import-alunos', {
+      var resp = await fetch('https://site-da-assessoria.vercel.app/api/import-alunos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ logins: lote }),

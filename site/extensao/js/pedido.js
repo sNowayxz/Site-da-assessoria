@@ -107,7 +107,7 @@ document.getElementById('form-pedido').addEventListener('submit', async function
     });
 
     // 2. Criar preferência Mercado Pago
-    var resp = await fetch('/api/create-preference', {
+    var resp = await fetch('https://site-da-assessoria.vercel.app/api/create-preference', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
