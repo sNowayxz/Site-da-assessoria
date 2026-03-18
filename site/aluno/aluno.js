@@ -152,33 +152,31 @@ function loadAluno(ra) {
         finalizado_cobrar: 'Finalizado'
       };
       var STATUS_COLORS = {
-        aguardando: '#d97706',
-        desenvolvendo: '#2563eb',
-        finalizado: '#16a34a',
-        finalizado_cobrar: '#7c3aed'
+        aguardando: '#b45309',
+        desenvolvendo: '#1d4ed8',
+        finalizado: '#15803d',
+        finalizado_cobrar: '#6d28d9'
       };
       var STATUS_BG = {
-        aguardando: 'rgba(217,119,6,0.15)',
-        desenvolvendo: 'rgba(37,99,235,0.15)',
-        finalizado: 'rgba(22,163,106,0.15)',
-        finalizado_cobrar: 'rgba(124,58,237,0.15)'
+        aguardando: 'rgba(180,83,9,0.1)',
+        desenvolvendo: 'rgba(29,78,216,0.1)',
+        finalizado: 'rgba(21,128,61,0.1)',
+        finalizado_cobrar: 'rgba(109,40,217,0.1)'
       };
 
       container.innerHTML = exts.map(function(s) {
         var horas = s.horas || 0;
         var validadas = s.horas_validadas || 0;
         var restantes = Math.max(0, horas - validadas);
-        var evolucao = horas > 0 ? Math.round((validadas / horas) * 100) : 0;
-        if (evolucao > 100) evolucao = 100;
+        var pct = horas > 0 ? Math.round((validadas / horas) * 100) : 0;
+        if (pct > 100) pct = 100;
         var statusText = STATUS_LABELS[s.status] || s.status;
-        var statusColor = STATUS_COLORS[s.status] || '#888';
-        var statusBg = STATUS_BG[s.status] || 'rgba(136,136,136,0.15)';
-        var isComplete = evolucao >= 100;
-        var barGradient = isComplete
-          ? 'linear-gradient(90deg, #16a34a, #34d399)'
-          : 'linear-gradient(90deg, #f0c030, #f5d45a)';
+        var statusColor = STATUS_COLORS[s.status] || '#666';
+        var statusBg = STATUS_BG[s.status] || 'rgba(102,102,102,0.1)';
+        var isComplete = pct >= 100;
+        var barColor = isComplete ? '#22c55e' : '#f0c030';
 
-        // Extract tema from observacoes
+        // Extrair tema
         var obs = s.observacoes || '';
         var tema = '';
         if (obs.indexOf('Tema: ') !== -1) {
@@ -191,67 +189,49 @@ function loadAluno(ra) {
           }
         }
 
-        // SVG circular progress
-        var radius = 36;
-        var circumference = 2 * Math.PI * radius;
-        var offset = circumference - (evolucao / 100) * circumference;
-
         return '<div class="extensao-card' + (isComplete ? ' complete' : '') + '">' +
 
-          // ── Dark top banner ──
-          '<div class="extensao-top">' +
-            '<div class="extensao-top-row">' +
-              '<span class="extensao-status" style="background:' + statusBg + ';color:' + statusColor + ';">' + statusText + '</span>' +
-              '<span class="extensao-date">' + formatDate(s.created_at) + '</span>' +
-            '</div>' +
-            (tema ? '<div class="extensao-tema">' + escapeHtml(tema) + '</div>' : '') +
+          '<div class="extensao-header">' +
+            '<span class="extensao-status" style="background:' + statusBg + ';color:' + statusColor + ';">' +
+              '<span class="extensao-status-dot" style="background:' + statusColor + ';"></span>' +
+              statusText +
+            '</span>' +
+            '<span class="extensao-date">' + formatDate(s.created_at) + '</span>' +
           '</div>' +
 
-          // ── Progress section: circle + bar ──
-          '<div class="extensao-progress-section">' +
-            '<div class="extensao-circle-wrap">' +
-              '<svg viewBox="0 0 90 90">' +
-                '<circle class="extensao-circle-bg" cx="45" cy="45" r="' + radius + '"/>' +
-                '<circle class="extensao-circle-fg" cx="45" cy="45" r="' + radius + '" ' +
-                  'stroke-dasharray="' + circumference + '" ' +
-                  'stroke-dashoffset="' + offset + '"/>' +
-              '</svg>' +
-              '<div class="extensao-circle-text">' +
-                '<span class="extensao-circle-pct">' + evolucao + '%</span>' +
-                '<span class="extensao-circle-label">Progresso</span>' +
-              '</div>' +
+          (tema ? '<div class="extensao-tema">' + escapeHtml(tema) + '</div>' : '') +
+
+          '<div class="extensao-pct-row">' +
+            '<span class="extensao-pct-num">' + pct + '%</span>' +
+            '<span class="extensao-pct-label">concluído</span>' +
+          '</div>' +
+
+          '<div class="extensao-bar-wrap">' +
+            '<div class="extensao-bar">' +
+              '<div class="extensao-bar-fill" style="width:' + pct + '%;background:' + barColor + ';"></div>' +
             '</div>' +
-            '<div class="extensao-bar-section">' +
-              '<div class="extensao-bar-label">Horas Completadas</div>' +
-              '<div class="extensao-bar">' +
-                '<div class="extensao-bar-fill" style="width:' + evolucao + '%;background:' + barGradient + ';"></div>' +
-              '</div>' +
-              '<div class="extensao-bar-numbers">' +
-                '<span>' + validadas + 'h validadas</span>' +
-                '<span>' + horas + 'h total</span>' +
-              '</div>' +
+            '<div class="extensao-bar-info">' +
+              '<span>' + validadas + ' de ' + horas + ' horas</span>' +
+              '<span>' + restantes + 'h restantes</span>' +
             '</div>' +
           '</div>' +
 
-          // ── Bottom metrics ──
-          '<div class="extensao-details">' +
-            '<div class="extensao-detail contracted">' +
-              '<div class="extensao-detail-icon">📋</div>' +
-              '<strong>' + horas + 'h</strong>' +
-              '<small>Contratadas</small>' +
+          '<div class="extensao-metrics">' +
+            '<div class="extensao-metric m-contratadas">' +
+              '<div class="extensao-metric-num">' + horas + 'h</div>' +
+              '<div class="extensao-metric-label">Contratadas</div>' +
             '</div>' +
-            '<div class="extensao-detail validated">' +
-              '<div class="extensao-detail-icon">✅</div>' +
-              '<strong>' + validadas + 'h</strong>' +
-              '<small>Validadas</small>' +
+            '<div class="extensao-metric m-validadas">' +
+              '<div class="extensao-metric-num">' + validadas + 'h</div>' +
+              '<div class="extensao-metric-label">Validadas</div>' +
             '</div>' +
-            '<div class="extensao-detail remaining">' +
-              '<div class="extensao-detail-icon">⏳</div>' +
-              '<strong>' + restantes + 'h</strong>' +
-              '<small>Restantes</small>' +
+            '<div class="extensao-metric m-restantes">' +
+              '<div class="extensao-metric-num">' + restantes + 'h</div>' +
+              '<div class="extensao-metric-label">Restantes</div>' +
             '</div>' +
           '</div>' +
-          '</div>';
+
+        '</div>';
       }).join('');
     }).catch(function(err) {
       console.error('[aluno] Erro ao carregar extensões:', err);
