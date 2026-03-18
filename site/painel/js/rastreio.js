@@ -82,16 +82,34 @@ async function loadSyncData() {
     (alunos || []).forEach(function (a) { window._alunosCache[a.id] = a; });
   }
 
+  // Por padrão: só pendentes com prazo aberto
   var query = sb.from('studeo_sync')
     .select('*')
-    .order('synced_at', { ascending: false });
+    .eq('respondida', false)
+    .order('data_final', { ascending: true });
 
   if (alunoId) query = query.eq('aluno_id', alunoId);
-  if (statusFilter === 'pendente') query = query.eq('respondida', false);
-  if (statusFilter === 'respondida') query = query.eq('respondida', true);
+  if (statusFilter === 'respondida') {
+    // Se explicitamente pedir respondidas, remove o filtro pendente
+    query = sb.from('studeo_sync')
+      .select('*')
+      .eq('respondida', true)
+      .order('data_final', { ascending: true });
+    if (alunoId) query = query.eq('aluno_id', alunoId);
+  }
 
   var { data, error } = await query;
   if (error) { console.error(error); return; }
+
+  // Filtrar client-side: só atividades com data_final no futuro (prazo aberto)
+  var now = new Date();
+  now.setHours(0, 0, 0, 0);
+  if (statusFilter !== 'respondida') {
+    data = (data || []).filter(function (item) {
+      if (!item.data_final) return true; // sem prazo = sempre mostrar
+      return new Date(item.data_final) >= now;
+    });
+  }
 
   // Attach aluno info from cache
   (data || []).forEach(function (item) {
@@ -144,6 +162,15 @@ function renderSyncData(data) {
   if (currentTab === 'ativas') groups = groups.filter(isActiveDisc);
   if (currentTab === 'passadas') groups = groups.filter(function (g) { return !isActiveDisc(g); });
 
+  // Ordenar grupos: disciplinas com prazo mais próximo primeiro
+  groups.sort(function (a, b) {
+    var aMin = getEarliestDeadline(a.items);
+    var bMin = getEarliestDeadline(b.items);
+    if (!aMin) return 1;
+    if (!bMin) return -1;
+    return aMin - bMin;
+  });
+
   if (!groups.length) {
     container.innerHTML = '<div class="empty-state" style="padding:48px;text-align:center;">Nenhuma disciplina ' + (currentTab === 'ativas' ? 'ativa' : currentTab === 'passadas' ? 'passada' : '') + ' encontrada.</div>';
     return;
@@ -173,19 +200,36 @@ function renderSyncData(data) {
       var statusClass = item.respondida ? 'respondida' : 'pendente';
       var statusLabel = item.respondida ? 'Respondida' : 'Pendente';
       var tipoClass = item.tipo_atividade === 'MAPA' ? 'badge-mapa' : 'badge-av';
-      var dataInfo = '';
-      if (item.data_inicial) {
-        dataInfo = formatDate(item.data_inicial);
-        if (item.data_final) dataInfo += ' ~ ' + formatDate(item.data_final);
+      var prazoInfo = '';
+      var urgente = false;
+
+      if (item.data_final) {
+        var deadline = new Date(item.data_final);
+        var hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        var diffDays = Math.ceil((deadline - hoje) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 0) {
+          prazoInfo = 'Vence hoje!';
+          urgente = true;
+        } else if (diffDays <= 3) {
+          prazoInfo = 'Vence em ' + diffDays + ' dia' + (diffDays > 1 ? 's' : '') + '!';
+          urgente = true;
+        } else if (diffDays <= 7) {
+          prazoInfo = 'Vence em ' + diffDays + ' dias';
+        } else {
+          prazoInfo = 'Até ' + formatDate(item.data_final);
+        }
       }
 
-      html += '<div class="ativ-row ativ-' + statusClass + '">'
+      var rowClass = 'ativ-row ativ-' + statusClass + (urgente ? ' ativ-urgente' : '');
+
+      html += '<div class="' + rowClass + '">'
         + '<div class="ativ-info">'
         + '<span class="badge ' + tipoClass + '">' + escapeHtml(item.tipo_atividade || 'AV') + '</span>'
         + '<span class="ativ-nome">' + escapeHtml(item.atividade) + '</span>'
         + '</div>'
         + '<div class="ativ-extra">'
-        + (dataInfo ? '<span class="ativ-data">' + dataInfo + '</span>' : '')
+        + (prazoInfo ? '<span class="ativ-data' + (urgente ? ' ativ-data-urgente' : '') + '">' + prazoInfo + '</span>' : '')
         + '<span class="badge badge-' + statusClass + '">' + statusLabel + '</span>'
         + '</div>'
         + '</div>';
@@ -335,6 +379,17 @@ function showSyncStatus(msg, type) {
   if (type === 'success' || type === 'warning') {
     setTimeout(function () { el.style.display = 'none'; }, 8000);
   }
+}
+
+function getEarliestDeadline(items) {
+  var min = null;
+  items.forEach(function (item) {
+    if (item.data_final) {
+      var d = new Date(item.data_final);
+      if (!min || d < min) min = d;
+    }
+  });
+  return min;
 }
 
 function isActiveDisc(group) {
