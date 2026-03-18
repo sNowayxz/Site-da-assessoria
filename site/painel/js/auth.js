@@ -26,7 +26,7 @@ async function redirectIfLoggedIn() {
   var user = await getUser();
   if (user) {
     var role = await getUserRole(user);
-    if (role === 'extensao' || role === 'assessoria') {
+    if (role === 'extensao') {
       window.location.href = '/painel/chat.html';
     } else {
       window.location.href = '/painel/app.html';
@@ -110,7 +110,7 @@ async function requireRole(allowedRoles) {
   if (effectiveRoles.indexOf(role) === -1) {
     var defaultPages = {
       extensao: '/painel/chat.html',
-      assessoria: '/painel/chat.html'
+      assessoria: '/painel/app.html'
     };
     window.location.href = defaultPages[role] || '/painel/app.html';
     return null;

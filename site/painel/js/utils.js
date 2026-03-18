@@ -292,8 +292,53 @@ async function checkNotifications() {
   if (!window.sb) return;
   var userRole = window._cachedRole || null;
 
-  // Assessoria/extensao: skip heavy notifications (studeo, atividades, agenda, alunos)
-  if (userRole === 'assessoria' || userRole === 'extensao') {
+  // Assessoria: show only solicitation status notifications
+  if (userRole === 'assessoria') {
+    try {
+      var userId = null;
+      var userRes = await sb.auth.getUser();
+      if (userRes.data && userRes.data.user) userId = userRes.data.user.id;
+      if (!userId) { _notifData = []; return; }
+
+      var notifications = [];
+      // Solicitações recentemente atualizadas (últimos 7 dias)
+      var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+      var { data: updated } = await sb.from('solicitacoes')
+        .select('aluno_nome, status, updated_at')
+        .eq('assessor_id', userId)
+        .gte('updated_at', weekAgo.toISOString())
+        .neq('status', 'aguardando')
+        .order('updated_at', { ascending: false })
+        .limit(10);
+
+      var statusIcons = { desenvolvendo: '🔵', finalizado: '✅', finalizado_cobrar: '💰' };
+      var statusTexts = { desenvolvendo: 'Em desenvolvimento', finalizado: 'Finalizado', finalizado_cobrar: 'Finalizado - cobrar' };
+      (updated || []).forEach(function(s) {
+        notifications.push({
+          icon: statusIcons[s.status] || '📋',
+          text: s.aluno_nome + ' — ' + (statusTexts[s.status] || s.status),
+          sub: timeAgo(new Date(s.updated_at)),
+          link: 'acompanhar.html',
+          priority: s.status === 'finalizado_cobrar' ? 1 : 2
+        });
+      });
+
+      _notifData = notifications;
+      var badge = document.getElementById('notif-badge');
+      if (badge) {
+        if (notifications.length > 0) {
+          badge.textContent = notifications.length > 99 ? '99+' : notifications.length;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    } catch(e) { _notifData = []; }
+    return;
+  }
+
+  // Extensao: skip heavy notifications
+  if (userRole === 'extensao') {
     _notifData = [];
     return;
   }
@@ -684,7 +729,7 @@ var PAGE_ACCESS = {
   admin: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil', 'solicitar', 'acompanhar', 'depoimentos'],
   dono: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil', 'solicitar', 'acompanhar', 'depoimentos'],
   extensao: ['chat', 'extensoes', 'solicitar', 'acompanhar', 'perfil'],
-  assessoria: ['chat', 'solicitar', 'acompanhar', 'perfil'],
+  assessoria: ['app', 'chat', 'solicitar', 'acompanhar', 'perfil'],
   assessor: ['app', 'agenda', 'chat', 'alunos', 'atividades', 'extensoes', 'kanban', 'perfil'],
   visualizador: ['app', 'agenda', 'perfil']
 };

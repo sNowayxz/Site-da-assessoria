@@ -263,7 +263,8 @@
             valor_hora: valorHora,
             valor_pago: valorPago,
             status: 'aguardando',
-            origem: 'aluno'
+            origem: 'aluno',
+            assessor_id: currentRole === 'assessoria' ? currentUserId : null
           }).then(function (res) {
             if (res.error) { showToast('Erro: ' + res.error.message, 'error'); return; }
             showToast('Aluno adicionado!', 'success');
