@@ -284,6 +284,111 @@ async function doGlobalSearch(q, resultsBox) {
 document.addEventListener('DOMContentLoaded', initGlobalSearch);
 
 
+// ─── Notificações (badge + painel dropdown) ───
+var _notifData = [];
+
+async function checkNotifications() {
+  if (!window.sb) return;
+  try {
+    var { data, count } = await sb
+      .from('atividades')
+      .select('id, tipo, status, aluno_id, created_at, alunos(nome)', { count: 'exact' })
+      .eq('status', 'pendente')
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    _notifData = data || [];
+    var badge = document.getElementById('notif-badge');
+    if (badge) {
+      if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : count;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  } catch (e) {
+    console.warn('[notif] Erro ao verificar:', e.message);
+  }
+}
+
+function initNotifications() {
+  var btn = document.getElementById('btn-notificacoes');
+  if (!btn) return;
+
+  // Create dropdown panel
+  var panel = document.createElement('div');
+  panel.className = 'notif-panel';
+  panel.id = 'notif-panel';
+  panel.innerHTML = '<div class="notif-panel-header">Notificações</div><div class="notif-panel-body" id="notif-panel-body"></div>';
+  btn.parentElement.style.position = 'relative';
+  btn.parentElement.appendChild(panel);
+
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var isOpen = panel.classList.contains('open');
+    if (isOpen) {
+      panel.classList.remove('open');
+      return;
+    }
+    renderNotifPanel();
+    panel.classList.add('open');
+  });
+
+  // Close on click outside
+  document.addEventListener('click', function (e) {
+    if (!panel.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+      panel.classList.remove('open');
+    }
+  });
+
+  // Load notifications
+  checkNotifications();
+}
+
+function renderNotifPanel() {
+  var body = document.getElementById('notif-panel-body');
+  if (!body) return;
+
+  if (!_notifData.length) {
+    body.innerHTML = '<div class="notif-empty">Nenhuma atividade pendente 🎉</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < _notifData.length; i++) {
+    var item = _notifData[i];
+    var alunoNome = (item.alunos && item.alunos.nome) ? item.alunos.nome : 'Aluno desconhecido';
+    var tipo = item.tipo || 'atividade';
+    var data = new Date(item.created_at);
+    var tempo = timeAgo(data);
+
+    html += '<a href="atividades.html" class="notif-item">';
+    html += '<div class="notif-item-icon">📋</div>';
+    html += '<div class="notif-item-content">';
+    html += '<div class="notif-item-text"><strong>' + escapeHtml(alunoNome) + '</strong> — ' + escapeHtml(tipo) + ' pendente</div>';
+    html += '<div class="notif-item-time">' + tempo + '</div>';
+    html += '</div>';
+    html += '</a>';
+  }
+
+  body.innerHTML = html;
+}
+
+function timeAgo(date) {
+  var now = new Date();
+  var diff = Math.floor((now - date) / 1000);
+  if (diff < 60) return 'agora';
+  if (diff < 3600) return Math.floor(diff / 60) + 'min atrás';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h atrás';
+  if (diff < 604800) return Math.floor(diff / 86400) + 'd atrás';
+  return date.toLocaleDateString('pt-BR');
+}
+
+document.addEventListener('DOMContentLoaded', initNotifications);
+
+
 // ─── Supabase Realtime (notificações) ───
 function subscribeToChanges(table, onInsert, onUpdate) {
   if (!window.sb) return;
