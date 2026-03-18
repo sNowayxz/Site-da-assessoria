@@ -194,11 +194,12 @@ async function studeoLogin(ra, senha) {
 }
 
 async function buscarDisciplinas(ra) {
-  const raClean = String(ra).replace(/[\s.\-]/g, '').trim();
+  // Papiron API needs RA with dash (e.g. 21161906-5), not cleaned
+  const raStr = String(ra).trim();
 
   let resp;
   try {
-    resp = await fetch(`${PAPIRON_API}/ferramentas/informar_disciplinas_aluno_json/${raClean}`, {
+    resp = await fetch(`${PAPIRON_API}/ferramentas/informar_disciplinas_aluno_json/${raStr}`, {
       headers: { 'Accept': 'application/json' },
     });
   } catch (err) {
