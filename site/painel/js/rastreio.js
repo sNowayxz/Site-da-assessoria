@@ -2,6 +2,7 @@
    Rastreio Studeo — Sincronização
    ═══════════════════════════════════════════ */
 
+var SYNC_API_URL = 'https://site-da-assessoria.vercel.app/api/sync-studeo';
 var syncInProgress = false;
 var currentTab = 'todas';
 
@@ -197,7 +198,7 @@ async function handleSync() {
   showSyncStatus('Sincronizando ' + aluno.nome + '...', 'loading');
 
   try {
-    var resp = await fetch('/api/sync-studeo', {
+    var resp = await fetch(SYNC_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'sync', ra: aluno.ra, senha: aluno.studeo_senha }),
@@ -243,7 +244,7 @@ async function handleSyncAll() {
     showSyncStatus('Sincronizando ' + (i + 1) + '/' + total + ': ' + aluno.nome + '...', 'loading');
 
     try {
-      var resp = await fetch('/api/sync-studeo', {
+      var resp = await fetch(SYNC_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'sync', ra: aluno.ra, senha: aluno.studeo_senha }),
