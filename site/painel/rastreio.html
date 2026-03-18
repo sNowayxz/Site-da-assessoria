@@ -39,6 +39,28 @@
       flex-wrap: wrap;
     }
 
+    /* Mini Stats (inline no painel) */
+    .panel-stats {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .mini-stat {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .mini-stat strong {
+      color: var(--gray-800);
+      font-size: 0.88rem;
+    }
+    [data-theme="dark"] .mini-stat { color: #8b949e; }
+    [data-theme="dark"] .mini-stat strong { color: #e6edf3; }
+
     /* Grupo Chips */
     .grupo-chips { display: flex; gap: 6px; flex-wrap: wrap; }
     .grupo-chip {
@@ -350,6 +372,8 @@
       .styled-select { min-width: unset; width: 100%; }
       .grupo-chips { flex-wrap: wrap; }
       .grupo-chip { padding: 6px 12px; font-size: 0.8rem; }
+      .panel-stats { gap: 10px; }
+      .mini-stat { font-size: 0.75rem; }
       .sync-actions { flex-direction: column; }
       .aluno-header { flex-direction: column; align-items: flex-start; }
       .aluno-info { flex-direction: column; gap: 4px; }
@@ -517,48 +541,22 @@
         </div>
       </div>
 
-      <!-- Stats -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon blue">👥</div>
-          <div class="stat-info">
-            <h3 id="count-mensalistas">0</h3>
-            <p>Total Alunos</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon orange">🔔</div>
-          <div class="stat-info">
-            <h3 id="count-alunos-prazo">0</h3>
-            <p>Alunos c/ Pendências</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon purple">📋</div>
-          <div class="stat-info">
-            <h3 id="count-atividades-sync">0</h3>
-            <p>Atividades no Prazo</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green">✅</div>
-          <div class="stat-info">
-            <h3 id="count-respondidas-sync">0</h3>
-            <p>Sincronizados</p>
-          </div>
-        </div>
-      </div>
-
       <!-- Painel de Controle Unificado -->
       <div class="rastreio-panel">
-        <!-- Grupo -->
+        <!-- Grupo + Resumo -->
         <div class="panel-section">
-          <div class="panel-label">Grupo</div>
-          <div class="grupo-chips" id="grupo-chips">
-            <button class="grupo-chip active" data-grupo="">Todos <span class="chip-count" id="count-all">0</span></button>
-            <button class="grupo-chip" data-grupo="mensalista">Mensalistas <span class="chip-count" id="count-men">0</span></button>
-            <button class="grupo-chip" data-grupo="recorrente">Recorrentes <span class="chip-count" id="count-rec">0</span></button>
-            <button class="grupo-chip" data-grupo="extensao">Extensão <span class="chip-count" id="count-ext">0</span></button>
+          <div class="panel-row" style="justify-content:space-between;">
+            <div class="grupo-chips" id="grupo-chips">
+              <button class="grupo-chip active" data-grupo="">Todos <span class="chip-count" id="count-all">0</span></button>
+              <button class="grupo-chip" data-grupo="mensalista">Mensalistas <span class="chip-count" id="count-men">0</span></button>
+              <button class="grupo-chip" data-grupo="recorrente">Recorrentes <span class="chip-count" id="count-rec">0</span></button>
+              <button class="grupo-chip" data-grupo="extensao">Extensão <span class="chip-count" id="count-ext">0</span></button>
+            </div>
+            <div class="panel-stats">
+              <span class="mini-stat" title="Alunos com pendências no prazo">🔔 <strong id="count-alunos-prazo">0</strong> c/ pendências</span>
+              <span class="mini-stat" title="Total de atividades no prazo">📋 <strong id="count-atividades-sync">0</strong> atividades</span>
+              <span class="mini-stat" title="Alunos sincronizados">✅ <strong id="count-respondidas-sync">0</strong> sincronizados</span>
+            </div>
           </div>
         </div>
 
@@ -578,20 +576,18 @@
 
         <!-- Prazo -->
         <div class="panel-section">
-          <div class="panel-row" style="justify-content:space-between;">
-            <div class="filter-prazo-chips" id="filter-prazo-chips">
-              <button class="prazo-chip" data-dias="7">7 dias</button>
-              <button class="prazo-chip" data-dias="15">15 dias</button>
-              <button class="prazo-chip" data-dias="30">30 dias</button>
-              <button class="prazo-chip active" data-dias="60">60 dias</button>
-              <button class="prazo-chip" data-dias="0">Todos</button>
-            </div>
-            <select class="styled-select" id="filter-aluno-rastreio" style="max-width:280px;flex:unset;">
-              <option value="">Filtrar aluno...</option>
-            </select>
+          <div class="filter-prazo-chips" id="filter-prazo-chips">
+            <button class="prazo-chip" data-dias="7">7 dias</button>
+            <button class="prazo-chip" data-dias="15">15 dias</button>
+            <button class="prazo-chip" data-dias="30">30 dias</button>
+            <button class="prazo-chip active" data-dias="60">60 dias</button>
+            <button class="prazo-chip" data-dias="0">Todos</button>
           </div>
         </div>
       </div>
+
+      <!-- Hidden elements for backwards compat -->
+      <span id="count-mensalistas" style="display:none">0</span>
 
       <!-- Sync Status -->
       <div class="sync-status" id="sync-status"></div>

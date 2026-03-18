@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('btn-sync').addEventListener('click', handleSync);
   document.getElementById('btn-sync-all').addEventListener('click', handleSyncAll);
   document.getElementById('btn-sync-new').addEventListener('click', handleSyncNew);
-  document.getElementById('filter-aluno-rastreio').addEventListener('change', loadSyncData);
 
   // Grupo chips (único controle para grupo — filtra sync e visualização)
   document.querySelectorAll('.grupo-chip').forEach(function (chip) {
@@ -109,14 +108,6 @@ function loadAlunos() {
     });
   }
 
-  // Filter select (mesmos dados)
-  var filterSelect = document.getElementById('filter-aluno-rastreio');
-  if (filterSelect) {
-    filterSelect.innerHTML = '<option value="">Filtrar aluno...</option>';
-    filtered.forEach(function (a) {
-      filterSelect.innerHTML += '<option value="' + a.id + '">' + escapeHtml(a.nome) + '</option>';
-    });
-  }
 }
 
 async function loadSyncData() {
@@ -130,8 +121,6 @@ async function loadSyncData() {
       + '</div>';
   }
 
-  var filterAluno = document.getElementById('filter-aluno-rastreio');
-  var alunoId = filterAluno ? filterAluno.value : '';
   var grupoFilter = getActiveGrupo();
 
   // Prazo chip ativo
@@ -162,10 +151,8 @@ async function loadSyncData() {
     query = query.lte('data_final', limite.toISOString());
   }
 
-  if (alunoId) query = query.eq('aluno_id', alunoId);
-
-  // Filtrar por grupo: pegar IDs dos alunos do grupo selecionado
-  if (grupoFilter && !alunoId) {
+  // Filtrar por grupo
+  if (grupoFilter) {
     var grupoIds = Object.keys(window._alunosCache).filter(function (id) {
       return window._alunosCache[id].tipo === grupoFilter;
     });
