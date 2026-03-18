@@ -20,6 +20,8 @@ const EXCLUIR = [
   'PREPARE-SE',
   'PROJETO DE ENSINO',
   'NIVELAMENTO',
+  'GIRO EAD',
+  'AULA INAUGURAL',
 ];
 
 function corsHeaders() {
@@ -214,10 +216,10 @@ async function buscarDisciplinas(ra) {
   }
 
   if (!Array.isArray(data) || data.length === 0) {
-    throw new Error(`Nenhuma disciplina encontrada para RA ${raClean}. Verifique se o RA está correto.`);
+    throw new Error(`Nenhuma disciplina encontrada para RA ${raStr}. Verifique se o RA está correto.`);
   }
 
-  return data
+  const all = data
     .map(d => ({
       nm_disciplina: d.nm_disciplina || d.disciplina || d.nome || '',
       cd_shortname:  d.cd_shortname  || d.shortname  || d.codigo || '',
@@ -225,6 +227,22 @@ async function buscarDisciplinas(ra) {
       modulo: d.modulo || null,
     }))
     .filter(d => d.nm_disciplina && d.cd_shortname);
+
+  // Only keep disciplines from current year (latest year found)
+  const currentYear = new Date().getFullYear();
+  const activeDiscs = all.filter(d => {
+    const ano = Number(d.ano);
+    // Keep current year and mod_curso != 9 (special/admin courses)
+    return ano >= currentYear;
+  });
+
+  // If no current year disciplines, fallback to latest year
+  if (activeDiscs.length === 0) {
+    const maxYear = Math.max(...all.map(d => Number(d.ano) || 0));
+    return all.filter(d => Number(d.ano) === maxYear);
+  }
+
+  return activeDiscs;
 }
 
 async function buscarAtividades(token, cdShortname) {
