@@ -88,6 +88,16 @@ function loadAlunos() {
 }
 
 async function loadSyncData() {
+  // Skeleton loading
+  var container = document.getElementById('sync-results');
+  if (container && !container.querySelector('.aluno-card')) {
+    container.innerHTML = '<div style="padding:20px;display:flex;flex-direction:column;gap:16px;">'
+      + '<div class="skeleton" style="height:60px;width:100%;"></div>'
+      + '<div class="skeleton" style="height:44px;width:90%;"></div>'
+      + '<div class="skeleton" style="height:44px;width:85%;"></div>'
+      + '</div>';
+  }
+
   var filterAluno = document.getElementById('filter-aluno-rastreio');
   var alunoId = filterAluno ? filterAluno.value : '';
   var grupoFilter = (document.getElementById('filter-grupo-rastreio') || {}).value || '';
@@ -268,6 +278,17 @@ function renderSyncData(data) {
   });
 
   container.innerHTML = html;
+
+  // Animar entrada dos cards
+  container.querySelectorAll('.aluno-card').forEach(function (card, i) {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(12px)';
+    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    setTimeout(function () {
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, 50 + i * 40);
+  });
 }
 
 async function handleSync() {
@@ -281,6 +302,7 @@ async function handleSync() {
   if (!aluno.studeo_senha) { alert('Este aluno não tem senha do Studeo cadastrada. Edite o aluno na página de Alunos e adicione a senha.'); return; }
 
   syncInProgress = true;
+  setSyncButtonsLoading(true);
   showSyncStatus('Sincronizando ' + aluno.nome + '...', 'loading');
 
   try {
@@ -308,7 +330,19 @@ async function handleSync() {
     showSyncStatus('Erro: ' + err.message, 'error');
   } finally {
     syncInProgress = false;
+    setSyncButtonsLoading(false);
   }
+}
+
+function setSyncButtonsLoading(loading) {
+  ['btn-sync', 'btn-sync-all', 'btn-sync-new'].forEach(function (id) {
+    var btn = document.getElementById(id);
+    if (btn) {
+      if (loading) btn.classList.add('btn-loading');
+      else btn.classList.remove('btn-loading');
+      btn.disabled = loading;
+    }
+  });
 }
 
 async function handleSyncAll() {
@@ -354,6 +388,7 @@ async function handleSyncNew() {
 
 async function syncBatch(alunosList, label) {
   syncInProgress = true;
+  setSyncButtonsLoading(true);
   var total = alunosList.length;
   var erros = 0;
   var totalAtiv = 0;
@@ -388,6 +423,7 @@ async function syncBatch(alunosList, label) {
 
   await loadSyncData();
   syncInProgress = false;
+  setSyncButtonsLoading(false);
 }
 
 async function saveResults(alunoId, resultado) {
