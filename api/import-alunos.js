@@ -81,13 +81,62 @@ module.exports = async function handler(req, res) {
 
   if (!SB_KEY) return res.status(500).json({ error: 'SUPABASE_SERVICE_KEY não configurada' });
 
-  const { logins } = req.body || {};
+  const { action, logins, alunos } = req.body || {};
+
+  // ── Ação "bulk": import direto sem login Studeo ──
+  if (action === 'bulk') {
+    if (!Array.isArray(alunos) || alunos.length === 0) {
+      return res.status(400).json({ error: 'Campo "alunos" (array) obrigatório para action=bulk' });
+    }
+
+    // Sanitizar registros
+    const records = alunos
+      .filter(a => a.ra)
+      .map(a => ({
+        ra: String(a.ra).trim(),
+        nome: a.nome || '',
+        curso: a.curso || null,
+        studeo_senha: a.studeo_senha || a.senha || '',
+        telefone: a.telefone || '',
+        tipo: 'mensalista',
+        situacao: a.situacao || 'cursando',
+        observacoes: a.observacoes || a.polo || null,
+      }));
+
+    let inserted = 0;
+    const errors = [];
+
+    for (let i = 0; i < records.length; i += 50) {
+      const chunk = records.slice(i, i + 50);
+      const sbResp = await fetch(`${SB_URL}/rest/v1/alunos?on_conflict=ra`, {
+        method: 'POST',
+        headers: {
+          'apikey': SB_KEY,
+          'Authorization': 'Bearer ' + SB_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates',
+        },
+        body: JSON.stringify(chunk),
+      });
+
+      if (sbResp.ok || sbResp.status === 201) {
+        inserted += chunk.length;
+      } else {
+        const errText = await sbResp.text();
+        errors.push(`Chunk ${Math.floor(i/50)}: ${sbResp.status} - ${errText.substring(0, 200)}`);
+      }
+    }
+
+    return res.status(200).json({ ok: true, inserted, total: records.length, errors: errors.length, errorDetails: errors.slice(0, 5) });
+  }
+
+  // ── Ação padrão: login Studeo individual ──
   if (!Array.isArray(logins) || logins.length === 0) {
-    return res.status(400).json({ error: 'Campo "logins" deve ser um array não vazio' });
+    return res.status(400).json({ error: 'Campo "logins" deve ser um array não vazio, ou use action="bulk"' });
   }
 
   const resultados = [];
-  const BATCH_SIZE = 5; // processa 5 por vez para não sobrecarregar
+  const BATCH_SIZE = 5;
 
   for (let i = 0; i < logins.length; i++) {
     const { ra, senha } = logins[i];
@@ -99,11 +148,9 @@ module.exports = async function handler(req, res) {
     const raClean = String(ra).replace(/[\s]/g, '').trim();
 
     try {
-      // 1. Login no Studeo para validar e pegar nome
       const { nome: nomeJwt } = await studeoLoginComNome(raClean, senha);
       const nome = nomeJwt || `Aluno ${raClean}`;
 
-      // 2. Upsert no Supabase
       const sbResp = await fetch(`${SB_URL}/rest/v1/alunos`, {
         method: 'POST',
         headers: {
@@ -112,40 +159,21 @@ module.exports = async function handler(req, res) {
           'Content-Type': 'application/json',
           'Prefer': 'resolution=merge-duplicates,return=representation',
         },
-        body: JSON.stringify({
-          ra: raClean,
-          nome,
-          tipo: 'mensalista',
-          studeo_senha: senha,
-        }),
+        body: JSON.stringify({ ra: raClean, nome, tipo: 'mensalista', studeo_senha: senha }),
       });
 
       const sbData = await sbResp.json().catch(() => null);
-      if (!sbResp.ok) {
-        const errMsg = sbData?.message || sbData?.error || `Supabase ${sbResp.status}`;
-        throw new Error(errMsg);
-      }
+      if (!sbResp.ok) throw new Error(sbData?.message || `Supabase ${sbResp.status}`);
 
-      const inserted = Array.isArray(sbData) ? sbData[0] : sbData;
-      resultados.push({
-        ra: raClean,
-        ok: true,
-        nome: inserted?.nome || nome,
-        id: inserted?.id,
-      });
-
+      resultados.push({ ra: raClean, ok: true, nome: sbData?.[0]?.nome || nome });
     } catch (err) {
       resultados.push({ ra: raClean, ok: false, erro: err.message });
     }
 
-    // Pequena pausa a cada batch para não sobrecarregar o Studeo
     if ((i + 1) % BATCH_SIZE === 0 && i + 1 < logins.length) {
       await new Promise(r => setTimeout(r, 500));
     }
   }
 
-  const sucesso = resultados.filter(r => r.ok).length;
-  const erros   = resultados.filter(r => !r.ok).length;
-
-  return res.status(200).json({ ok: true, sucesso, erros, resultados });
+  return res.status(200).json({ ok: true, sucesso: resultados.filter(r => r.ok).length, erros: resultados.filter(r => !r.ok).length, resultados });
 };
