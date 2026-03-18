@@ -286,13 +286,24 @@ document.addEventListener('DOMContentLoaded', initGlobalSearch);
 
 // ─── Notificações (badge + painel dropdown) ───
 var _notifData = [];
+var _notifAlunosCache = {};
 
 async function checkNotifications() {
   if (!window.sb) return;
   try {
+    // Load alunos cache if empty
+    if (Object.keys(_notifAlunosCache).length === 0) {
+      var { data: alunos } = await sb.from('alunos').select('id, nome');
+      if (alunos) {
+        for (var i = 0; i < alunos.length; i++) {
+          _notifAlunosCache[alunos[i].id] = alunos[i].nome;
+        }
+      }
+    }
+
     var { data, count } = await sb
       .from('atividades')
-      .select('id, tipo, status, aluno_id, created_at, alunos(nome)', { count: 'exact' })
+      .select('*', { count: 'exact' })
       .eq('status', 'pendente')
       .order('created_at', { ascending: false })
       .limit(20);
@@ -359,7 +370,7 @@ function renderNotifPanel() {
   var html = '';
   for (var i = 0; i < _notifData.length; i++) {
     var item = _notifData[i];
-    var alunoNome = (item.alunos && item.alunos.nome) ? item.alunos.nome : 'Aluno desconhecido';
+    var alunoNome = _notifAlunosCache[item.aluno_id] || 'Aluno';
     var tipo = item.tipo || 'atividade';
     var data = new Date(item.created_at);
     var tempo = timeAgo(data);

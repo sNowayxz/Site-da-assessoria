@@ -261,10 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Notification badge
-  checkNotifications();
-
-  // Dynamic favicon
+  // Dynamic favicon (notifications handled by utils.js)
   updateFaviconBadge();
 });
 
@@ -290,17 +287,6 @@ async function refreshCharts() {
   } catch (e) {
     console.warn('Erro ao atualizar charts:', e);
   }
-}
-
-async function checkNotifications() {
-  try {
-    var { count } = await sb.from('atividades').select('*', { count: 'exact', head: true }).eq('status', 'pendente');
-    var badge = document.getElementById('notif-badge');
-    if (badge && count > 0) {
-      badge.textContent = count;
-      badge.style.display = 'flex';
-    }
-  } catch (e) { /* silent */ }
 }
 
 function updateFaviconBadge() {
