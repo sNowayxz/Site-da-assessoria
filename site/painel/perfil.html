@@ -148,7 +148,11 @@
       </div>
 
       <div class="profile-card">
-        <div class="profile-avatar-lg" id="profile-avatar">A</div>
+        <div class="profile-avatar-wrap" style="position:relative;display:inline-block;margin-bottom:20px;">
+          <div class="profile-avatar-lg" id="profile-avatar" style="cursor:pointer;position:relative;overflow:hidden;" title="Clique para alterar foto">A</div>
+          <div style="position:absolute;bottom:0;right:0;background:var(--gold);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2);" onclick="document.getElementById('avatar-input').click()">📷</div>
+          <input type="file" id="avatar-input" accept="image/*" style="display:none;">
+        </div>
 
         <div class="profile-section">
           <h3>Informações</h3>
@@ -299,6 +303,22 @@
     document.getElementById('mobile-toggle').addEventListener('click', function () { document.getElementById('sidebar').classList.toggle('open'); });
     document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });
 
+    function setAvatarImage(url) {
+      var profileAv = document.getElementById('profile-avatar');
+      var sidebarAv = document.getElementById('user-avatar');
+      profileAv.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+      sidebarAv.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+    }
+
+    async function loadAvatar(userId) {
+      try {
+        var { data } = await sb.from('assessores').select('avatar_url').eq('id', userId).single();
+        if (data && data.avatar_url) {
+          setAvatarImage(data.avatar_url);
+        }
+      } catch (e) {}
+    }
+
     document.addEventListener('DOMContentLoaded', async function () {
       var result = await requireRole(['admin', 'dono', 'extensao', 'assessoria', 'assessor', 'visualizador']);
       if (!result) return;
@@ -315,6 +335,41 @@
       document.getElementById('profile-nome').value = user.user_metadata?.nome || name;
 
       document.getElementById('btn-logout').addEventListener('click', handleLogout);
+
+      // Load existing avatar
+      loadAvatar(user.id);
+
+      // Avatar upload
+      document.getElementById('avatar-input').addEventListener('change', async function (e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { showToast('Imagem muito grande. Máximo 2MB.', 'error'); return; }
+
+        var ext = file.name.split('.').pop();
+        var path = 'avatars/' + user.id + '.' + ext;
+
+        try {
+          // Upload to storage
+          var { error: upErr } = await sb.storage.from('chat-files').upload(path, file, { cacheControl: '3600', upsert: true });
+          if (upErr) throw upErr;
+
+          var { data: urlData } = sb.storage.from('chat-files').getPublicUrl(path);
+          var avatarUrl = urlData.publicUrl + '?t=' + Date.now();
+
+          // Save URL to assessores table
+          await sb.from('assessores').update({ avatar_url: avatarUrl }).eq('id', user.id);
+
+          // Update UI
+          setAvatarImage(avatarUrl);
+          showToast('Foto atualizada!', 'success');
+        } catch (err) {
+          showToast('Erro ao enviar foto: ' + (err.message || err), 'error');
+        }
+      });
+
+      document.getElementById('profile-avatar').addEventListener('click', function () {
+        document.getElementById('avatar-input').click();
+      });
 
       // Visualizador: disable editing
       if (role === 'visualizador') {
