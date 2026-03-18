@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', async function () {
-  var result = await requireRole(['admin', 'assessor', 'visualizador']);
+  var result = await requireRole(['admin', 'dono', 'extensao', 'assessoria', 'assessor', 'visualizador']);
   if (!result) return;
   var user = result.user;
   var role = result.role;

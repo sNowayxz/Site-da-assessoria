@@ -8,7 +8,7 @@ var _kanbanCurrentEditId = null;
 var _draggedCard = null;
 
 document.addEventListener('DOMContentLoaded', async function () {
-  var result = await requireRole(['admin', 'assessor']);
+  var result = await requireRole(['admin', 'dono', 'assessor']);
   if (!result) return;
   var user = result.user;
   var role = result.role;

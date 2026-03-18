@@ -11,7 +11,7 @@ var _pendingFile = null; // file staged for upload
 
 // ─── Init ───
 document.addEventListener('DOMContentLoaded', async function () {
-  var result = await requireRole(['admin', 'assessor']);
+  var result = await requireRole(['admin', 'dono', 'extensao', 'assessoria', 'assessor']);
   if (!result) return;
   var user = result.user;
   var role = result.role;
