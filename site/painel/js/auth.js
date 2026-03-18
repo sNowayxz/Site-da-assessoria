@@ -25,7 +25,12 @@ async function requireAuth() {
 async function redirectIfLoggedIn() {
   var user = await getUser();
   if (user) {
-    window.location.href = '/painel/app.html';
+    var role = await getUserRole(user);
+    if (role === 'extensao' || role === 'assessoria') {
+      window.location.href = '/painel/chat.html';
+    } else {
+      window.location.href = '/painel/app.html';
+    }
   }
 }
 
@@ -101,9 +106,13 @@ async function requireRole(allowedRoles) {
     effectiveRoles.push('dono');
   }
 
-  // Se role não é permitido nesta página
+  // Se role não é permitido nesta página, redirecionar para página padrão do role
   if (effectiveRoles.indexOf(role) === -1) {
-    window.location.href = '/painel/app.html';
+    var defaultPages = {
+      extensao: '/painel/chat.html',
+      assessoria: '/painel/chat.html'
+    };
+    window.location.href = defaultPages[role] || '/painel/app.html';
     return null;
   }
 
