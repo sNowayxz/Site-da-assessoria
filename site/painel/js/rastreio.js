@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('btn-sync-all').addEventListener('click', handleSyncAll);
   document.getElementById('btn-sync-new').addEventListener('click', handleSyncNew);
   document.getElementById('filter-aluno-rastreio').addEventListener('change', loadSyncData);
-  document.getElementById('filter-dias').addEventListener('change', loadSyncData);
   document.getElementById('filter-grupo-rastreio').addEventListener('change', function () { loadAlunos(); loadSyncData(); });
   document.getElementById('sync-grupo-select').addEventListener('change', loadAlunos);
 
@@ -101,8 +100,6 @@ async function loadSyncData() {
   var filterAluno = document.getElementById('filter-aluno-rastreio');
   var alunoId = filterAluno ? filterAluno.value : '';
   var grupoFilter = (document.getElementById('filter-grupo-rastreio') || {}).value || '';
-  var diasInput = document.getElementById('filter-dias');
-  var dias = diasInput ? parseInt(diasInput.value) || 60 : 60;
 
   // Build alunos cache with tipo
   if (!window._alunosCache) {
@@ -111,10 +108,14 @@ async function loadSyncData() {
     (alunos || []).forEach(function (a) { window._alunosCache[a.id] = a; });
   }
 
-  // Só pendentes, ordenadas por data_final
+  // Só pendentes (não respondidas), com prazo no futuro, ordenadas por data_final
+  var now = new Date();
+  now.setHours(0, 0, 0, 0);
+
   var query = sb.from('studeo_sync')
     .select('*')
     .eq('respondida', false)
+    .gte('data_final', now.toISOString())
     .order('data_final', { ascending: true });
 
   if (alunoId) query = query.eq('aluno_id', alunoId);
@@ -129,18 +130,6 @@ async function loadSyncData() {
 
   var { data, error } = await query;
   if (error) { console.error(error); return; }
-
-  // Filtrar: só atividades com prazo dentro dos próximos X dias
-  var now = new Date();
-  now.setHours(0, 0, 0, 0);
-  var limite = new Date(now);
-  limite.setDate(limite.getDate() + dias);
-
-  data = (data || []).filter(function (item) {
-    if (!item.data_final) return false; // sem prazo = não mostrar
-    var df = new Date(item.data_final);
-    return df >= now && df <= limite;
-  });
 
   // Attach aluno info from cache
   (data || []).forEach(function (item) {
