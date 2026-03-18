@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Depoimentos — Painel Assessoria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://lztfoprapoyicldunhzw.supabase.co">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/painel.css">
+  <style>
+    /* Stats */
+    .dep-stats {
+      display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .dep-stat {
+      background: var(--white); border-radius: 12px; padding: 16px 24px;
+      box-shadow: var(--shadow); flex: 1; min-width: 120px; text-align: center;
+    }
+    .dep-stat-number {
+      font-size: 1.8rem; font-weight: 800; color: var(--gold);
+    }
+    .dep-stat-label {
+      font-size: 0.75rem; color: var(--gray-500); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.03em;
+    }
+
+    /* Filters */
+    .dep-filters {
+      display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .dep-filter-btn {
+      padding: 8px 18px; border: 1.5px solid var(--gray-200); border-radius: 8px;
+      background: transparent; color: var(--gray-500); font-weight: 600;
+      font-size: 0.82rem; cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .dep-filter-btn:hover { border-color: var(--gray-300); color: var(--gray-700); }
+    .dep-filter-btn.active {
+      background: var(--gold); color: var(--dark); border-color: var(--gold);
+    }
+
+    /* Cards */
+    .dep-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+    .dep-card {
+      background: var(--white); border-radius: 12px; box-shadow: var(--shadow);
+      overflow: hidden; transition: all 0.2s; position: relative;
+    }
+    .dep-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+
+    .dep-card-status {
+      height: 4px; width: 100%;
+    }
+    .dep-card-status.pendente { background: #f59e0b; }
+    .dep-card-status.aprovado { background: #22c55e; }
+    .dep-card-status.rejeitado { background: #ef4444; }
+
+    .dep-card-body { padding: 20px; }
+
+    .dep-card-header {
+      display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;
+    }
+    .dep-card-author {
+      font-weight: 700; font-size: 0.95rem; color: var(--gray-800);
+    }
+    .dep-card-course {
+      font-size: 0.78rem; color: var(--gray-400); margin-top: 2px;
+    }
+    .dep-card-date {
+      font-size: 0.72rem; color: var(--gray-400); white-space: nowrap;
+    }
+
+    .dep-card-stars {
+      color: #f59e0b; font-size: 1rem; letter-spacing: 1px; margin-bottom: 10px;
+    }
+
+    .dep-card-text {
+      font-size: 0.88rem; color: var(--gray-600); line-height: 1.55;
+      font-style: italic; margin-bottom: 16px;
+    }
+    .dep-card-text::before { content: '"'; font-size: 1.2rem; font-weight: 700; color: var(--gold); }
+    .dep-card-text::after { content: '"'; font-size: 1.2rem; font-weight: 700; color: var(--gold); }
+
+    .dep-card-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .badge-pendente { background: rgba(245,158,11,0.12); color: #d97706; }
+    .badge-aprovado { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-rejeitado { background: rgba(239,68,68,0.12); color: #dc2626; }
+
+    .dep-card-actions {
+      display: flex; gap: 8px; margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid var(--gray-100);
+    }
+    .dep-btn {
+      flex: 1; padding: 8px 12px; border: none; border-radius: 8px;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .dep-btn-approve {
+      background: rgba(34,197,94,0.1); color: #16a34a;
+    }
+    .dep-btn-approve:hover { background: rgba(34,197,94,0.2); }
+    .dep-btn-reject {
+      background: rgba(239,68,68,0.1); color: #dc2626;
+    }
+    .dep-btn-reject:hover { background: rgba(239,68,68,0.2); }
+    .dep-btn-delete {
+      background: rgba(107,114,128,0.1); color: #6b7280;
+    }
+    .dep-btn-delete:hover { background: rgba(107,114,128,0.2); }
+    .dep-btn-undo {
+      background: rgba(59,130,246,0.1); color: #2563eb;
+    }
+    .dep-btn-undo:hover { background: rgba(59,130,246,0.2); }
+
+    .dep-empty {
+      text-align: center; padding: 60px 20px; color: var(--gray-400); font-size: 1rem;
+    }
+    .dep-empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* Dark mode */
+    [data-theme="dark"] .dep-stat { background: #1c2128; }
+    [data-theme="dark"] .dep-card { background: #1c2128; }
+    [data-theme="dark"] .dep-card-author { color: #e6edf3; }
+    [data-theme="dark"] .dep-card-text { color: #8b949e; }
+    [data-theme="dark"] .dep-card-actions { border-top-color: #21262d; }
+    [data-theme="dark"] .dep-filter-btn { border-color: #30363d; color: #8b949e; }
+    [data-theme="dark"] .dep-filter-btn:hover { border-color: #484f58; color: #e6edf3; }
+
+    @media (max-width: 768px) {
+      .dep-grid { grid-template-columns: 1fr; }
+      .dep-stats { gap: 8px; }
+      .dep-stat { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-loader" id="page-loader">
+    <div class="loader-spinner">
+      <div class="loader-logo"><img src="../logo.png" alt="" onerror="this.parentElement.textContent='A'"></div>
+    </div>
+    <div class="loader-text">Carregando</div>
+    <div class="loader-dots"><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo"><img src="../logo.png" alt="Logo" onerror="this.style.display='none'"></div>
+        <div class="sidebar-brand-text">Assessoria<br><small>Painel de Gest&atilde;o</small></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-label" data-category="geral">Geral<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="app.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+          <a href="agenda.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agenda</a>
+          <a href="chat.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat</a>
+        </div>
+        <div class="sidebar-nav-label" data-category="academico">Acad&ecirc;mico<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="alunos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Alunos</a>
+          <a href="atividades.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Atividades</a>
+          <a href="solicitar.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Solicitar</a>
+          <a href="acompanhar.html" class="sidebar-link"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Acompanhar</a>
+          <a href="extensoes.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Extens&otilde;es</a>
+          <a href="kanban.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="12" rx="1"/></svg>Kanban</a>
+          <a href="rastreio.html" class="sidebar-link"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Rastreio</a>
+        </div>
+        <div class="sidebar-nav-label" data-category="marketing">Marketing<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="depoimentos.html" class="sidebar-link active"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Depoimentos</a>
+        </div>
+        <div class="sidebar-nav-label" data-category="financeiro">Financeiro<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="financeiro.html" class="sidebar-link"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Financeiro</a>
+          <a href="pedidos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Pedidos</a>
+          <a href="relatorios.html" class="sidebar-link"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Relat&oacute;rios</a>
+        </div>
+        <div class="sidebar-nav-label" data-category="sistema" data-always-open="true">Sistema</div>
+        <div class="sidebar-category-links">
+          <a href="#" class="sidebar-link" id="btn-notificacoes" style="position:relative;"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifica&ccedil;&otilde;es<span class="notif-badge" id="notif-badge" style="display:none"></span></a>
+          <a href="perfil.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</a>
+          <button class="sidebar-link" id="btn-logout"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>
+        </div>
+      </nav>
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="user-avatar">A</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name" id="user-name">Admin</div><div class="sidebar-user-role">Admin</div></div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main-content">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="mobile-toggle" id="mobile-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <h1>Depoimentos</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="theme-toggle" id="btn-theme" title="Alternar tema">🌙</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="dep-stats" id="dep-stats">
+        <div class="dep-stat">
+          <div class="dep-stat-number" id="stat-total">0</div>
+          <div class="dep-stat-label">Total</div>
+        </div>
+        <div class="dep-stat">
+          <div class="dep-stat-number" id="stat-pendentes" style="color:#f59e0b;">0</div>
+          <div class="dep-stat-label">Pendentes</div>
+        </div>
+        <div class="dep-stat">
+          <div class="dep-stat-number" id="stat-aprovados" style="color:#22c55e;">0</div>
+          <div class="dep-stat-label">Aprovados</div>
+        </div>
+        <div class="dep-stat">
+          <div class="dep-stat-number" id="stat-media" style="color:#f59e0b;">0</div>
+          <div class="dep-stat-label">Nota M&eacute;dia</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="dep-filters">
+        <button class="dep-filter-btn active" onclick="filterDeps('todos')">Todos</button>
+        <button class="dep-filter-btn" onclick="filterDeps('pendente')">⏳ Pendentes</button>
+        <button class="dep-filter-btn" onclick="filterDeps('aprovado')">✅ Aprovados</button>
+        <button class="dep-filter-btn" onclick="filterDeps('rejeitado')">❌ Rejeitados</button>
+      </div>
+
+      <!-- Grid -->
+      <div class="dep-grid" id="dep-grid">
+        <div class="dep-empty">
+          <div class="dep-empty-icon">💬</div>
+          Carregando depoimentos...
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js?v=4"></script>
+  <script src="js/utils.js?v=4"></script>
+  <script>
+    var allDeps = [];
+    var currentFilter = 'todos';
+    var currentUserId = null;
+
+    document.getElementById('mobile-toggle').addEventListener('click', function () { document.getElementById('sidebar').classList.toggle('open'); });
+    document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      var result = await requireRole(['admin', 'dono']);
+      if (!result) return;
+      currentUserId = result.user.id;
+      setupSidebarPermissions(result.role);
+      document.getElementById('user-name').textContent = getUserName(result.user);
+      document.getElementById('user-avatar').textContent = getUserName(result.user).charAt(0).toUpperCase();
+      document.getElementById('btn-logout').addEventListener('click', handleLogout);
+
+      await loadDepoimentos();
+    });
+
+    async function loadDepoimentos() {
+      try {
+        var { data, error } = await sb.from('depoimentos')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        allDeps = data || [];
+        updateStats();
+        renderDeps();
+      } catch (e) {
+        console.error('[depoimentos]', e);
+        document.getElementById('dep-grid').innerHTML =
+          '<div class="dep-empty"><div class="dep-empty-icon">⚠️</div>Erro ao carregar depoimentos.</div>';
+      }
+    }
+
+    function updateStats() {
+      var total = allDeps.length;
+      var pendentes = allDeps.filter(function(d) { return !d.aprovado && !d.rejeitado; }).length;
+      var aprovados = allDeps.filter(function(d) { return d.aprovado; }).length;
+      var notas = allDeps.filter(function(d) { return d.aprovado; }).map(function(d) { return d.nota; });
+      var media = notas.length ? (notas.reduce(function(a, b) { return a + b; }, 0) / notas.length).toFixed(1) : '—';
+
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-pendentes').textContent = pendentes;
+      document.getElementById('stat-aprovados').textContent = aprovados;
+      document.getElementById('stat-media').textContent = media;
+    }
+
+    function filterDeps(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.dep-filter-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.textContent.toLowerCase().indexOf(
+          filter === 'todos' ? 'todos' : filter === 'pendente' ? 'pendente' : filter === 'aprovado' ? 'aprovado' : 'rejeitado'
+        ) !== -1);
+      });
+      // Simpler: just match by onclick
+      document.querySelectorAll('.dep-filter-btn').forEach(function(btn) {
+        var onclick = btn.getAttribute('onclick') || '';
+        var btnFilter = onclick.match(/'(\w+)'/);
+        btn.classList.toggle('active', btnFilter && btnFilter[1] === filter);
+      });
+      renderDeps();
+    }
+
+    function renderDeps() {
+      var grid = document.getElementById('dep-grid');
+      var filtered = allDeps;
+
+      if (currentFilter === 'pendente') {
+        filtered = allDeps.filter(function(d) { return !d.aprovado && !d.rejeitado; });
+      } else if (currentFilter === 'aprovado') {
+        filtered = allDeps.filter(function(d) { return d.aprovado; });
+      } else if (currentFilter === 'rejeitado') {
+        filtered = allDeps.filter(function(d) { return d.rejeitado; });
+      }
+
+      if (!filtered.length) {
+        var emptyTexts = {
+          todos: 'Nenhum depoimento ainda.',
+          pendente: 'Nenhum depoimento pendente.',
+          aprovado: 'Nenhum depoimento aprovado.',
+          rejeitado: 'Nenhum depoimento rejeitado.'
+        };
+        grid.innerHTML = '<div class="dep-empty"><div class="dep-empty-icon">💬</div>' + emptyTexts[currentFilter] + '</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(function(d) {
+        var stars = '';
+        for (var i = 0; i < 5; i++) stars += i < d.nota ? '★' : '☆';
+
+        var statusClass = d.aprovado ? 'aprovado' : d.rejeitado ? 'rejeitado' : 'pendente';
+        var statusLabel = d.aprovado ? 'Aprovado' : d.rejeitado ? 'Rejeitado' : 'Pendente';
+        var dt = new Date(d.created_at).toLocaleDateString('pt-BR');
+
+        var actions = '';
+        if (!d.aprovado && !d.rejeitado) {
+          // Pendente: pode aprovar ou rejeitar
+          actions = '<button class="dep-btn dep-btn-approve" onclick="aproveDep(\'' + d.id + '\')">✅ Aprovar</button>'
+            + '<button class="dep-btn dep-btn-reject" onclick="rejectDep(\'' + d.id + '\')">❌ Rejeitar</button>';
+        } else if (d.aprovado) {
+          // Aprovado: pode despublicar ou deletar
+          actions = '<button class="dep-btn dep-btn-undo" onclick="undoDep(\'' + d.id + '\')">↩ Despublicar</button>'
+            + '<button class="dep-btn dep-btn-delete" onclick="deleteDep(\'' + d.id + '\')">🗑 Excluir</button>';
+        } else {
+          // Rejeitado: pode aprovar ou deletar
+          actions = '<button class="dep-btn dep-btn-approve" onclick="aproveDep(\'' + d.id + '\')">✅ Aprovar</button>'
+            + '<button class="dep-btn dep-btn-delete" onclick="deleteDep(\'' + d.id + '\')">🗑 Excluir</button>';
+        }
+
+        return '<div class="dep-card">'
+          + '<div class="dep-card-status ' + statusClass + '"></div>'
+          + '<div class="dep-card-body">'
+          + '<div class="dep-card-header">'
+          + '<div><div class="dep-card-author">' + escapeHtml(d.nome) + '</div>'
+          + (d.curso ? '<div class="dep-card-course">' + escapeHtml(d.curso) + '</div>' : '')
+          + '</div>'
+          + '<div style="text-align:right;"><span class="dep-card-badge badge-' + statusClass + '">' + statusLabel + '</span>'
+          + '<div class="dep-card-date">' + dt + '</div></div>'
+          + '</div>'
+          + '<div class="dep-card-stars">' + stars + '</div>'
+          + '<div class="dep-card-text">' + escapeHtml(d.texto) + '</div>'
+          + '<div class="dep-card-actions">' + actions + '</div>'
+          + '</div></div>';
+      }).join('');
+    }
+
+    // ─── Actions ───
+    async function aproveDep(id) {
+      try {
+        var { error } = await sb.from('depoimentos').update({
+          aprovado: true, rejeitado: false,
+          aprovado_por: currentUserId,
+          aprovado_em: new Date().toISOString()
+        }).eq('id', id);
+        if (error) throw error;
+        showToast('Depoimento aprovado e publicado!', 'success');
+        await loadDepoimentos();
+      } catch (e) {
+        showToast('Erro: ' + (e.message || e), 'error');
+      }
+    }
+
+    async function rejectDep(id) {
+      try {
+        var { error } = await sb.from('depoimentos').update({
+          aprovado: false, rejeitado: true
+        }).eq('id', id);
+        if (error) throw error;
+        showToast('Depoimento rejeitado.', 'warning');
+        await loadDepoimentos();
+      } catch (e) {
+        showToast('Erro: ' + (e.message || e), 'error');
+      }
+    }
+
+    async function undoDep(id) {
+      try {
+        var { error } = await sb.from('depoimentos').update({
+          aprovado: false, rejeitado: false, aprovado_por: null, aprovado_em: null
+        }).eq('id', id);
+        if (error) throw error;
+        showToast('Depoimento voltou para pendente.', 'info');
+        await loadDepoimentos();
+      } catch (e) {
+        showToast('Erro: ' + (e.message || e), 'error');
+      }
+    }
+
+    async function deleteDep(id) {
+      if (!confirm('Tem certeza que deseja excluir este depoimento permanentemente?')) return;
+      try {
+        var { error } = await sb.from('depoimentos').delete().eq('id', id);
+        if (error) throw error;
+        showToast('Depoimento excluído.', 'success');
+        await loadDepoimentos();
+      } catch (e) {
+        showToast('Erro: ' + (e.message || e), 'error');
+      }
+    }
+  </script>
+</body>
+</html>
