@@ -27,8 +27,16 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('btn-sync-all').addEventListener('click', handleSyncAll);
   document.getElementById('btn-sync-new').addEventListener('click', handleSyncNew);
   document.getElementById('filter-aluno-rastreio').addEventListener('change', loadSyncData);
-  document.getElementById('filter-grupo-rastreio').addEventListener('change', function () { loadAlunos(); loadSyncData(); });
-  document.getElementById('sync-grupo-select').addEventListener('change', loadAlunos);
+
+  // Grupo chips (único controle para grupo — filtra sync e visualização)
+  document.querySelectorAll('.grupo-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      document.querySelectorAll('.grupo-chip').forEach(function (c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      loadAlunos();
+      loadSyncData();
+    });
+  });
 
   // Prazo chips
   document.querySelectorAll('.prazo-chip').forEach(function (chip) {
@@ -50,6 +58,11 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 });
 
+function getActiveGrupo() {
+  var chip = document.querySelector('.grupo-chip.active');
+  return chip ? chip.getAttribute('data-grupo') : '';
+}
+
 async function loadMensalistas() {
   var { data, error } = await sb.from('alunos')
     .select('id, ra, nome, studeo_senha, tipo')
@@ -61,36 +74,40 @@ async function loadMensalistas() {
   // Contadores por grupo
   var counts = { mensalista: 0, recorrente: 0, extensao: 0 };
   (data || []).forEach(function (a) { counts[a.tipo] = (counts[a.tipo] || 0) + 1; });
+
   document.getElementById('count-mensalistas').textContent = (data || []).length;
+  var el;
+  el = document.getElementById('count-all'); if (el) el.textContent = (data || []).length;
+  el = document.getElementById('count-men'); if (el) el.textContent = counts.mensalista || 0;
+  el = document.getElementById('count-rec'); if (el) el.textContent = counts.recorrente || 0;
+  el = document.getElementById('count-ext'); if (el) el.textContent = counts.extensao || 0;
 
   loadAlunos();
 }
 
 function loadAlunos() {
-  var grupoSync = (document.getElementById('sync-grupo-select') || {}).value || '';
-  var grupoFilter = (document.getElementById('filter-grupo-rastreio') || {}).value || '';
+  var grupo = getActiveGrupo();
   var all = window._todosAlunos || [];
+  var filtered = grupo ? all.filter(function (a) { return a.tipo === grupo; }) : all;
 
-  // Filtrar por grupo para o sync select
-  var syncFiltered = grupoSync ? all.filter(function (a) { return a.tipo === grupoSync; }) : all;
+  // Sync select
   var syncSelect = document.getElementById('sync-aluno-select');
   if (syncSelect) {
-    syncSelect.innerHTML = '<option value="">Selecione um aluno</option>';
-    syncFiltered.forEach(function (a) {
+    syncSelect.innerHTML = '<option value="">Selecione um aluno para sincronizar...</option>';
+    filtered.forEach(function (a) {
       var hasSenha = a.studeo_senha ? '' : ' [sem senha]';
-      var grupoTag = ' [' + (a.tipo === 'extensao' ? 'EXT' : a.tipo === 'recorrente' ? 'REC' : 'MEN') + ']';
+      var tag = a.tipo === 'extensao' ? 'EXT' : a.tipo === 'recorrente' ? 'REC' : 'MEN';
       syncSelect.innerHTML += '<option value="' + a.id + '"' + (!a.studeo_senha ? ' disabled' : '') + '>'
-        + escapeHtml(a.nome) + ' (' + escapeHtml(a.ra) + ')' + grupoTag + hasSenha + '</option>';
+        + escapeHtml(a.nome) + ' (' + escapeHtml(a.ra) + ') [' + tag + ']' + hasSenha + '</option>';
     });
   }
 
-  // Filtrar por grupo para o filtro de visualização
-  var filterFiltered = grupoFilter ? all.filter(function (a) { return a.tipo === grupoFilter; }) : all;
-  var select = document.getElementById('filter-aluno-rastreio');
-  if (select) {
-    select.innerHTML = '<option value="">Todos os alunos</option>';
-    filterFiltered.forEach(function (a) {
-      select.innerHTML += '<option value="' + a.id + '">' + escapeHtml(a.nome) + ' (' + escapeHtml(a.ra) + ')</option>';
+  // Filter select (mesmos dados)
+  var filterSelect = document.getElementById('filter-aluno-rastreio');
+  if (filterSelect) {
+    filterSelect.innerHTML = '<option value="">Filtrar aluno...</option>';
+    filtered.forEach(function (a) {
+      filterSelect.innerHTML += '<option value="' + a.id + '">' + escapeHtml(a.nome) + '</option>';
     });
   }
 }
@@ -108,7 +125,7 @@ async function loadSyncData() {
 
   var filterAluno = document.getElementById('filter-aluno-rastreio');
   var alunoId = filterAluno ? filterAluno.value : '';
-  var grupoFilter = (document.getElementById('filter-grupo-rastreio') || {}).value || '';
+  var grupoFilter = getActiveGrupo();
 
   // Prazo chip ativo
   var activeChip = document.querySelector('.prazo-chip.active');
@@ -381,12 +398,10 @@ function setSyncButtonsLoading(loading) {
 async function handleSyncAll() {
   if (syncInProgress) { alert('Sincronização em andamento, aguarde...'); return; }
 
-  var grupoSync = (document.getElementById('sync-grupo-select') || {}).value || '';
+  var grupo = getActiveGrupo();
   var all = (window._todosAlunos || []).filter(function (a) { return a.studeo_senha; });
-
-  // Filtrar por grupo se selecionado
-  var alunosList = grupoSync ? all.filter(function (a) { return a.tipo === grupoSync; }) : all;
-  var grupoLabel = grupoSync ? (' do grupo ' + grupoSync) : '';
+  var alunosList = grupo ? all.filter(function (a) { return a.tipo === grupo; }) : all;
+  var grupoLabel = grupo ? (' ' + grupo) : '';
 
   if (!alunosList.length) {
     alert('Nenhum aluno com senha do Studeo' + grupoLabel + '.');
@@ -399,9 +414,9 @@ async function handleSyncAll() {
 async function handleSyncNew() {
   if (syncInProgress) { alert('Sincronização em andamento, aguarde...'); return; }
 
-  var grupoSync = (document.getElementById('sync-grupo-select') || {}).value || '';
+  var grupo = getActiveGrupo();
   var all = (window._todosAlunos || []).filter(function (a) { return a.studeo_senha; });
-  if (grupoSync) all = all.filter(function (a) { return a.tipo === grupoSync; });
+  if (grupo) all = all.filter(function (a) { return a.tipo === grupo; });
 
   // Buscar quais alunos já têm sync
   var { data: synced } = await sb.from('studeo_sync').select('aluno_id');
@@ -472,6 +487,12 @@ async function saveResults(alunoId, resultado) {
     for (var j = 0; j < allActivities.length; j++) {
       var ativ = allActivities[j];
       if (!ativ.descricao) continue;
+
+      // Só salvar atividades com prazo aberto (dataFinal no futuro)
+      if (ativ.dataFinal) {
+        var df = new Date(ativ.dataFinal);
+        if (df < new Date()) continue; // prazo já passou, ignorar
+      }
 
       // Deduplicar: mesmo shortname + descricao = mesma atividade
       var key = disc.cd_shortname + '|' + ativ.descricao;

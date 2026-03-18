@@ -11,30 +11,97 @@
   <link rel="stylesheet" href="css/painel.css">
   <style>
     /* ── Rastreio-specific styles ── */
-    .sync-bar {
+    /* ── Painel de Controle Unificado ── */
+    .rastreio-panel {
       background: var(--white);
       border-radius: var(--radius-lg);
-      padding: 20px 24px;
       box-shadow: var(--shadow);
       margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .panel-section {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .panel-section:last-child { border-bottom: none; }
+    .panel-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gray-400);
+      margin-bottom: 10px;
+    }
+    .panel-row {
       display: flex;
+      gap: 10px;
       align-items: center;
-      gap: 16px;
       flex-wrap: wrap;
     }
-    .sync-bar select {
-      padding: 10px 14px;
-      border: 2px solid var(--gray-200);
+
+    /* Grupo Chips */
+    .grupo-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .grupo-chip {
+      padding: 8px 16px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      background: var(--white);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .grupo-chip:hover {
+      border-color: var(--gold);
+      color: var(--primary);
+      background: var(--gold-glow);
+    }
+    .grupo-chip.active {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+    .grupo-chip .chip-count {
+      font-size: 0.7rem;
+      background: rgba(0,0,0,0.08);
+      padding: 1px 7px;
       border-radius: 8px;
-      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    .grupo-chip.active .chip-count {
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* Select estilizado */
+    .styled-select {
+      flex: 1;
+      min-width: 220px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 10px;
+      font-size: 0.88rem;
       color: var(--gray-800);
       background: var(--white);
-      min-width: 260px;
       outline: none;
-      transition: border-color var(--transition);
+      transition: all 0.2s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
     }
-    .sync-bar select:focus { border-color: var(--gold); }
-    .sync-bar .btn { white-space: nowrap; }
+    .styled-select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow);
+    }
+    .styled-select:hover { border-color: var(--gray-300); }
+
+    /* Botões sync */
+    .sync-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .btn-sync {
       background: var(--info);
       color: var(--white);
@@ -230,13 +297,7 @@
     .badge-av { background: rgba(59,130,246,0.12); color: #2563eb; }
     .badge-respondida { background: rgba(34,197,94,0.12); color: #16a34a; }
 
-    .filters-rastreio {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
+    /* removed - unified into rastreio-panel */
     .filter-prazo-chips {
       display: flex;
       gap: 6px;
@@ -280,18 +341,7 @@
       color: var(--dark);
       border-color: var(--gold);
     }
-    .filters-rastreio select {
-      padding: 9px 14px;
-      border: 2px solid var(--gray-200);
-      border-radius: 8px;
-      font-size: 0.88rem;
-      color: var(--gray-800);
-      background: var(--white);
-      min-width: 200px;
-      outline: none;
-      transition: border-color var(--transition);
-    }
-    .filters-rastreio select:focus { border-color: var(--gold); }
+    /* removed - unified */
 
     /* Tabs */
     .tabs-bar {
@@ -323,20 +373,26 @@
     .tab-btn:hover:not(.active) { color: var(--gray-800); background: var(--gray-50); }
 
     @media (max-width: 768px) {
-      .sync-bar { flex-direction: column; align-items: stretch; }
-      .sync-bar select { min-width: unset; width: 100%; }
+      .panel-row { flex-direction: column; align-items: stretch; }
+      .styled-select { min-width: unset; width: 100%; }
+      .grupo-chips { flex-wrap: wrap; }
+      .grupo-chip { padding: 6px 12px; font-size: 0.8rem; }
+      .sync-actions { flex-direction: column; }
       .aluno-header { flex-direction: column; align-items: flex-start; }
       .aluno-info { flex-direction: column; gap: 4px; }
       .disc-row { flex-direction: column; align-items: flex-start; gap: 6px; }
       .disc-row-prazo { margin-top: 2px; }
-      .filters-rastreio { flex-direction: column; }
-      .filters-rastreio select { min-width: unset; width: 100%; }
       .filter-prazo-chips { flex-wrap: wrap; }
       .prazo-chip { padding: 5px 12px; font-size: 0.78rem; }
     }
 
-    [data-theme="dark"] .sync-bar { background: #1c2128; border: 1px solid #30363d; }
-    [data-theme="dark"] .sync-bar select { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .rastreio-panel { background: #1c2128; border: 1px solid #30363d; }
+    [data-theme="dark"] .panel-section { border-bottom-color: #30363d; }
+    [data-theme="dark"] .styled-select { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .styled-select:focus { border-color: var(--gold); }
+    [data-theme="dark"] .grupo-chip { background: #161b22; border-color: #30363d; color: #8b949e; }
+    [data-theme="dark"] .grupo-chip:hover { border-color: var(--gold); color: #f0c030; background: rgba(240,192,48,0.08); }
+    [data-theme="dark"] .grupo-chip.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
     [data-theme="dark"] .aluno-header { background: #161b22; border-bottom-color: #30363d; }
     [data-theme="dark"] .aluno-info h3 { color: var(--primary-light, #f0c030); }
     [data-theme="dark"] .disc-row { border-bottom-color: #21262d; }
@@ -347,7 +403,7 @@
     [data-theme="dark"] .copy-value.copied { background: #064e3b; border-color: #10b981; color: #6ee7b7; }
     [data-theme="dark"] .tabs-bar { background: #1c2128; }
     [data-theme="dark"] .tab-btn:hover:not(.active) { background: #21262d; }
-    [data-theme="dark"] .filters-rastreio select { background: #1c2128; border-color: #30363d; color: #e6edf3; }
+    /* dark mode filters handled via rastreio-panel */
   </style>
 </head>
 <body>
@@ -528,44 +584,52 @@
         <button class="tab-btn" data-tab="passadas">Passadas</button>
       </div>
 
-      <!-- Sync Bar -->
-      <div class="sync-bar">
-        <select id="sync-grupo-select">
-          <option value="">Todos os grupos</option>
-          <option value="mensalista">Mensalistas</option>
-          <option value="recorrente">Recorrentes</option>
-          <option value="extensao">Projeto de Extensão</option>
-        </select>
-        <select id="sync-aluno-select">
-          <option value="">Selecione um aluno</option>
-        </select>
-        <button class="btn btn-sync" id="btn-sync">🔄 Sincronizar</button>
-        <button class="btn btn-sync-all" id="btn-sync-all">⚡ Sync Grupo</button>
-        <button class="btn btn-sync-new" id="btn-sync-new" title="Sincronizar apenas alunos que nunca foram sincronizados">🆕 Só Novos</button>
+      <!-- Painel de Controle Unificado -->
+      <div class="rastreio-panel">
+        <!-- Grupo -->
+        <div class="panel-section">
+          <div class="panel-label">Grupo</div>
+          <div class="grupo-chips" id="grupo-chips">
+            <button class="grupo-chip active" data-grupo="">Todos <span class="chip-count" id="count-all">0</span></button>
+            <button class="grupo-chip" data-grupo="mensalista">Mensalistas <span class="chip-count" id="count-men">0</span></button>
+            <button class="grupo-chip" data-grupo="recorrente">Recorrentes <span class="chip-count" id="count-rec">0</span></button>
+            <button class="grupo-chip" data-grupo="extensao">Extensão <span class="chip-count" id="count-ext">0</span></button>
+          </div>
+        </div>
+
+        <!-- Aluno + Ações -->
+        <div class="panel-section">
+          <div class="panel-row">
+            <select class="styled-select" id="sync-aluno-select">
+              <option value="">Selecione um aluno para sincronizar...</option>
+            </select>
+            <div class="sync-actions">
+              <button class="btn btn-sync" id="btn-sync">🔄 Sync</button>
+              <button class="btn btn-sync-all" id="btn-sync-all">⚡ Sync Grupo</button>
+              <button class="btn btn-sync-new" id="btn-sync-new" title="Sincronizar apenas alunos que nunca foram sincronizados">🆕 Só Novos</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prazo -->
+        <div class="panel-section">
+          <div class="panel-row" style="justify-content:space-between;">
+            <div class="filter-prazo-chips" id="filter-prazo-chips">
+              <button class="prazo-chip" data-dias="7">7 dias</button>
+              <button class="prazo-chip" data-dias="15">15 dias</button>
+              <button class="prazo-chip" data-dias="30">30 dias</button>
+              <button class="prazo-chip active" data-dias="60">60 dias</button>
+              <button class="prazo-chip" data-dias="0">Todos</button>
+            </div>
+            <select class="styled-select" id="filter-aluno-rastreio" style="max-width:280px;flex:unset;">
+              <option value="">Filtrar aluno...</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <!-- Sync Status -->
       <div class="sync-status" id="sync-status"></div>
-
-      <!-- Filters -->
-      <div class="filters-rastreio">
-        <select id="filter-grupo-rastreio">
-          <option value="">Todos os grupos</option>
-          <option value="mensalista">Mensalistas</option>
-          <option value="recorrente">Recorrentes</option>
-          <option value="extensao">Projeto de Extensão</option>
-        </select>
-        <select id="filter-aluno-rastreio">
-          <option value="">Todos os alunos</option>
-        </select>
-        <div class="filter-prazo-chips" id="filter-prazo-chips">
-          <button class="prazo-chip" data-dias="7">7 dias</button>
-          <button class="prazo-chip" data-dias="15">15 dias</button>
-          <button class="prazo-chip" data-dias="30">30 dias</button>
-          <button class="prazo-chip active" data-dias="60">60 dias</button>
-          <button class="prazo-chip" data-dias="0">Todos</button>
-        </div>
-      </div>
 
       <!-- Results -->
       <div id="sync-results">
