@@ -30,6 +30,15 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('filter-grupo-rastreio').addEventListener('change', function () { loadAlunos(); loadSyncData(); });
   document.getElementById('sync-grupo-select').addEventListener('change', loadAlunos);
 
+  // Prazo chips
+  document.querySelectorAll('.prazo-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      document.querySelectorAll('.prazo-chip').forEach(function (c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      loadSyncData();
+    });
+  });
+
   // Tab listeners
   document.querySelectorAll('.tab-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -101,6 +110,10 @@ async function loadSyncData() {
   var alunoId = filterAluno ? filterAluno.value : '';
   var grupoFilter = (document.getElementById('filter-grupo-rastreio') || {}).value || '';
 
+  // Prazo chip ativo
+  var activeChip = document.querySelector('.prazo-chip.active');
+  var dias = activeChip ? parseInt(activeChip.getAttribute('data-dias')) : 60;
+
   // Build alunos cache with tipo
   if (!window._alunosCache) {
     var { data: alunos } = await sb.from('alunos').select('id, nome, ra, tipo, studeo_senha');
@@ -117,6 +130,13 @@ async function loadSyncData() {
     .eq('respondida', false)
     .gte('data_final', now.toISOString())
     .order('data_final', { ascending: true });
+
+  // Limite de prazo se não for "Todos"
+  if (dias > 0) {
+    var limite = new Date(now);
+    limite.setDate(limite.getDate() + dias);
+    query = query.lte('data_final', limite.toISOString());
+  }
 
   if (alunoId) query = query.eq('aluno_id', alunoId);
 

@@ -237,12 +237,48 @@
       flex-wrap: wrap;
       align-items: center;
     }
-    .filter-dias {
+    .filter-prazo-chips {
       display: flex;
-      align-items: center;
       gap: 6px;
-      font-size: 0.88rem;
-      color: var(--gray-600);
+      align-items: center;
+    }
+    .prazo-chip {
+      padding: 6px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      background: var(--white);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .prazo-chip:hover {
+      border-color: var(--gold);
+      color: var(--primary);
+      background: var(--gold-glow);
+    }
+    .prazo-chip.active {
+      background: var(--gold);
+      color: var(--dark);
+      border-color: var(--gold);
+      box-shadow: 0 2px 8px var(--gold-shadow);
+    }
+    [data-theme="dark"] .prazo-chip {
+      background: #161b22;
+      border-color: #30363d;
+      color: #8b949e;
+    }
+    [data-theme="dark"] .prazo-chip:hover {
+      border-color: var(--gold);
+      color: #f0c030;
+      background: rgba(240,192,48,0.1);
+    }
+    [data-theme="dark"] .prazo-chip.active {
+      background: var(--gold);
+      color: var(--dark);
+      border-color: var(--gold);
     }
     .filters-rastreio select {
       padding: 9px 14px;
@@ -295,6 +331,8 @@
       .disc-row-prazo { margin-top: 2px; }
       .filters-rastreio { flex-direction: column; }
       .filters-rastreio select { min-width: unset; width: 100%; }
+      .filter-prazo-chips { flex-wrap: wrap; }
+      .prazo-chip { padding: 5px 12px; font-size: 0.78rem; }
     }
 
     [data-theme="dark"] .sync-bar { background: #1c2128; border: 1px solid #30363d; }
@@ -520,7 +558,13 @@
         <select id="filter-aluno-rastreio">
           <option value="">Todos os alunos</option>
         </select>
-        <!-- Mostra automaticamente todas atividades ativas com prazo aberto -->
+        <div class="filter-prazo-chips" id="filter-prazo-chips">
+          <button class="prazo-chip" data-dias="7">7 dias</button>
+          <button class="prazo-chip" data-dias="15">15 dias</button>
+          <button class="prazo-chip" data-dias="30">30 dias</button>
+          <button class="prazo-chip active" data-dias="60">60 dias</button>
+          <button class="prazo-chip" data-dias="0">Todos</button>
+        </div>
       </div>
 
       <!-- Results -->
