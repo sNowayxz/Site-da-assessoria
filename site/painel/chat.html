@@ -156,6 +156,99 @@
       padding: 8px 0;
     }
 
+    /* Botão attach */
+    .btn-attach {
+      background: none;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--gray-500);
+    }
+    .btn-attach:hover {
+      border-color: var(--gold);
+      background: var(--gold-glow);
+    }
+
+    /* Upload preview */
+    .chat-upload-preview {
+      padding: 8px 16px;
+      border-top: 1px solid var(--gray-200);
+      background: var(--gray-50);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: var(--gray-600);
+    }
+    .chat-upload-preview img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--gray-200);
+    }
+    .chat-upload-preview .upload-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .chat-upload-preview .upload-cancel {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px;
+    }
+
+    /* Delete button on bubble */
+    .chat-bubble { position: relative; }
+    .chat-bubble .btn-delete-msg {
+      display: none;
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(239,68,68,0.9);
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-size: 0.65rem;
+      cursor: pointer;
+      padding: 2px 5px;
+      line-height: 1;
+    }
+    .chat-bubble:hover .btn-delete-msg { display: block; }
+
+    /* File attachment in message */
+    .chat-file-attach {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      padding: 6px 10px;
+      background: rgba(0,0,0,0.04);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      text-decoration: none;
+      color: var(--info);
+      transition: background 0.2s;
+    }
+    .chat-file-attach:hover { background: rgba(0,0,0,0.08); }
+    .chat-file-attach .file-icon { font-size: 1.1rem; }
+    .chat-img-attach {
+      margin-top: 6px;
+      max-width: 260px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .chat-img-attach:hover { opacity: 0.85; }
+
     /* Dark mode */
     [data-theme="dark"] .chat-tabs {
       background: #1c2128;
@@ -175,9 +268,12 @@
     [data-theme="dark"] .chat-text {
       color: #e6edf3;
     }
-    [data-theme="dark"] .chat-input-area input:focus {
-      border-color: var(--gold);
-    }
+    [data-theme="dark"] .chat-input-area input:focus { border-color: var(--gold); }
+    [data-theme="dark"] .btn-attach { border-color: #30363d; color: #8b949e; }
+    [data-theme="dark"] .btn-attach:hover { border-color: var(--gold); background: rgba(240,192,48,0.08); }
+    [data-theme="dark"] .chat-upload-preview { background: #161b22; border-top-color: #30363d; color: #8b949e; }
+    [data-theme="dark"] .chat-file-attach { background: rgba(255,255,255,0.05); color: #58a6ff; }
+    [data-theme="dark"] .chat-file-attach:hover { background: rgba(255,255,255,0.08); }
 
     @media (max-width: 768px) {
       .chat-bubble {
@@ -309,9 +405,12 @@
         </div>
 
         <div class="chat-input-area">
+          <input type="file" id="chat-file-input" style="display:none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.txt">
+          <button type="button" id="btn-attach" class="btn-attach" title="Enviar imagem ou arquivo" onclick="document.getElementById('chat-file-input').click()">📎</button>
           <input type="text" id="chat-input" placeholder="Digite sua mensagem..." autocomplete="off">
           <button id="btn-send" onclick="sendMessage()">Enviar</button>
         </div>
+        <div class="chat-upload-preview" id="chat-upload-preview" style="display:none"></div>
       </div>
     </main>
   </div>
