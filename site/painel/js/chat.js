@@ -188,7 +188,7 @@ async function sendMessage() {
     }
 
     var record = {
-      content: text || null,
+      content: text || '',
       channel: currentChannel,
       sender_id: currentUserId
     };
