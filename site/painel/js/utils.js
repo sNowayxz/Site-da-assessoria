@@ -743,9 +743,11 @@ function setupSidebarPermissions(role) {
     });
   }
 
-  // Mostrar layout após processar permissões (evita flash)
+  // Mostrar layout e esconder loader
   var layout = document.querySelector('.layout');
   if (layout) layout.classList.add('ready');
+  var loader = document.getElementById('page-loader');
+  if (loader) loader.classList.add('hide');
 }
 
 
