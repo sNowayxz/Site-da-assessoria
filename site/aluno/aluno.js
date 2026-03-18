@@ -127,6 +127,60 @@ function loadAluno(ra) {
       }).join('');
     });
 
+    // Load extensão (projeto de extensão pelo RA)
+    supaGet('solicitacoes?ra=eq.' + encodeURIComponent(ra) + '&select=*&order=created_at.desc').then(function(exts) {
+      exts = exts || [];
+      var panel = document.getElementById('panel-extensao');
+      var container = document.getElementById('extensao-content');
+
+      if (!exts.length) {
+        panel.style.display = 'none';
+        return;
+      }
+
+      panel.style.display = 'block';
+      var STATUS_LABELS = {
+        aguardando: 'Aguardando',
+        desenvolvendo: 'Desenvolvendo',
+        finalizado: 'Finalizado',
+        finalizado_cobrar: 'Finalizado a Cobrar'
+      };
+      var STATUS_COLORS = {
+        aguardando: '#d97706',
+        desenvolvendo: '#2563eb',
+        finalizado: '#16a34a',
+        finalizado_cobrar: '#7c3aed'
+      };
+
+      container.innerHTML = exts.map(function(s) {
+        var horas = s.horas || 0;
+        var validadas = s.horas_validadas || 0;
+        var restantes = Math.max(0, horas - validadas);
+        var evolucao = horas > 0 ? Math.round((validadas / horas) * 100) : 0;
+        if (evolucao > 100) evolucao = 100;
+        var statusText = STATUS_LABELS[s.status] || s.status;
+        var statusColor = STATUS_COLORS[s.status] || '#888';
+
+        return '<div class="extensao-card">' +
+          '<div class="extensao-header">' +
+            '<span class="extensao-status" style="background:' + statusColor + '15;color:' + statusColor + ';">' + statusText + '</span>' +
+            '<span class="extensao-date">' + formatDate(s.created_at) + '</span>' +
+          '</div>' +
+          '<div class="extensao-progress">' +
+            '<div class="extensao-bar">' +
+              '<div class="extensao-bar-fill" style="width:' + evolucao + '%;background:' + (evolucao >= 100 ? '#16a34a' : '#f0c030') + ';"></div>' +
+            '</div>' +
+            '<span class="extensao-pct">' + evolucao + '%</span>' +
+          '</div>' +
+          '<div class="extensao-details">' +
+            '<div class="extensao-detail"><strong>' + horas + '</strong><small>Horas Contratadas</small></div>' +
+            '<div class="extensao-detail"><strong>' + validadas + '</strong><small>Horas Validadas</small></div>' +
+            '<div class="extensao-detail"><strong>' + restantes + '</strong><small>Horas Restantes</small></div>' +
+          '</div>' +
+          '</div>';
+      }).join('');
+    });
+
   }).catch(function() {
     showError('Erro de conexão. Tente novamente.');
   });
