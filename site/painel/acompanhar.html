@@ -311,7 +311,7 @@
         var assessorName = _assessorNames[s.assessor_id] || 'Assessoria';
         var horas = s.horas || 0;
         var horasValidadas = s.horas_validadas || 0;
-        var horasAValidar = s.horas_a_validar || 0;
+        var horasAValidar = Math.max(0, horas - horasValidadas);
         var evolucao = horas > 0 ? Math.round((horasValidadas / horas) * 100) : 0;
         if (evolucao > 100) evolucao = 100;
         var badgeClass = 'badge-' + (s.status || 'aguardando');
@@ -354,12 +354,8 @@
           + '<div class="evolucao-text">' + (evolucao > 0 ? evolucao + '%' : '') + '</div>'
           + '</div></td>';
 
-        // Horas a Validar
-        if (canEdit) {
-          html += '<td><input type="number" class="progresso-input" data-id="' + s.id + '" data-field="horas_a_validar" value="' + horasAValidar + '" min="0" oninput="markChanged(this)" style="width:70px;text-align:center;"></td>';
-        } else {
-          html += '<td style="text-align:center;">' + (horasAValidar || '') + (horasAValidar ? ' Horas' : '') + '</td>';
-        }
+        // Horas a Validar (calculado automaticamente)
+        html += '<td style="text-align:center;font-weight:600;color:' + (horasAValidar > 0 ? '#d97706' : '#16a34a') + ';">' + horasAValidar + ' Horas</td>';
 
         // Save button
         if (canEdit) {
@@ -383,7 +379,6 @@
     async function saveRow(id) {
       var statusEl = document.querySelector('.status-select[data-id="' + id + '"]');
       var horasValEl = document.querySelector('input[data-id="' + id + '"][data-field="horas_validadas"]');
-      var horasAValEl = document.querySelector('input[data-id="' + id + '"][data-field="horas_a_validar"]');
       var btn = document.querySelector('.btn-save-row[data-id="' + id + '"]');
 
       var update = {
@@ -391,7 +386,6 @@
       };
       if (statusEl) update.status = statusEl.value;
       if (horasValEl) update.horas_validadas = parseInt(horasValEl.value) || 0;
-      if (horasAValEl) update.horas_a_validar = parseInt(horasAValEl.value) || 0;
 
       btn.textContent = '...';
       btn.disabled = true;
@@ -406,7 +400,6 @@
           if (s.id === id) {
             if (update.status) s.status = update.status;
             if (update.horas_validadas !== undefined) s.horas_validadas = update.horas_validadas;
-            if (update.horas_a_validar !== undefined) s.horas_a_validar = update.horas_a_validar;
           }
         });
         renderTable();
