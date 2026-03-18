@@ -42,10 +42,10 @@
       display: inline-block; padding: 3px 10px; border-radius: 12px;
       font-size: 0.72rem; font-weight: 700;
     }
-    .badge-pendente { background: rgba(245,158,11,0.12); color: #d97706; }
-    .badge-em_andamento { background: rgba(59,130,246,0.12); color: #2563eb; }
-    .badge-concluida { background: rgba(34,197,94,0.12); color: #16a34a; }
-    .badge-recusada { background: rgba(239,68,68,0.12); color: #dc2626; }
+    .badge-aguardando { background: rgba(245,158,11,0.15); color: #92700c; }
+    .badge-desenvolvendo { background: rgba(59,130,246,0.12); color: #2563eb; }
+    .badge-finalizado { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-finalizado_cobrar { background: rgba(139,92,246,0.12); color: #7c3aed; }
 
     .status-select {
       padding: 4px 8px; border-radius: 8px; border: 1.5px solid var(--gray-200);
@@ -73,10 +73,25 @@
       padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
       display: flex; align-items: center; gap: 6px;
     }
-    .stat-pill.pendente { background: rgba(245,158,11,0.1); color: #d97706; }
-    .stat-pill.andamento { background: rgba(59,130,246,0.1); color: #2563eb; }
-    .stat-pill.concluida { background: rgba(34,197,94,0.1); color: #16a34a; }
+    .stat-pill.aguardando { background: rgba(245,158,11,0.1); color: #92700c; }
+    .stat-pill.desenvolvendo { background: rgba(59,130,246,0.1); color: #2563eb; }
+    .stat-pill.finalizado { background: rgba(34,197,94,0.1); color: #16a34a; }
     .stat-pill.total { background: var(--gray-100); color: var(--gray-600); }
+
+    /* Barra de evolução */
+    .evolucao-bar {
+      width: 100%; height: 20px; background: var(--gray-100); border-radius: 10px;
+      overflow: hidden; position: relative; min-width: 80px;
+    }
+    .evolucao-fill {
+      height: 100%; border-radius: 10px; transition: width 0.3s ease;
+      background: linear-gradient(90deg, var(--gold), #f59e0b);
+    }
+    .evolucao-text {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700; color: var(--gray-800);
+    }
 
     /* Dark mode */
     [data-theme="dark"] .solic-table-wrap { background: #1c2128; }
@@ -157,10 +172,10 @@
       <div class="filter-bar">
         <select id="filter-status">
           <option value="">Todos os status</option>
-          <option value="pendente">Pendente</option>
-          <option value="em_andamento">Em Andamento</option>
-          <option value="concluida">Concluída</option>
-          <option value="recusada">Recusada</option>
+          <option value="aguardando">Aguardando</option>
+          <option value="desenvolvendo">Desenvolvendo</option>
+          <option value="finalizado">Finalizado</option>
+          <option value="finalizado_cobrar">Finalizado a Cobrar</option>
         </select>
         <select id="filter-assessor" style="display:none;">
           <option value="">Todas as assessorias</option>
@@ -173,19 +188,18 @@
         <table class="solic-table">
           <thead>
             <tr>
-              <th>Aluno</th>
-              <th>RA</th>
-              <th>Assessoria</th>
-              <th>Horas</th>
-              <th>Valor</th>
               <th>Status</th>
-              <th>Progresso</th>
-              <th>Data</th>
+              <th>Nome do Aluno</th>
+              <th>Responsável</th>
+              <th>Horas Contratadas</th>
+              <th>Horas Validadas</th>
+              <th>Evolução</th>
+              <th>Horas a Validar</th>
               <th></th>
             </tr>
           </thead>
           <tbody id="solic-tbody">
-            <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--gray-400);">Carregando...</td></tr>
+            <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">Carregando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -244,14 +258,21 @@
     }
 
     function renderStats() {
-      var stats = { pendente: 0, em_andamento: 0, concluida: 0, total: _solicitacoes.length };
+      var stats = { aguardando: 0, desenvolvendo: 0, finalizado: 0, finalizado_cobrar: 0, total: _solicitacoes.length };
       _solicitacoes.forEach(function (s) { stats[s.status] = (stats[s.status] || 0) + 1; });
       document.getElementById('stats-inline').innerHTML =
         '<div class="stat-pill total">📊 ' + stats.total + ' total</div>' +
-        '<div class="stat-pill pendente">⏳ ' + stats.pendente + ' pendentes</div>' +
-        '<div class="stat-pill andamento">🔄 ' + stats.em_andamento + ' em andamento</div>' +
-        '<div class="stat-pill concluida">✅ ' + stats.concluida + ' concluídas</div>';
+        '<div class="stat-pill aguardando">⏳ ' + stats.aguardando + ' aguardando</div>' +
+        '<div class="stat-pill desenvolvendo">🔄 ' + stats.desenvolvendo + ' desenvolvendo</div>' +
+        '<div class="stat-pill finalizado">✅ ' + (stats.finalizado + stats.finalizado_cobrar) + ' finalizados</div>';
     }
+
+    var STATUS_LABELS = {
+      aguardando: 'Aguardando',
+      desenvolvendo: 'Desenvolvendo',
+      finalizado: 'Finalizado',
+      finalizado_cobrar: 'Finalizado a Cobrar'
+    };
 
     function renderTable() {
       var statusFilter = document.getElementById('filter-status').value;
@@ -271,45 +292,74 @@
 
       var tbody = document.getElementById('solic-tbody');
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--gray-400);">Nenhuma solicitação encontrada.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">Nenhuma solicitação encontrada.</td></tr>';
         return;
       }
 
       var canEdit = currentRole !== 'assessoria';
-      var statusLabels = { pendente: 'Pendente', em_andamento: 'Em Andamento', concluida: 'Concluída', recusada: 'Recusada' };
 
       var html = '';
       filtered.forEach(function (s) {
-        var dt = new Date(s.created_at).toLocaleDateString('pt-BR');
         var assessorName = _assessorNames[s.assessor_id] || 'Assessoria';
-        var badgeClass = 'badge-' + (s.status || 'pendente');
+        var horas = s.horas || 0;
+        var horasValidadas = s.horas_validadas || 0;
+        var horasAValidar = s.horas_a_validar || 0;
+        var evolucao = horas > 0 ? Math.round((horasValidadas / horas) * 100) : 0;
+        if (evolucao > 100) evolucao = 100;
+        var badgeClass = 'badge-' + (s.status || 'aguardando');
+        var statusText = STATUS_LABELS[s.status] || s.status;
 
         html += '<tr data-id="' + s.id + '">';
-        html += '<td class="td-aluno">' + escapeHtml(s.aluno_nome) + '</td>';
-        html += '<td class="td-ra">' + escapeHtml(s.ra || '') + '</td>';
-        html += '<td class="td-assessor">' + escapeHtml(assessorName) + '</td>';
-        html += '<td>' + (s.horas || 0) + 'h</td>';
-        html += '<td>R$ ' + ((s.valor_hora || 0) * (s.horas || 0)).toFixed(2) + '</td>';
 
+        // Status
         if (canEdit) {
           html += '<td><select class="status-select" data-id="' + s.id + '" onchange="markChanged(this)">'
-            + '<option value="pendente"' + (s.status === 'pendente' ? ' selected' : '') + '>⏳ Pendente</option>'
-            + '<option value="em_andamento"' + (s.status === 'em_andamento' ? ' selected' : '') + '>🔄 Em Andamento</option>'
-            + '<option value="concluida"' + (s.status === 'concluida' ? ' selected' : '') + '>✅ Concluída</option>'
-            + '<option value="recusada"' + (s.status === 'recusada' ? ' selected' : '') + '>❌ Recusada</option>'
+            + '<option value="aguardando"' + (s.status === 'aguardando' ? ' selected' : '') + '>Aguardando</option>'
+            + '<option value="desenvolvendo"' + (s.status === 'desenvolvendo' ? ' selected' : '') + '>Desenvolvendo</option>'
+            + '<option value="finalizado"' + (s.status === 'finalizado' ? ' selected' : '') + '>Finalizado</option>'
+            + '<option value="finalizado_cobrar"' + (s.status === 'finalizado_cobrar' ? ' selected' : '') + '>Finalizado a Cobrar</option>'
             + '</select></td>';
-          html += '<td><textarea class="progresso-input" data-id="' + s.id + '" placeholder="Progresso..." oninput="markChanged(this)">' + escapeHtml(s.progresso || '') + '</textarea></td>';
         } else {
-          html += '<td><span class="badge-status ' + badgeClass + '">' + (statusLabels[s.status] || s.status) + '</span></td>';
-          html += '<td style="font-size:0.82rem;color:var(--gray-600);">' + escapeHtml(s.progresso || '—') + '</td>';
+          html += '<td><span class="badge-status ' + badgeClass + '">' + statusText + '</span></td>';
         }
 
-        html += '<td>' + dt + '</td>';
+        // Nome do Aluno
+        html += '<td class="td-aluno">' + escapeHtml(s.aluno_nome) + '</td>';
+
+        // Responsável
+        html += '<td class="td-assessor">' + escapeHtml(assessorName) + '</td>';
+
+        // Horas Contratadas
+        html += '<td style="text-align:center;">' + horas + ' Horas</td>';
+
+        // Horas Validadas
+        if (canEdit) {
+          html += '<td><input type="number" class="progresso-input" data-id="' + s.id + '" data-field="horas_validadas" value="' + horasValidadas + '" min="0" oninput="markChanged(this)" style="width:70px;text-align:center;"></td>';
+        } else {
+          html += '<td style="text-align:center;">' + (horasValidadas || '') + (horasValidadas ? ' Horas' : '—') + '</td>';
+        }
+
+        // Evolução (barra de progresso)
+        html += '<td>'
+          + '<div class="evolucao-bar">'
+          + '<div class="evolucao-fill" style="width:' + evolucao + '%;' + (evolucao >= 100 ? 'background:linear-gradient(90deg,#22c55e,#16a34a);' : '') + '"></div>'
+          + '<div class="evolucao-text">' + (evolucao > 0 ? evolucao + '%' : '') + '</div>'
+          + '</div></td>';
+
+        // Horas a Validar
+        if (canEdit) {
+          html += '<td><input type="number" class="progresso-input" data-id="' + s.id + '" data-field="horas_a_validar" value="' + horasAValidar + '" min="0" oninput="markChanged(this)" style="width:70px;text-align:center;"></td>';
+        } else {
+          html += '<td style="text-align:center;">' + (horasAValidar || '') + (horasAValidar ? ' Horas' : '') + '</td>';
+        }
+
+        // Save button
         if (canEdit) {
           html += '<td><button class="btn-save-row" data-id="' + s.id + '" onclick="saveRow(\'' + s.id + '\')" style="display:none;">💾</button></td>';
         } else {
           html += '<td></td>';
         }
+
         html += '</tr>';
       });
 
@@ -324,14 +374,16 @@
 
     async function saveRow(id) {
       var statusEl = document.querySelector('.status-select[data-id="' + id + '"]');
-      var progressoEl = document.querySelector('.progresso-input[data-id="' + id + '"]');
+      var horasValEl = document.querySelector('input[data-id="' + id + '"][data-field="horas_validadas"]');
+      var horasAValEl = document.querySelector('input[data-id="' + id + '"][data-field="horas_a_validar"]');
       var btn = document.querySelector('.btn-save-row[data-id="' + id + '"]');
 
       var update = {
-        status: statusEl ? statusEl.value : undefined,
-        progresso: progressoEl ? progressoEl.value : undefined,
         updated_at: new Date().toISOString()
       };
+      if (statusEl) update.status = statusEl.value;
+      if (horasValEl) update.horas_validadas = parseInt(horasValEl.value) || 0;
+      if (horasAValEl) update.horas_a_validar = parseInt(horasAValEl.value) || 0;
 
       btn.textContent = '...';
       btn.disabled = true;
@@ -345,9 +397,11 @@
         _solicitacoes.forEach(function (s) {
           if (s.id === id) {
             if (update.status) s.status = update.status;
-            if (update.progresso !== undefined) s.progresso = update.progresso;
+            if (update.horas_validadas !== undefined) s.horas_validadas = update.horas_validadas;
+            if (update.horas_a_validar !== undefined) s.horas_a_validar = update.horas_a_validar;
           }
         });
+        renderTable();
         renderStats();
       } catch (err) {
         showToast('Erro: ' + (err.message || err), 'error');

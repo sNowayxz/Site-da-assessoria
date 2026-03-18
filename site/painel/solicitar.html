@@ -266,7 +266,7 @@
           valor_hora: parseFloat(form.valor_hora.value) || 0,
           valor_pago: parseFloat(form.valor_pago.value) || 0,
           observacoes: form.observacoes.value.trim(),
-          status: 'pendente'
+          status: 'aguardando'
         };
 
         var { error } = await sb.from('solicitacoes').insert(record);
@@ -301,16 +301,16 @@
       }
 
       var statusLabels = {
-        pendente: 'Pendente',
-        em_andamento: 'Em Andamento',
-        concluida: 'Concluída',
-        recusada: 'Recusada'
+        aguardando: 'Aguardando',
+        desenvolvendo: 'Desenvolvendo',
+        finalizado: 'Finalizado',
+        finalizado_cobrar: 'Finalizado a Cobrar'
       };
 
       var html = '';
       data.forEach(function (s) {
         var dt = new Date(s.created_at).toLocaleDateString('pt-BR');
-        var statusClass = 'badge-' + (s.status || 'pendente');
+        var statusClass = 'badge-' + (s.status || 'aguardando');
         var statusText = statusLabels[s.status] || s.status;
 
         html += '<div class="solic-card">'
