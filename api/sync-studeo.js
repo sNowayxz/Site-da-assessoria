@@ -170,55 +170,62 @@ function extractNameFromJWT(token) {
 }
 
 async function studeoLogin(ra, senha) {
-  // Tenta múltiplos formatos de RA: original, sem traço, só números
   const raStr = String(ra).trim();
-  const formatos = [...new Set([
-    raStr,                                    // original: 23136944-5
-    raStr.replace(/[\s]/g, ''),               // sem espaços
-    raStr.replace(/[\s.\-]/g, ''),            // sem traço/ponto: 231369445
-    raStr.replace(/[^0-9]/g, ''),             // só números
-  ])];
+  const senhaStr = String(senha).trim();
 
-  let lastError = 'Nenhum formato de RA funcionou';
+  // RA formats to try
+  const raFormatos = [...new Set([
+    raStr,
+    raStr.replace(/[\s]/g, ''),
+    raStr.replace(/[\s.\-]/g, ''),
+    raStr.replace(/[^0-9]/g, ''),
+  ])].filter(Boolean);
 
-  for (const formato of formatos) {
-    if (!formato) continue;
-    try {
-      const resp = await fetch(`${STUDEO_API}/auth-api-controller/auth/token/create`, {
-        method: 'POST',
-        headers: HEADERS_BASE,
-        body: JSON.stringify({ username: formato, password: senha }),
-      });
+  // Senha formats: original, sem "55" no final (erro comum de export com DDI)
+  const senhaFormatos = [senhaStr];
+  if (senhaStr.endsWith('55') && senhaStr.length > 4) {
+    senhaFormatos.push(senhaStr.slice(0, -2));
+  }
 
-      const text = await resp.text();
-      let data;
-      try { data = JSON.parse(text); } catch { data = null; }
+  let lastError = 'Nenhuma combinação funcionou';
 
-      // Credenciais inválidas neste formato — tenta o próximo
-      if (data && data.valid === false) {
-        lastError = `RA "${formato}": credenciais inválidas`;
+  for (const senhaTry of senhaFormatos) {
+    for (const formato of raFormatos) {
+      try {
+        const resp = await fetch(`${STUDEO_API}/auth-api-controller/auth/token/create`, {
+          method: 'POST',
+          headers: HEADERS_BASE,
+          body: JSON.stringify({ username: formato, password: senhaTry }),
+        });
+
+        const text = await resp.text();
+        let data;
+        try { data = JSON.parse(text); } catch { data = null; }
+
+        if (data && data.valid === false) {
+          lastError = `RA "${formato}" senha "${senhaTry.substring(0,3)}...": inválidas`;
+          continue;
+        }
+        if (!resp.ok) {
+          lastError = `RA "${formato}": HTTP ${resp.status}`;
+          continue;
+        }
+        if (!data || !data.token) {
+          lastError = `RA "${formato}": token não retornado`;
+          continue;
+        }
+
+        console.log(`[studeo] Login OK: RA=${formato} senha=${senhaTry === senhaStr ? 'original' : 'sem 55'}`);
+        return data.token;
+
+      } catch (err) {
+        lastError = `RA "${formato}": ${err.message}`;
         continue;
       }
-      if (!resp.ok) {
-        lastError = `RA "${formato}": HTTP ${resp.status}`;
-        continue;
-      }
-      if (!data || !data.token) {
-        lastError = `RA "${formato}": token não retornado`;
-        continue;
-      }
-
-      // Sucesso!
-      console.log(`[studeo] Login OK com formato: ${formato}`);
-      return data.token;
-
-    } catch (err) {
-      lastError = `RA "${formato}": ${err.message}`;
-      continue;
     }
   }
 
-  throw new Error(`Login falhou em todos os formatos. Último erro: ${lastError}`);
+  throw new Error(`Login falhou. Último erro: ${lastError}`);
 }
 
 async function buscarDisciplinas(ra) {
