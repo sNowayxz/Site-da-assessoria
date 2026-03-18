@@ -11,10 +11,14 @@
   <base href="/painel/">
   <link rel="stylesheet" href="css/painel.css">
   <style>
+    /* Chat ocupa toda a área */
+    .main-content { padding: 0 !important; overflow: hidden !important; }
+    .topbar { padding: 12px 24px !important; }
     .chat-container {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 65px);
+      height: calc(100vh - 57px);
+      overflow: hidden;
     }
 
     .chat-tabs {
@@ -404,13 +408,13 @@
           <div class="chat-empty" id="chat-empty">Carregando mensagens...</div>
         </div>
 
+        <div class="chat-upload-preview" id="chat-upload-preview" style="display:none"></div>
         <div class="chat-input-area">
           <input type="file" id="chat-file-input" style="display:none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.txt">
           <button type="button" id="btn-attach" class="btn-attach" title="Enviar imagem ou arquivo" onclick="document.getElementById('chat-file-input').click()">📎</button>
           <input type="text" id="chat-input" placeholder="Digite sua mensagem..." autocomplete="off">
           <button id="btn-send" onclick="sendMessage()">Enviar</button>
         </div>
-        <div class="chat-upload-preview" id="chat-upload-preview" style="display:none"></div>
       </div>
     </main>
   </div>
@@ -419,7 +423,7 @@
   <script src="js/supabase-config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/utils.js"></script>
-  <script src="js/chat.js"></script>
+  <script src="js/chat.js?v=20260318b"></script>
   <script>
     document.getElementById('mobile-toggle').addEventListener('click', function () { document.getElementById('sidebar').classList.toggle('open'); });
     document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });
