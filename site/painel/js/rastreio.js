@@ -32,10 +32,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     chip.addEventListener('click', function () {
       document.querySelectorAll('.grupo-chip').forEach(function (c) { c.classList.remove('active'); });
       chip.classList.add('active');
+      updateSyncGroupButton();
       loadAlunos();
       loadSyncData();
     });
   });
+  updateSyncGroupButton();
 
   // Prazo chips
   document.querySelectorAll('.prazo-chip').forEach(function (chip) {
@@ -51,6 +53,21 @@ document.addEventListener('DOMContentLoaded', async function () {
 function getActiveGrupo() {
   var chip = document.querySelector('.grupo-chip.active');
   return chip ? chip.getAttribute('data-grupo') : '';
+}
+
+function getActiveGrupoLabel() {
+  var grupo = getActiveGrupo();
+  if (grupo === 'mensalista') return 'Mensalistas';
+  if (grupo === 'recorrente') return 'Recorrentes';
+  if (grupo === 'extensao') return 'Extensão';
+  return 'Todos';
+}
+
+function updateSyncGroupButton() {
+  var btn = document.getElementById('btn-sync-all');
+  if (btn) btn.textContent = '⚡ Sync ' + getActiveGrupoLabel();
+  var btnNew = document.getElementById('btn-sync-new');
+  if (btnNew) btnNew.textContent = '🆕 Novos ' + getActiveGrupoLabel();
 }
 
 async function loadMensalistas() {
