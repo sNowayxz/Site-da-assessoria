@@ -674,6 +674,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 var PAGE_ACCESS = {
   admin: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil'],
+  dono: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil'],
+  extensao: ['chat', 'extensoes', 'perfil'],
+  assessoria: ['chat', 'perfil'],
   assessor: ['app', 'agenda', 'chat', 'alunos', 'atividades', 'extensoes', 'kanban', 'perfil'],
   visualizador: ['app', 'agenda', 'perfil']
 };
@@ -712,10 +715,18 @@ function setupSidebarPermissions(role) {
     }
   });
 
-  // Update role label in sidebar
+  // Update role label in sidebar (use custom label if available)
   var roleEl = document.querySelector('.sidebar-user-role');
-  if (roleEl && typeof getRoleLabel === 'function') {
-    roleEl.textContent = getRoleLabel(role);
+  if (roleEl) {
+    var customLabel = typeof getUserLabel === 'function' ? getUserLabel() : null;
+    roleEl.textContent = customLabel || (typeof getRoleLabel === 'function' ? getRoleLabel(role) : role);
+  }
+
+  // Hide delete buttons for assessoria/extensao (only admin/dono can delete)
+  if (role !== 'admin' && role !== 'dono') {
+    document.querySelectorAll('.btn-danger, .btn-icon.btn-danger').forEach(function (btn) {
+      btn.classList.add('role-hidden');
+    });
   }
 
   // Hide action buttons for visualizador
@@ -725,8 +736,8 @@ function setupSidebarPermissions(role) {
     });
   }
 
-  // Hide delete buttons for non-admin
-  if (role !== 'admin') {
+  // (delete buttons already handled above for non-admin/dono)
+  if (false) {
     document.querySelectorAll('.btn-danger, .btn-icon.btn-danger').forEach(function (btn) {
       btn.classList.add('role-hidden');
     });

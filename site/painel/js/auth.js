@@ -50,24 +50,31 @@ function getUserName(user) {
 
 // ─── Role System ───
 
+var _cachedLabel = null;
+
 async function getUserRole(user) {
   if (_cachedRole) return _cachedRole;
   if (!user) user = await getUser();
   if (!user) return null;
 
   try {
-    var { data, error } = await sb.from('assessores').select('role').eq('id', user.id).single();
+    var { data, error } = await sb.from('assessores').select('role, label').eq('id', user.id).single();
     if (error || !data) {
       console.warn('[auth] Sem registro em assessores para user:', user.id);
       _cachedRole = null;
       return null;
     }
     _cachedRole = data.role;
+    _cachedLabel = data.label || null;
     return _cachedRole;
   } catch (e) {
     console.error('[auth] Erro ao buscar role:', e.message);
     return null;
   }
+}
+
+function getUserLabel() {
+  return _cachedLabel;
 }
 
 /**
@@ -88,8 +95,14 @@ async function requireRole(allowedRoles) {
     return null;
   }
 
+  // dono tem mesmos acessos que admin (exceto alterar Gustavo)
+  var effectiveRoles = allowedRoles.slice();
+  if (effectiveRoles.indexOf('admin') !== -1 && effectiveRoles.indexOf('dono') === -1) {
+    effectiveRoles.push('dono');
+  }
+
   // Se role não é permitido nesta página
-  if (allowedRoles.indexOf(role) === -1) {
+  if (effectiveRoles.indexOf(role) === -1) {
     window.location.href = '/painel/app.html';
     return null;
   }
@@ -102,6 +115,9 @@ async function requireRole(allowedRoles) {
  */
 var ROLE_LABELS = {
   admin: 'Administrador',
+  dono: 'Dono',
+  extensao: 'Extensão',
+  assessoria: 'Assessoria',
   assessor: 'Assessor',
   visualizador: 'Visualizador'
 };
