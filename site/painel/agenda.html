@@ -408,6 +408,7 @@
       });
 
       await renderCalendar();
+      initCalendarDragDrop();
     });
 
     function resetEventForm() {
@@ -509,7 +510,7 @@
 
       grid.innerHTML = html;
 
-      // Day click handlers
+      // Day click handlers (re-attach because innerHTML replaces elements)
       grid.querySelectorAll('.calendar-day:not(.other-month)').forEach(function (cell) {
         cell.addEventListener('click', function (e) {
           if (e.target.closest('.cal-event[draggable="true"]')) return;
@@ -517,11 +518,10 @@
           if (ds) openDayDetail(ds);
         });
       });
+    }
 
-      // Drag & drop for manual events
-      initCalendarDragDrop();
-
-      function initCalendarDragDrop() {
+    // Drag & drop (called once — uses event delegation on grid)
+    function initCalendarDragDrop() {
         var grid = document.getElementById('calendar-grid');
 
         grid.addEventListener('dragstart', function(e) {
