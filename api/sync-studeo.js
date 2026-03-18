@@ -72,22 +72,44 @@ module.exports = async function handler(req, res) {
         const nomeUpper = (disc.nmDisciplina || '').toUpperCase();
         if (EXCLUIR.some(e => nomeUpper.includes(e))) continue;
 
+        const pendentes = afazerMap[disc.cdShortname] || 0;
+
         try {
           const [atividades, mapa] = await Promise.all([
             buscarAtividades(token, disc.cdShortname),
             buscarMapa(token, disc.cdShortname),
           ]);
 
-          const atividadesNorm = normalizarAtividades(atividades, 'AV');
+          // Combinar e deduplicar por descricao, depois limitar ao nº real de pendências
+          const allNorm = normalizarAtividades(atividades, 'AV');
           const mapaNorm = normalizarAtividades(mapa, 'MAPA');
+          const combined = [...allNorm, ...mapaNorm];
+
+          // Deduplicar por descricao
+          const seen = new Set();
+          const unique = combined.filter(a => {
+            if (seen.has(a.descricao)) return false;
+            seen.add(a.descricao);
+            return true;
+          });
+
+          // Ordenar por dataInicial desc (mais recentes primeiro = não respondidas)
+          unique.sort((a, b) => {
+            const da = a.dataInicial ? new Date(a.dataInicial).getTime() : 0;
+            const db = b.dataInicial ? new Date(b.dataInicial).getTime() : 0;
+            return db - da;
+          });
+
+          // Pegar apenas as N pendentes (conforme endpoint afazer)
+          const pendentesReais = unique.slice(0, pendentes);
 
           resultado.push({
             disciplina: disc.nmDisciplina,
             cd_shortname: disc.cdShortname,
             ano: disc.ano || null,
             modulo: disc.semestre ? String(disc.semestre) : null,
-            atividades: atividadesNorm,
-            mapa: mapaNorm,
+            atividades: pendentesReais,
+            mapa: [],
           });
         } catch (err) {
           console.error(`[sync] Erro em ${disc.nmDisciplina}:`, err.message);
