@@ -359,8 +359,8 @@
       document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
       document.getElementById('user-name').textContent = name;
 
-      if (role === 'admin') {
-        // Admin: show spreadsheet (already visible)
+      if (role === 'admin' || role === 'extensao') {
+        // Admin/Extensao: show spreadsheet
         document.getElementById('sheet-container').classList.remove('role-hidden');
       } else {
         // Assessor: hide spreadsheet, show project list

@@ -1,13 +1,18 @@
 /* ═══════════════════════════════════════════
-   Chat — Mensagens em Tempo Real
+   Chat — Mensagens Privadas + Canais
+   v2: DM extensão↔assessorias
    ═══════════════════════════════════════════ */
 
 var currentChannel = 'geral';
 var currentUserId = null;
 var currentUserName = '';
+var currentRole = null;
 var realtimeSubscription = null;
 var _assessorNamesCache = {};
-var _pendingFile = null; // file staged for upload
+var _assessorAvatarsCache = {};
+var _pendingFile = null;
+var _extensaoUserId = null; // ID do usuário extensão (Gessica)
+var _contactsList = []; // Lista de contatos para extensão
 
 // ─── Init ───
 document.addEventListener('DOMContentLoaded', async function () {
@@ -15,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   if (!result) return;
   var user = result.user;
   var role = result.role;
+  currentRole = role;
   setupSidebarPermissions(role);
   currentUserId = user.id;
   currentUserName = getUserName(user);
@@ -33,20 +39,31 @@ document.addEventListener('DOMContentLoaded', async function () {
   // File input change
   document.getElementById('chat-file-input').addEventListener('change', handleFileSelected);
 
-  // Pre-load assessor names
+  // Pre-load assessor names + avatars
   await loadAssessorNames();
 
-  await loadMessages(currentChannel);
-  subscribeRealtime();
+  // Setup chat mode based on role
+  if (role === 'extensao') {
+    await setupExtensaoChat();
+  } else if (role === 'assessoria') {
+    await setupAssessoriaChat();
+  } else {
+    // admin/dono: show channel tabs (geral, urgente) + DMs
+    setupAdminChat();
+  }
 });
 
 // ─── Load Assessor Names Cache ───
 async function loadAssessorNames() {
   try {
-    var { data } = await sb.from('assessores').select('id, nome');
+    var { data } = await sb.from('assessores').select('id, nome, label, role, avatar_url');
     if (data) {
       for (var i = 0; i < data.length; i++) {
-        _assessorNamesCache[data[i].id] = data[i].nome;
+        _assessorNamesCache[data[i].id] = data[i].nome || data[i].label || 'Sem nome';
+        _assessorAvatarsCache[data[i].id] = data[i].avatar_url || '';
+        if (data[i].role === 'extensao') {
+          _extensaoUserId = data[i].id;
+        }
       }
     }
   } catch (e) {
@@ -59,6 +76,156 @@ function getSenderName(senderId) {
   return _assessorNamesCache[senderId] || 'Desconhecido';
 }
 
+// ─── DM Channel name (sorted IDs for consistency) ───
+function dmChannel(id1, id2) {
+  return id1 < id2 ? 'dm-' + id1 + '-' + id2 : 'dm-' + id2 + '-' + id1;
+}
+
+// ═══════════════════════════════════════════
+// Extensão: vê lista de assessorias à esquerda
+// ═══════════════════════════════════════════
+async function setupExtensaoChat() {
+  // Get all assessorias
+  var { data: assessorias } = await sb.from('assessores')
+    .select('id, nome, label, avatar_url')
+    .eq('role', 'assessoria')
+    .order('nome');
+
+  _contactsList = assessorias || [];
+
+  // Build contacts panel
+  var tabsEl = document.getElementById('chat-tabs-area');
+  tabsEl.innerHTML = '';
+  tabsEl.className = 'chat-contacts-panel';
+
+  var headerHtml = '<div class="contacts-header">💬 Conversas</div>';
+  var listHtml = '<div class="contacts-list" id="contacts-list">';
+
+  for (var i = 0; i < _contactsList.length; i++) {
+    var c = _contactsList[i];
+    var initial = (c.nome || 'A').charAt(0).toUpperCase();
+    var avatarHtml = c.avatar_url
+      ? '<img src="' + escapeHtml(c.avatar_url) + '" alt="" class="contact-avatar-img">'
+      : '<span class="contact-avatar-letter">' + initial + '</span>';
+
+    listHtml += '<div class="contact-item" data-contact-id="' + c.id + '" onclick="openDM(\'' + c.id + '\')">'
+      + '<div class="contact-avatar">' + avatarHtml + '</div>'
+      + '<div class="contact-info">'
+      + '<div class="contact-name">' + escapeHtml(c.label || c.nome) + '</div>'
+      + '<div class="contact-last" id="last-' + c.id + '">...</div>'
+      + '</div>'
+      + '<span class="contact-unread" id="unread-' + c.id + '" style="display:none;">0</span>'
+      + '</div>';
+  }
+  listHtml += '</div>';
+  tabsEl.innerHTML = headerHtml + listHtml;
+
+  // Update topbar title
+  var topbarH1 = document.querySelector('.topbar h1');
+  if (topbarH1) topbarH1.textContent = 'Chat — Extensão';
+
+  // Load last messages for preview
+  loadContactPreviews();
+
+  // Select first contact by default
+  if (_contactsList.length > 0) {
+    openDM(_contactsList[0].id);
+  } else {
+    document.getElementById('chat-messages').innerHTML = '<div class="chat-empty">Nenhuma assessoria cadastrada.</div>';
+  }
+}
+
+async function loadContactPreviews() {
+  for (var i = 0; i < _contactsList.length; i++) {
+    var c = _contactsList[i];
+    var ch = dmChannel(currentUserId, c.id);
+    try {
+      var { data } = await sb.from('mensagens')
+        .select('content, created_at')
+        .eq('channel', ch)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      var el = document.getElementById('last-' + c.id);
+      if (el && data && data[0]) {
+        var txt = data[0].content || '📎 Arquivo';
+        el.textContent = txt.length > 30 ? txt.substring(0, 30) + '...' : txt;
+      } else if (el) {
+        el.textContent = 'Nenhuma mensagem';
+      }
+    } catch (e) {}
+  }
+}
+
+// ═══════════════════════════════════════════
+// Assessoria: vê apenas chat com Gessica
+// ═══════════════════════════════════════════
+async function setupAssessoriaChat() {
+  var tabsEl = document.getElementById('chat-tabs-area');
+  tabsEl.innerHTML = '';
+  tabsEl.className = '';
+
+  if (!_extensaoUserId) {
+    document.getElementById('chat-messages').innerHTML = '<div class="chat-empty">Nenhum responsável de extensão encontrado.</div>';
+    return;
+  }
+
+  // Show who they're chatting with
+  var extName = _assessorNamesCache[_extensaoUserId] || 'Extensão';
+  var topbarH1 = document.querySelector('.topbar h1');
+  if (topbarH1) topbarH1.textContent = 'Chat com ' + extName;
+
+  // Auto-open DM with extensão
+  currentChannel = dmChannel(currentUserId, _extensaoUserId);
+  await loadMessages(currentChannel);
+  subscribeRealtime();
+}
+
+// ═══════════════════════════════════════════
+// Admin/Dono: canais + DMs
+// ═══════════════════════════════════════════
+function setupAdminChat() {
+  // Keep original tabs
+  var tabsEl = document.getElementById('chat-tabs-area');
+  tabsEl.className = 'chat-tabs';
+  tabsEl.innerHTML = '<button class="chat-tab active" data-channel="geral" onclick="switchChannel(\'geral\')">Geral</button>'
+    + '<button class="chat-tab" data-channel="urgente" onclick="switchChannel(\'urgente\')">Urgente</button>';
+
+  loadMessages(currentChannel);
+  subscribeRealtime();
+}
+
+// ─── Open DM (from contacts list) ───
+window.openDM = async function(contactId) {
+  var ch = dmChannel(currentUserId, contactId);
+  currentChannel = ch;
+
+  // Highlight selected contact
+  document.querySelectorAll('.contact-item').forEach(function(el) {
+    el.classList.toggle('active', el.getAttribute('data-contact-id') === contactId);
+  });
+
+  // Hide unread badge
+  var unreadEl = document.getElementById('unread-' + contactId);
+  if (unreadEl) unreadEl.style.display = 'none';
+
+  // Update topbar with contact name
+  var contactName = _assessorNamesCache[contactId] || 'Chat';
+  var topbarH1 = document.querySelector('.topbar h1');
+  if (topbarH1) topbarH1.textContent = 'Chat — ' + contactName;
+
+  // Clear and reload
+  document.getElementById('chat-messages').innerHTML = '<div class="chat-empty">Carregando...</div>';
+  clearFilePreview();
+
+  if (realtimeSubscription) {
+    sb.removeChannel(realtimeSubscription);
+    realtimeSubscription = null;
+  }
+
+  await loadMessages(ch);
+  subscribeRealtime();
+};
+
 // ─── Load Messages ───
 async function loadMessages(channel) {
   var messagesEl = document.getElementById('chat-messages');
@@ -69,12 +236,12 @@ async function loadMessages(channel) {
       .select('*')
       .eq('channel', channel)
       .order('created_at', { ascending: true })
-      .limit(100);
+      .limit(200);
 
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      messagesEl.innerHTML = '<div class="chat-empty">Nenhuma mensagem ainda. Comece a conversa!</div>';
+      messagesEl.innerHTML = '<div class="chat-empty">Nenhuma mensagem ainda. Comece a conversa! 💬</div>';
       return;
     }
 
@@ -82,7 +249,6 @@ async function loadMessages(channel) {
   } catch (e) {
     console.error('[chat] Erro ao carregar mensagens:', e);
     messagesEl.innerHTML = '<div class="chat-empty">Erro ao carregar mensagens.</div>';
-    showToast('Erro ao carregar mensagens: ' + (e.message || e), 'error');
   }
 }
 
@@ -112,7 +278,6 @@ function buildMessageHTML(msg, lastDate) {
 
   var html = '';
 
-  // Date separator
   if (dateStr !== lastDate) {
     html += '<div class="chat-date-separator">' + dateStr + '</div>';
   }
@@ -121,7 +286,6 @@ function buildMessageHTML(msg, lastDate) {
 
   html += '<div class="' + bubbleClass + '" data-msg-id="' + msg.id + '">';
 
-  // Delete button (only for own messages)
   if (isOwn) {
     html += '<button class="btn-delete-msg" onclick="deleteMessage(\'' + msg.id + '\')" title="Apagar">✕</button>';
   }
@@ -130,12 +294,10 @@ function buildMessageHTML(msg, lastDate) {
     html += '<div class="chat-sender">' + escapeHtml(senderName) + '</div>';
   }
 
-  // Text content
   if (msg.content) {
     html += '<div class="chat-text">' + escapeHtml(msg.content) + '</div>';
   }
 
-  // File attachment
   if (msg.file_url) {
     html += renderFileAttachment(msg.file_url, msg.file_name || 'arquivo');
   }
@@ -169,7 +331,6 @@ async function sendMessage() {
   var btn = document.getElementById('btn-send');
   var text = input.value.trim();
 
-  // Need at least text or a file
   if (!text && !_pendingFile) return;
 
   btn.disabled = true;
@@ -179,7 +340,6 @@ async function sendMessage() {
     var fileUrl = null;
     var fileName = null;
 
-    // Upload file if pending
     if (_pendingFile) {
       var uploadResult = await uploadFile(_pendingFile);
       fileUrl = uploadResult.url;
@@ -196,10 +356,12 @@ async function sendMessage() {
     if (fileName) record.file_name = fileName;
 
     var { error } = await sb.from('mensagens').insert(record);
-
     if (error) throw error;
 
     input.value = '';
+
+    // Update last message preview in contacts
+    updateContactPreview(currentChannel, text || '📎 Arquivo');
   } catch (e) {
     console.error('[chat] Erro ao enviar:', e);
     showToast('Erro ao enviar mensagem: ' + (e.message || e), 'error');
@@ -210,12 +372,25 @@ async function sendMessage() {
   }
 }
 
+function updateContactPreview(channel, text) {
+  // Find which contact this channel belongs to
+  for (var i = 0; i < _contactsList.length; i++) {
+    var ch = dmChannel(currentUserId, _contactsList[i].id);
+    if (ch === channel) {
+      var el = document.getElementById('last-' + _contactsList[i].id);
+      if (el) {
+        el.textContent = text.length > 30 ? text.substring(0, 30) + '...' : text;
+      }
+      break;
+    }
+  }
+}
+
 // ─── File Upload ───
 function handleFileSelected(e) {
   var file = e.target.files[0];
   if (!file) return;
 
-  // Max 10MB
   if (file.size > 10 * 1024 * 1024) {
     showToast('Arquivo muito grande. Máximo 10MB.', 'error');
     e.target.value = '';
@@ -247,9 +422,12 @@ function showFilePreview(file) {
 function clearFilePreview() {
   _pendingFile = null;
   var preview = document.getElementById('chat-upload-preview');
-  preview.style.display = 'none';
-  preview.innerHTML = '';
-  document.getElementById('chat-file-input').value = '';
+  if (preview) {
+    preview.style.display = 'none';
+    preview.innerHTML = '';
+  }
+  var fileInput = document.getElementById('chat-file-input');
+  if (fileInput) fileInput.value = '';
 }
 
 function formatFileSize(bytes) {
@@ -260,7 +438,7 @@ function formatFileSize(bytes) {
 
 async function uploadFile(file) {
   var ext = file.name.split('.').pop();
-  var path = 'chat/' + currentChannel + '/' + Date.now() + '_' + Math.random().toString(36).substring(2, 8) + '.' + ext;
+  var path = 'chat/' + currentChannel.replace(/[^a-z0-9-]/g, '_') + '/' + Date.now() + '_' + Math.random().toString(36).substring(2, 8) + '.' + ext;
 
   var { data, error } = await sb.storage
     .from('chat-files')
@@ -281,7 +459,6 @@ async function deleteMessage(msgId) {
     var { error } = await sb.from('mensagens').delete().eq('id', msgId).eq('sender_id', currentUserId);
     if (error) throw error;
 
-    // Remove from DOM
     var bubble = document.querySelector('[data-msg-id="' + msgId + '"]');
     if (bubble) {
       bubble.style.opacity = '0';
@@ -297,28 +474,19 @@ async function deleteMessage(msgId) {
   }
 }
 
-// ─── Switch Channel ───
-function switchChannel(channel) {
+// ─── Switch Channel (admin tabs) ───
+window.switchChannel = function(channel) {
   if (channel === currentChannel) return;
   currentChannel = channel;
 
-  // Update tab UI
   var tabs = document.querySelectorAll('.chat-tab');
   for (var i = 0; i < tabs.length; i++) {
-    if (tabs[i].getAttribute('data-channel') === channel) {
-      tabs[i].classList.add('active');
-    } else {
-      tabs[i].classList.remove('active');
-    }
+    tabs[i].classList.toggle('active', tabs[i].getAttribute('data-channel') === channel);
   }
 
-  // Clear pending file
   clearFilePreview();
-
-  // Clear and reload
   document.getElementById('chat-messages').innerHTML = '<div class="chat-empty">Carregando mensagens...</div>';
 
-  // Unsubscribe old and resubscribe
   if (realtimeSubscription) {
     sb.removeChannel(realtimeSubscription);
     realtimeSubscription = null;
@@ -326,7 +494,7 @@ function switchChannel(channel) {
 
   loadMessages(channel);
   subscribeRealtime();
-}
+};
 
 // ─── Subscribe Realtime ───
 function subscribeRealtime() {
@@ -337,7 +505,7 @@ function subscribeRealtime() {
 
   try {
     realtimeSubscription = sb
-      .channel('chat-' + currentChannel)
+      .channel('chat-' + currentChannel.replace(/[^a-z0-9-]/g, '_'))
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -361,8 +529,6 @@ function subscribeRealtime() {
 
 // ─── Handle New Message from Realtime ───
 function handleNewMessage(msg) {
-  var senderName = getSenderName(msg.sender_id);
-
   if (!_assessorNamesCache[msg.sender_id] && msg.sender_id !== currentUserId) {
     sb.from('assessores').select('nome').eq('id', msg.sender_id).single().then(function (res) {
       if (res.data && res.data.nome) {
@@ -378,11 +544,9 @@ function handleNewMessage(msg) {
 
   var messagesEl = document.getElementById('chat-messages');
 
-  // Remove empty state if present
   var emptyEl = messagesEl.querySelector('.chat-empty');
   if (emptyEl) emptyEl.remove();
 
-  // Get last date for separator check
   var lastSeparator = messagesEl.querySelector('.chat-date-separator:last-of-type');
   var lastDateText = lastSeparator ? lastSeparator.textContent : '';
 
@@ -394,9 +558,11 @@ function handleNewMessage(msg) {
   }
 
   scrollToBottom();
+
+  // Update contact preview
+  updateContactPreview(msg.channel, msg.content || '📎 Arquivo');
 }
 
-// ─── Handle Deleted Message from Realtime ───
 function handleDeletedMessage(msg) {
   if (!msg || !msg.id) return;
   var bubble = document.querySelector('[data-msg-id="' + msg.id + '"]');
@@ -408,7 +574,6 @@ function handleDeletedMessage(msg) {
   }
 }
 
-// ─── Scroll to Bottom ───
 function scrollToBottom() {
   var messagesEl = document.getElementById('chat-messages');
   messagesEl.scrollTop = messagesEl.scrollHeight;
