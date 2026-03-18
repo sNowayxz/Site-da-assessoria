@@ -21,4 +21,3 @@ jobs:
           password: ${{ secrets.FTP_PASS }}
           local-dir: ./site/
           server-dir: /domains/xn--assessoriaextenses-82b.com/public_html/
-          dangerous-clean-slate: true
