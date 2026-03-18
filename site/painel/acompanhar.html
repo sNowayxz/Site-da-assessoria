@@ -168,7 +168,8 @@
           <button class="mobile-toggle" id="mobile-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
           <h1>Acompanhar Solicitações</h1>
         </div>
-        <div class="topbar-actions">
+        <div class="topbar-actions" style="display:flex;gap:8px;align-items:center;">
+          <button class="btn" id="btn-add-manual" style="background:var(--gold);color:var(--dark);font-size:0.82rem;padding:8px 14px;display:none;">➕ Adicionar Aluno</button>
           <button class="theme-toggle" id="btn-theme" title="Alternar tema">🌙</button>
         </div>
       </div>
@@ -178,6 +179,11 @@
 
       <!-- Filters -->
       <div class="filter-bar">
+        <select id="filter-origem" style="display:none;">
+          <option value="">Todos</option>
+          <option value="assessoria">Assessorias</option>
+          <option value="aluno">Alunos Direto</option>
+        </select>
         <select id="filter-status">
           <option value="">Todos os status</option>
           <option value="aguardando">Aguardando</option>
@@ -234,6 +240,38 @@
       document.getElementById('user-avatar').textContent = getUserName(result.user).charAt(0).toUpperCase();
       document.getElementById('btn-logout').addEventListener('click', handleLogout);
 
+      // Show origin filter and add button for extensao/admin/dono
+      if (currentRole !== 'assessoria') {
+        document.getElementById('filter-origem').style.display = '';
+        document.getElementById('btn-add-manual').style.display = '';
+
+        document.getElementById('filter-origem').addEventListener('change', renderTable);
+
+        // Add manual button
+        document.getElementById('btn-add-manual').addEventListener('click', function () {
+          var nome = prompt('Nome do Aluno:');
+          if (!nome) return;
+          var ra = prompt('RA do Aluno:');
+          var horas = parseInt(prompt('Horas Contratadas:')) || 0;
+          var valorHora = parseFloat(prompt('Valor da Hora (R$):')) || 0;
+          var valorPago = parseFloat(prompt('Valor Pago (R$):')) || 0;
+
+          sb.from('solicitacoes').insert({
+            aluno_nome: nome.trim(),
+            ra: (ra || '').trim(),
+            horas: horas,
+            valor_hora: valorHora,
+            valor_pago: valorPago,
+            status: 'aguardando',
+            origem: 'aluno'
+          }).then(function (res) {
+            if (res.error) { showToast('Erro: ' + res.error.message, 'error'); return; }
+            showToast('Aluno adicionado!', 'success');
+            loadSolicitacoes();
+          });
+        });
+      }
+
       // Load assessor names for admin/extensao
       if (currentRole !== 'assessoria') {
         var { data: assessores } = await sb.from('assessores').select('id, nome, label');
@@ -266,10 +304,19 @@
     }
 
     function renderStats() {
-      var stats = { aguardando: 0, desenvolvendo: 0, finalizado: 0, finalizado_cobrar: 0, total: _solicitacoes.length };
-      _solicitacoes.forEach(function (s) { stats[s.status] = (stats[s.status] || 0) + 1; });
+      var stats = { aguardando: 0, desenvolvendo: 0, finalizado: 0, finalizado_cobrar: 0, total: _solicitacoes.length, assessoria: 0, aluno: 0 };
+      _solicitacoes.forEach(function (s) {
+        stats[s.status] = (stats[s.status] || 0) + 1;
+        if (s.origem === 'aluno') stats.aluno++;
+        else stats.assessoria++;
+      });
+      var origemInfo = currentRole !== 'assessoria'
+        ? '<div class="stat-pill" style="background:rgba(59,130,246,0.08);color:#2563eb;">📋 ' + stats.assessoria + ' assessorias</div>' +
+          '<div class="stat-pill" style="background:rgba(139,92,246,0.08);color:#7c3aed;">👤 ' + stats.aluno + ' alunos direto</div>'
+        : '';
       document.getElementById('stats-inline').innerHTML =
         '<div class="stat-pill total">📊 ' + stats.total + ' total</div>' +
+        origemInfo +
         '<div class="stat-pill aguardando">⏳ ' + stats.aguardando + ' aguardando</div>' +
         '<div class="stat-pill desenvolvendo">🔄 ' + stats.desenvolvendo + ' desenvolvendo</div>' +
         '<div class="stat-pill finalizado">✅ ' + (stats.finalizado + stats.finalizado_cobrar) + ' finalizados</div>';
@@ -285,11 +332,13 @@
     function renderTable() {
       var statusFilter = document.getElementById('filter-status').value;
       var assessorFilter = document.getElementById('filter-assessor').value;
+      var origemFilter = document.getElementById('filter-origem').value;
       var busca = document.getElementById('filter-busca').value.toLowerCase();
 
       var filtered = _solicitacoes.filter(function (s) {
         if (statusFilter && s.status !== statusFilter) return false;
         if (assessorFilter && s.assessor_id !== assessorFilter) return false;
+        if (origemFilter && (s.origem || 'assessoria') !== origemFilter) return false;
         if (busca) {
           var match = (s.aluno_nome || '').toLowerCase().indexOf(busca) !== -1
             || (s.ra || '').toLowerCase().indexOf(busca) !== -1;
@@ -334,8 +383,9 @@
         // Nome do Aluno
         html += '<td class="td-aluno">' + escapeHtml(s.aluno_nome) + '</td>';
 
-        // Responsável
-        html += '<td class="td-assessor">' + escapeHtml(assessorName) + '</td>';
+        // Responsável + Origem
+        var origemTag = (s.origem === 'aluno') ? '<span style="font-size:0.68rem;background:#dbeafe;color:#1d4ed8;padding:1px 6px;border-radius:4px;margin-left:4px;">Direto</span>' : '';
+        html += '<td class="td-assessor">' + escapeHtml(assessorName) + origemTag + '</td>';
 
         // Horas Contratadas
         html += '<td style="text-align:center;">' + horas + ' Horas</td>';
