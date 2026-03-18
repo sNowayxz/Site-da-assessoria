@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acompanhar Solicitações — Painel Assessoria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://lztfoprapoyicldunhzw.supabase.co">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/painel.css">
+  <style>
+    .filter-bar {
+      display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+    }
+    .filter-bar select, .filter-bar input {
+      padding: 9px 14px; border: 1.5px solid var(--gray-200); border-radius: 10px;
+      font-size: 0.88rem; color: var(--gray-800); background: var(--white); outline: none;
+    }
+    .filter-bar select:focus, .filter-bar input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-glow); }
+
+    .solic-table-wrap {
+      background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow-x: auto;
+    }
+    .solic-table {
+      width: 100%; border-collapse: collapse; font-size: 0.88rem;
+    }
+    .solic-table th {
+      padding: 12px 16px; text-align: left; font-weight: 700; font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.04em; color: var(--gray-500);
+      background: var(--gray-50); border-bottom: 2px solid var(--gray-200);
+    }
+    .solic-table td {
+      padding: 12px 16px; border-bottom: 1px solid var(--gray-100); vertical-align: middle;
+    }
+    .solic-table tr:hover td { background: rgba(240,192,48,0.03); }
+    .solic-table .td-aluno { font-weight: 600; color: var(--gray-800); }
+    .solic-table .td-ra { font-family: monospace; font-size: 0.82rem; color: var(--gray-500); }
+    .solic-table .td-assessor { font-size: 0.82rem; color: var(--info); font-weight: 600; }
+
+    .badge-status {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .badge-pendente { background: rgba(245,158,11,0.12); color: #d97706; }
+    .badge-em_andamento { background: rgba(59,130,246,0.12); color: #2563eb; }
+    .badge-concluida { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-recusada { background: rgba(239,68,68,0.12); color: #dc2626; }
+
+    .status-select {
+      padding: 4px 8px; border-radius: 8px; border: 1.5px solid var(--gray-200);
+      font-size: 0.82rem; font-family: inherit; cursor: pointer;
+    }
+    .status-select:focus { border-color: var(--gold); }
+
+    .progresso-input {
+      width: 100%; padding: 6px 10px; border: 1.5px solid var(--gray-200); border-radius: 8px;
+      font-size: 0.82rem; font-family: inherit; resize: none; min-height: 32px;
+    }
+    .progresso-input:focus { border-color: var(--gold); outline: none; }
+
+    .btn-save-row {
+      padding: 4px 10px; border: none; border-radius: 6px; background: var(--gold);
+      color: var(--dark); font-weight: 700; font-size: 0.78rem; cursor: pointer;
+      font-family: inherit; transition: all 0.2s;
+    }
+    .btn-save-row:hover { filter: brightness(1.1); }
+
+    .stats-inline {
+      display: flex; gap: 20px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .stat-pill {
+      padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .stat-pill.pendente { background: rgba(245,158,11,0.1); color: #d97706; }
+    .stat-pill.andamento { background: rgba(59,130,246,0.1); color: #2563eb; }
+    .stat-pill.concluida { background: rgba(34,197,94,0.1); color: #16a34a; }
+    .stat-pill.total { background: var(--gray-100); color: var(--gray-600); }
+
+    /* Dark mode */
+    [data-theme="dark"] .solic-table-wrap { background: #1c2128; }
+    [data-theme="dark"] .solic-table th { background: #161b22; border-bottom-color: #30363d; color: #8b949e; }
+    [data-theme="dark"] .solic-table td { border-bottom-color: #21262d; }
+    [data-theme="dark"] .solic-table .td-aluno { color: #e6edf3; }
+    [data-theme="dark"] .filter-bar select, [data-theme="dark"] .filter-bar input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .status-select { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .progresso-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+
+    @media (max-width: 768px) {
+      .filter-bar { flex-direction: column; }
+      .solic-table { font-size: 0.82rem; }
+      .solic-table th, .solic-table td { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo"><img src="../logo.png" alt="Logo" onerror="this.style.display='none'"></div>
+        <div class="sidebar-brand-text">Assessoria<br><small>Painel de Gest&atilde;o</small></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-label" data-category="geral">Geral<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="app.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+          <a href="agenda.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agenda</a>
+          <a href="chat.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat</a>
+        </div>
+        <div class="sidebar-nav-label" data-category="academico">Acad&ecirc;mico<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="alunos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Alunos</a>
+          <a href="atividades.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Atividades</a>
+          <a href="solicitar.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Solicitar</a>
+          <a href="acompanhar.html" class="sidebar-link active"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Acompanhar</a>
+          <a href="extensoes.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Extensões</a>
+          <a href="kanban.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>Kanban</a>
+          <a href="rastreio.html" class="sidebar-link"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Rastreio</a>
+        </div>
+        <div class="sidebar-nav-label" data-category="financeiro">Financeiro<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="financeiro.html" class="sidebar-link"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Financeiro</a>
+          <a href="pedidos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Pedidos</a>
+          <a href="relatorios.html" class="sidebar-link"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Relatórios</a>
+        </div>
+        <div class="sidebar-nav-label" data-category="sistema">Sistema<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="#" class="sidebar-link" id="btn-notificacoes" style="position:relative;"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notificações<span class="notif-badge" id="notif-badge" style="display:none"></span></a>
+          <a href="perfil.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</a>
+          <a href="audit.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Audit Log</a>
+          <button class="sidebar-link" id="btn-logout"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>
+        </div>
+      </nav>
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="user-avatar">A</div>
+        <div class="sidebar-user-info"><div class="sidebar-user-name" id="user-name">Assessor</div><div class="sidebar-user-role">Assessor</div></div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main-content">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="mobile-toggle" id="mobile-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <h1>Acompanhar Solicitações</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="theme-toggle" id="btn-theme" title="Alternar tema">🌙</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-inline" id="stats-inline"></div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <select id="filter-status">
+          <option value="">Todos os status</option>
+          <option value="pendente">Pendente</option>
+          <option value="em_andamento">Em Andamento</option>
+          <option value="concluida">Concluída</option>
+          <option value="recusada">Recusada</option>
+        </select>
+        <select id="filter-assessor" style="display:none;">
+          <option value="">Todas as assessorias</option>
+        </select>
+        <input type="text" id="filter-busca" placeholder="Buscar aluno ou RA...">
+      </div>
+
+      <!-- Table -->
+      <div class="solic-table-wrap">
+        <table class="solic-table">
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>RA</th>
+              <th>Assessoria</th>
+              <th>Horas</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Progresso</th>
+              <th>Data</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="solic-tbody">
+            <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--gray-400);">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js?v=2"></script>
+  <script src="js/utils.js?v=2"></script>
+  <script>
+    var currentUserId = null;
+    var currentRole = null;
+    var _solicitacoes = [];
+    var _assessorNames = {};
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      var result = await requireRole(['admin', 'dono', 'extensao', 'assessoria']);
+      if (!result) return;
+      currentUserId = result.user.id;
+      currentRole = result.role;
+      setupSidebarPermissions(currentRole);
+      document.getElementById('user-name').textContent = getUserName(result.user);
+      document.getElementById('user-avatar').textContent = getUserName(result.user).charAt(0).toUpperCase();
+      document.getElementById('btn-logout').addEventListener('click', handleLogout);
+
+      // Load assessor names for admin/extensao
+      if (currentRole !== 'assessoria') {
+        var { data: assessores } = await sb.from('assessores').select('id, nome, label');
+        (assessores || []).forEach(function (a) { _assessorNames[a.id] = a.label || a.nome; });
+        // Show assessor filter
+        var sel = document.getElementById('filter-assessor');
+        sel.style.display = '';
+        (assessores || []).filter(function (a) { return a.label && a.label.startsWith('Assessoria'); }).forEach(function (a) {
+          sel.innerHTML += '<option value="' + a.id + '">' + escapeHtml(a.label || a.nome) + '</option>';
+        });
+      }
+
+      document.getElementById('filter-status').addEventListener('change', renderTable);
+      document.getElementById('filter-assessor').addEventListener('change', renderTable);
+      document.getElementById('filter-busca').addEventListener('input', renderTable);
+
+      await loadSolicitacoes();
+    });
+
+    async function loadSolicitacoes() {
+      var query = sb.from('solicitacoes').select('*').order('created_at', { ascending: false });
+      if (currentRole === 'assessoria') {
+        query = query.eq('assessor_id', currentUserId);
+      }
+      var { data, error } = await query;
+      if (error) { console.error(error); return; }
+      _solicitacoes = data || [];
+      renderTable();
+      renderStats();
+    }
+
+    function renderStats() {
+      var stats = { pendente: 0, em_andamento: 0, concluida: 0, total: _solicitacoes.length };
+      _solicitacoes.forEach(function (s) { stats[s.status] = (stats[s.status] || 0) + 1; });
+      document.getElementById('stats-inline').innerHTML =
+        '<div class="stat-pill total">📊 ' + stats.total + ' total</div>' +
+        '<div class="stat-pill pendente">⏳ ' + stats.pendente + ' pendentes</div>' +
+        '<div class="stat-pill andamento">🔄 ' + stats.em_andamento + ' em andamento</div>' +
+        '<div class="stat-pill concluida">✅ ' + stats.concluida + ' concluídas</div>';
+    }
+
+    function renderTable() {
+      var statusFilter = document.getElementById('filter-status').value;
+      var assessorFilter = document.getElementById('filter-assessor').value;
+      var busca = document.getElementById('filter-busca').value.toLowerCase();
+
+      var filtered = _solicitacoes.filter(function (s) {
+        if (statusFilter && s.status !== statusFilter) return false;
+        if (assessorFilter && s.assessor_id !== assessorFilter) return false;
+        if (busca) {
+          var match = (s.aluno_nome || '').toLowerCase().indexOf(busca) !== -1
+            || (s.ra || '').toLowerCase().indexOf(busca) !== -1;
+          if (!match) return false;
+        }
+        return true;
+      });
+
+      var tbody = document.getElementById('solic-tbody');
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--gray-400);">Nenhuma solicitação encontrada.</td></tr>';
+        return;
+      }
+
+      var canEdit = currentRole !== 'assessoria';
+      var statusLabels = { pendente: 'Pendente', em_andamento: 'Em Andamento', concluida: 'Concluída', recusada: 'Recusada' };
+
+      var html = '';
+      filtered.forEach(function (s) {
+        var dt = new Date(s.created_at).toLocaleDateString('pt-BR');
+        var assessorName = _assessorNames[s.assessor_id] || 'Assessoria';
+        var badgeClass = 'badge-' + (s.status || 'pendente');
+
+        html += '<tr data-id="' + s.id + '">';
+        html += '<td class="td-aluno">' + escapeHtml(s.aluno_nome) + '</td>';
+        html += '<td class="td-ra">' + escapeHtml(s.ra || '') + '</td>';
+        html += '<td class="td-assessor">' + escapeHtml(assessorName) + '</td>';
+        html += '<td>' + (s.horas || 0) + 'h</td>';
+        html += '<td>R$ ' + ((s.valor_hora || 0) * (s.horas || 0)).toFixed(2) + '</td>';
+
+        if (canEdit) {
+          html += '<td><select class="status-select" data-id="' + s.id + '" onchange="markChanged(this)">'
+            + '<option value="pendente"' + (s.status === 'pendente' ? ' selected' : '') + '>⏳ Pendente</option>'
+            + '<option value="em_andamento"' + (s.status === 'em_andamento' ? ' selected' : '') + '>🔄 Em Andamento</option>'
+            + '<option value="concluida"' + (s.status === 'concluida' ? ' selected' : '') + '>✅ Concluída</option>'
+            + '<option value="recusada"' + (s.status === 'recusada' ? ' selected' : '') + '>❌ Recusada</option>'
+            + '</select></td>';
+          html += '<td><textarea class="progresso-input" data-id="' + s.id + '" placeholder="Progresso..." oninput="markChanged(this)">' + escapeHtml(s.progresso || '') + '</textarea></td>';
+        } else {
+          html += '<td><span class="badge-status ' + badgeClass + '">' + (statusLabels[s.status] || s.status) + '</span></td>';
+          html += '<td style="font-size:0.82rem;color:var(--gray-600);">' + escapeHtml(s.progresso || '—') + '</td>';
+        }
+
+        html += '<td>' + dt + '</td>';
+        if (canEdit) {
+          html += '<td><button class="btn-save-row" data-id="' + s.id + '" onclick="saveRow(\'' + s.id + '\')" style="display:none;">💾</button></td>';
+        } else {
+          html += '<td></td>';
+        }
+        html += '</tr>';
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    function markChanged(el) {
+      var id = el.getAttribute('data-id');
+      var btn = document.querySelector('.btn-save-row[data-id="' + id + '"]');
+      if (btn) btn.style.display = '';
+    }
+
+    async function saveRow(id) {
+      var statusEl = document.querySelector('.status-select[data-id="' + id + '"]');
+      var progressoEl = document.querySelector('.progresso-input[data-id="' + id + '"]');
+      var btn = document.querySelector('.btn-save-row[data-id="' + id + '"]');
+
+      var update = {
+        status: statusEl ? statusEl.value : undefined,
+        progresso: progressoEl ? progressoEl.value : undefined,
+        updated_at: new Date().toISOString()
+      };
+
+      btn.textContent = '...';
+      btn.disabled = true;
+
+      try {
+        var { error } = await sb.from('solicitacoes').update(update).eq('id', id);
+        if (error) throw error;
+        btn.style.display = 'none';
+        showToast('Atualizado!', 'success');
+        // Update local data
+        _solicitacoes.forEach(function (s) {
+          if (s.id === id) {
+            if (update.status) s.status = update.status;
+            if (update.progresso !== undefined) s.progresso = update.progresso;
+          }
+        });
+        renderStats();
+      } catch (err) {
+        showToast('Erro: ' + (err.message || err), 'error');
+      } finally {
+        btn.textContent = '💾';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

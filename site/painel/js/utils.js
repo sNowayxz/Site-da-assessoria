@@ -673,10 +673,10 @@ document.addEventListener('DOMContentLoaded', function () {
 // ─── Role-Based Sidebar Permissions ───
 
 var PAGE_ACCESS = {
-  admin: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil', 'solicitar'],
-  dono: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil', 'solicitar'],
-  extensao: ['chat', 'extensoes', 'solicitar', 'perfil'],
-  assessoria: ['chat', 'solicitar', 'perfil'],
+  admin: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil', 'solicitar', 'acompanhar'],
+  dono: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil', 'solicitar', 'acompanhar'],
+  extensao: ['chat', 'extensoes', 'solicitar', 'acompanhar', 'perfil'],
+  assessoria: ['chat', 'solicitar', 'acompanhar', 'perfil'],
   assessor: ['app', 'agenda', 'chat', 'alunos', 'atividades', 'extensoes', 'kanban', 'perfil'],
   visualizador: ['app', 'agenda', 'perfil']
 };
