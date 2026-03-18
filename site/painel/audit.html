@@ -329,8 +329,8 @@
     var currentPage = 1;
 
     // ── Helpers ──
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
     function escapeHtml(text) {
       if (!text) return '';
