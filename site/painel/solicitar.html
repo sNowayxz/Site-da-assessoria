@@ -110,9 +110,38 @@
     [data-theme="dark"] .solic-card { background: #1c2128; }
     [data-theme="dark"] .solic-info h4 { color: #e6edf3; }
 
+    /* Tabela de solicitações */
+    .solic-table-mini {
+      width: 100%; border-collapse: collapse; font-size: 0.88rem;
+      background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .solic-table-mini th {
+      padding: 10px 14px; text-align: left; font-weight: 700; font-size: 0.75rem;
+      text-transform: uppercase; letter-spacing: 0.04em; color: var(--gray-500);
+      background: var(--gray-50); border-bottom: 2px solid var(--gray-200);
+    }
+    .solic-table-mini td {
+      padding: 10px 14px; border-bottom: 1px solid var(--gray-100); vertical-align: middle;
+    }
+    .solic-table-mini tr:hover td { background: rgba(240,192,48,0.03); }
+    .badge-status { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+    .badge-aguardando { background: rgba(245,158,11,0.15); color: #92700c; }
+    .badge-desenvolvendo { background: rgba(59,130,246,0.12); color: #2563eb; }
+    .badge-finalizado { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-finalizado_cobrar { background: rgba(139,92,246,0.12); color: #7c3aed; }
+    .evolucao-bar { width: 80px; height: 16px; background: var(--gray-100); border-radius: 8px; overflow: hidden; position: relative; }
+    .evolucao-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--gold), #f59e0b); transition: width 0.3s; }
+    .evolucao-text { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 700; color: var(--gray-800); }
+
+    [data-theme="dark"] .solic-table-mini { background: #1c2128; }
+    [data-theme="dark"] .solic-table-mini th { background: #161b22; border-bottom-color: #30363d; color: #8b949e; }
+    [data-theme="dark"] .solic-table-mini td { border-bottom-color: #21262d; }
+
     @media (max-width: 768px) {
       .form-row { flex-direction: column; gap: 0; }
       .form-card { padding: 20px; }
+      .solic-table-mini { font-size: 0.82rem; }
+      .solic-table-mini th, .solic-table-mini td { padding: 8px 10px; }
     }
   </style>
 </head>
@@ -225,8 +254,23 @@
 
       <!-- Minhas Solicitações -->
       <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-700);margin-bottom:12px;">Minhas Solicitações</h2>
-      <div class="solic-list" id="solic-list">
-        <div class="empty-state" style="padding:40px;text-align:center;color:var(--gray-400);">Carregando...</div>
+      <div style="overflow-x:auto;">
+        <table class="solic-table-mini" id="solic-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Aluno</th>
+              <th>RA</th>
+              <th>Horas</th>
+              <th>Validadas</th>
+              <th>Evolução</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="solic-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--gray-400);">Carregando...</td></tr>
+          </tbody>
+        </table>
       </div>
     </main>
   </div>
@@ -291,10 +335,15 @@
       }
     }
 
+    var STATUS_LABELS = {
+      aguardando: 'Aguardando',
+      desenvolvendo: 'Desenvolvendo',
+      finalizado: 'Finalizado',
+      finalizado_cobrar: 'Finalizado a Cobrar'
+    };
+
     async function loadSolicitacoes() {
       var query = sb.from('solicitacoes').select('*').order('created_at', { ascending: false });
-
-      // Assessoria vê só as suas; admin/dono/extensao vê todas
       if (currentRole === 'assessoria') {
         query = query.eq('assessor_id', currentUserId);
       }
@@ -302,39 +351,34 @@
       var { data, error } = await query;
       if (error) { console.error(error); return; }
 
-      var container = document.getElementById('solic-list');
+      var tbody = document.getElementById('solic-tbody');
       if (!data || !data.length) {
-        container.innerHTML = '<div class="empty-state" style="padding:40px;text-align:center;color:var(--gray-400);">Nenhuma solicitação ainda.</div>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--gray-400);">Nenhuma solicitação ainda.</td></tr>';
         return;
       }
-
-      var statusLabels = {
-        aguardando: 'Aguardando',
-        desenvolvendo: 'Desenvolvendo',
-        finalizado: 'Finalizado',
-        finalizado_cobrar: 'Finalizado a Cobrar'
-      };
 
       var html = '';
       data.forEach(function (s) {
         var dt = new Date(s.created_at).toLocaleDateString('pt-BR');
-        var statusClass = 'badge-' + (s.status || 'aguardando');
-        var statusText = statusLabels[s.status] || s.status;
+        var badgeClass = 'badge-' + (s.status || 'aguardando');
+        var statusText = STATUS_LABELS[s.status] || s.status;
+        var horas = s.horas || 0;
+        var validadas = s.horas_validadas || 0;
+        var evolucao = horas > 0 ? Math.round((validadas / horas) * 100) : 0;
+        if (evolucao > 100) evolucao = 100;
 
-        html += '<div class="solic-card">'
-          + '<div class="solic-info">'
-          + '<h4>' + escapeHtml(s.aluno_nome) + ' — RA: ' + escapeHtml(s.ra) + '</h4>'
-          + '<p>' + (s.horas || 0) + 'h contratadas | R$ ' + (s.valor_hora || 0).toFixed(2) + '/h | Pago: R$ ' + (s.valor_pago || 0).toFixed(2) + '</p>'
-          + (s.observacoes ? '<p style="margin-top:4px;font-style:italic;">' + escapeHtml(s.observacoes) + '</p>' : '')
-          + '</div>'
-          + '<div class="solic-meta">'
-          + '<span class="badge-status ' + statusClass + '">' + statusText + '</span>'
-          + '<div style="margin-top:4px;">' + dt + '</div>'
-          + '</div>'
-          + '</div>';
+        html += '<tr>';
+        html += '<td><span class="badge-status ' + badgeClass + '">' + statusText + '</span></td>';
+        html += '<td style="font-weight:600;">' + escapeHtml(s.aluno_nome) + '</td>';
+        html += '<td style="font-family:monospace;font-size:0.82rem;color:var(--gray-500);">' + escapeHtml(s.ra || '') + '</td>';
+        html += '<td style="text-align:center;">' + horas + 'h</td>';
+        html += '<td style="text-align:center;">' + (validadas || '—') + '</td>';
+        html += '<td><div class="evolucao-bar"><div class="evolucao-fill" style="width:' + evolucao + '%"></div><div class="evolucao-text">' + (evolucao > 0 ? evolucao + '%' : '') + '</div></div></td>';
+        html += '<td style="font-size:0.78rem;color:var(--gray-400);">' + dt + '</td>';
+        html += '</tr>';
       });
 
-      container.innerHTML = html;
+      tbody.innerHTML = html;
     }
   </script>
 </body>
