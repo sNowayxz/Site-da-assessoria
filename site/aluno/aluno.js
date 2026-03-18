@@ -147,15 +147,21 @@ function loadAluno(ra) {
       panel.style.display = 'block';
       var STATUS_LABELS = {
         aguardando: 'Aguardando',
-        desenvolvendo: 'Desenvolvendo',
+        desenvolvendo: 'Em Desenvolvimento',
         finalizado: 'Finalizado',
-        finalizado_cobrar: 'Finalizado a Cobrar'
+        finalizado_cobrar: 'Finalizado'
       };
       var STATUS_COLORS = {
         aguardando: '#d97706',
         desenvolvendo: '#2563eb',
         finalizado: '#16a34a',
         finalizado_cobrar: '#7c3aed'
+      };
+      var STATUS_BG = {
+        aguardando: 'rgba(217,119,6,0.15)',
+        desenvolvendo: 'rgba(37,99,235,0.15)',
+        finalizado: 'rgba(22,163,106,0.15)',
+        finalizado_cobrar: 'rgba(124,58,237,0.15)'
       };
 
       container.innerHTML = exts.map(function(s) {
@@ -166,32 +172,84 @@ function loadAluno(ra) {
         if (evolucao > 100) evolucao = 100;
         var statusText = STATUS_LABELS[s.status] || s.status;
         var statusColor = STATUS_COLORS[s.status] || '#888';
+        var statusBg = STATUS_BG[s.status] || 'rgba(136,136,136,0.15)';
         var isComplete = evolucao >= 100;
         var barGradient = isComplete
           ? 'linear-gradient(90deg, #16a34a, #34d399)'
           : 'linear-gradient(90deg, #f0c030, #f5d45a)';
+
+        // Extract tema from observacoes
         var obs = s.observacoes || '';
         var tema = '';
-        if (obs.indexOf('Tema: ') === 0) {
-          tema = obs.split(' | ')[0].replace('Tema: ', '');
+        if (obs.indexOf('Tema: ') !== -1) {
+          var parts = obs.split(' | ');
+          for (var p = 0; p < parts.length; p++) {
+            if (parts[p].indexOf('Tema: ') === 0) {
+              tema = parts[p].replace('Tema: ', '');
+              break;
+            }
+          }
         }
 
+        // SVG circular progress
+        var radius = 36;
+        var circumference = 2 * Math.PI * radius;
+        var offset = circumference - (evolucao / 100) * circumference;
+
         return '<div class="extensao-card' + (isComplete ? ' complete' : '') + '">' +
-          '<div class="extensao-header">' +
-            '<span class="extensao-status" style="background:' + statusColor + '15;color:' + statusColor + ';">' + statusText + '</span>' +
-            '<span class="extensao-date">' + formatDate(s.created_at) + '</span>' +
-          '</div>' +
-          (tema ? '<div style="font-size:0.88rem;color:#4a5568;margin-bottom:14px;font-weight:500;">' + escapeHtml(tema) + '</div>' : '') +
-          '<div class="extensao-progress">' +
-            '<div class="extensao-bar">' +
-              '<div class="extensao-bar-fill" style="width:' + evolucao + '%;background:' + barGradient + ';"></div>' +
+
+          // ── Dark top banner ──
+          '<div class="extensao-top">' +
+            '<div class="extensao-top-row">' +
+              '<span class="extensao-status" style="background:' + statusBg + ';color:' + statusColor + ';">' + statusText + '</span>' +
+              '<span class="extensao-date">' + formatDate(s.created_at) + '</span>' +
             '</div>' +
-            '<span class="extensao-pct">' + evolucao + '%</span>' +
+            (tema ? '<div class="extensao-tema">' + escapeHtml(tema) + '</div>' : '') +
           '</div>' +
+
+          // ── Progress section: circle + bar ──
+          '<div class="extensao-progress-section">' +
+            '<div class="extensao-circle-wrap">' +
+              '<svg viewBox="0 0 90 90">' +
+                '<circle class="extensao-circle-bg" cx="45" cy="45" r="' + radius + '"/>' +
+                '<circle class="extensao-circle-fg" cx="45" cy="45" r="' + radius + '" ' +
+                  'stroke-dasharray="' + circumference + '" ' +
+                  'stroke-dashoffset="' + offset + '"/>' +
+              '</svg>' +
+              '<div class="extensao-circle-text">' +
+                '<span class="extensao-circle-pct">' + evolucao + '%</span>' +
+                '<span class="extensao-circle-label">Progresso</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="extensao-bar-section">' +
+              '<div class="extensao-bar-label">Horas Completadas</div>' +
+              '<div class="extensao-bar">' +
+                '<div class="extensao-bar-fill" style="width:' + evolucao + '%;background:' + barGradient + ';"></div>' +
+              '</div>' +
+              '<div class="extensao-bar-numbers">' +
+                '<span>' + validadas + 'h validadas</span>' +
+                '<span>' + horas + 'h total</span>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+
+          // ── Bottom metrics ──
           '<div class="extensao-details">' +
-            '<div class="extensao-detail"><strong>' + horas + '</strong><small>Contratadas</small></div>' +
-            '<div class="extensao-detail"><strong>' + validadas + '</strong><small>Validadas</small></div>' +
-            '<div class="extensao-detail"><strong>' + restantes + '</strong><small>Restantes</small></div>' +
+            '<div class="extensao-detail contracted">' +
+              '<div class="extensao-detail-icon">📋</div>' +
+              '<strong>' + horas + 'h</strong>' +
+              '<small>Contratadas</small>' +
+            '</div>' +
+            '<div class="extensao-detail validated">' +
+              '<div class="extensao-detail-icon">✅</div>' +
+              '<strong>' + validadas + 'h</strong>' +
+              '<small>Validadas</small>' +
+            '</div>' +
+            '<div class="extensao-detail remaining">' +
+              '<div class="extensao-detail-icon">⏳</div>' +
+              '<strong>' + restantes + 'h</strong>' +
+              '<small>Restantes</small>' +
+            '</div>' +
           '</div>' +
           '</div>';
       }).join('');
