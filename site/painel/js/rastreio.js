@@ -72,7 +72,8 @@ async function loadMensalistas() {
 }
 
 async function loadSyncData() {
-  var alunoId = document.getElementById('filter-aluno-rastreio').value;
+  var filterAluno = document.getElementById('filter-aluno-rastreio');
+  var alunoId = filterAluno ? filterAluno.value : '';
   var diasInput = document.getElementById('filter-dias');
   var dias = diasInput ? parseInt(diasInput.value) || 10 : 10;
 
