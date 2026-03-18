@@ -7,7 +7,27 @@
       "Bash(rm -rf .git)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git branch:*)",
+      "Bash(git rm:*)",
+      "WebFetch(domain:www.papiron.com.br)",
+      "WebFetch(domain:papiron.com.br)",
+      "Bash(find /c/Users/uandr/Desktop/AppEquipe/BD/atividades -name *.json -type f)",
+      "Bash(wc -l /c/Users/uandr/Desktop/AppEquipe/*.py)",
+      "WebFetch(domain:unpkg.com)",
+      "WebSearch",
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "Bash(find /c/Users/uandr/Desktop/AppEquipe -type f -name *.json)",
+      "Bash(grep -E \"\\\\.py$|^d\")",
+      "Bash(xargs grep:*)",
+      "Bash(find C:/Users/uandr/Desktop/AppEquipe -type d -not -path */.* -not -path */__pycache__* -not -path *.venv*)",
+      "Bash(find C:/Users/uandr/Desktop/AppEquipe -type d -name *api* -o -type d -name *backend* -o -type d -name *server*)",
+      "Bash(find /c/Users/uandr/Desktop/AppEquipe/site -name *.json -o -name .env*)",
+      "Bash(grep -r \"stripe\\\\|mercado\\\\|pago\\\\|payment\" /c/Users/uandr/Desktop/AppEquipe/site --include=*.js --include=*.html --include=*.json)",
+      "Bash(xargs ls:*)",
+      "Bash(find /c/Users/uandr/Desktop/AppEquipe/site/painel -name \"*.html\" -exec wc -l {} +)",
+      "Bash(find /c/Users/uandr/Desktop/AppEquipe -name package.json -o -name .env*)"
     ]
   }
 }

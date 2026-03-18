@@ -807,7 +807,6 @@ function setupSidebarPermissions(role) {
 }
 
 // ─── Sidebar Avatar (global) ───
-// Usa setTimeout para rodar DEPOIS do código da página setar a letra inicial
 function loadSidebarAvatar() {
   if (!window.sb) return;
 
@@ -815,27 +814,39 @@ function loadSidebarAvatar() {
     var el = document.getElementById('user-avatar');
     if (!el) return;
     el.innerHTML = '<img src="' + url + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-    el.setAttribute('data-has-avatar', 'true');
   }
 
-  // Delay to run after page code sets textContent on user-avatar
-  setTimeout(function() {
+  // Aplica em múltiplos momentos para garantir que não seja sobrescrito
+  function tryApply() {
     var cached = sessionStorage.getItem('sidebar-avatar-url');
     if (cached) {
       applyAvatar(cached);
-      return;
+      return true;
     }
+    return false;
+  }
 
-    sb.auth.getUser().then(function(res) {
-      if (!res.data || !res.data.user) return;
-      sb.from('assessores').select('avatar_url').eq('id', res.data.user.id).single().then(function(r) {
-        if (r.data && r.data.avatar_url) {
-          sessionStorage.setItem('sidebar-avatar-url', r.data.avatar_url);
-          applyAvatar(r.data.avatar_url);
-        }
-      }).catch(function() {});
+  // Tenta aplicar do cache imediatamente e em intervalos
+  if (tryApply()) {
+    // Re-aplica após delays para cobrir pages que setam textContent depois
+    setTimeout(tryApply, 300);
+    setTimeout(tryApply, 800);
+    return;
+  }
+
+  // Sem cache: busca do banco
+  sb.auth.getUser().then(function(res) {
+    if (!res.data || !res.data.user) return;
+    sb.from('assessores').select('avatar_url').eq('id', res.data.user.id).single().then(function(r) {
+      if (r.data && r.data.avatar_url) {
+        sessionStorage.setItem('sidebar-avatar-url', r.data.avatar_url);
+        applyAvatar(r.data.avatar_url);
+        // Re-aplica para cobrir sobrescritas
+        setTimeout(function() { applyAvatar(r.data.avatar_url); }, 500);
+        setTimeout(function() { applyAvatar(r.data.avatar_url); }, 1000);
+      }
     }).catch(function() {});
-  }, 200);
+  }).catch(function() {});
 }
 
 
