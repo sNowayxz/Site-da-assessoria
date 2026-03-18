@@ -751,11 +751,38 @@ function setupSidebarPermissions(role) {
     });
   }
 
+  // Carregar avatar do usuário na sidebar
+  loadSidebarAvatar();
+
   // Mostrar layout e esconder loader
   var layout = document.querySelector('.layout');
   if (layout) layout.classList.add('ready');
   var loader = document.getElementById('page-loader');
   if (loader) loader.classList.add('hide');
+}
+
+// ─── Sidebar Avatar (global) ───
+function loadSidebarAvatar() {
+  if (!window.sb) return;
+  var avatarEl = document.getElementById('user-avatar');
+  if (!avatarEl) return;
+
+  // Check cache first
+  var cached = sessionStorage.getItem('sidebar-avatar-url');
+  if (cached) {
+    avatarEl.innerHTML = '<img src="' + cached + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+    return;
+  }
+
+  sb.auth.getUser().then(function(res) {
+    if (!res.data || !res.data.user) return;
+    sb.from('assessores').select('avatar_url').eq('id', res.data.user.id).single().then(function(r) {
+      if (r.data && r.data.avatar_url) {
+        sessionStorage.setItem('sidebar-avatar-url', r.data.avatar_url);
+        avatarEl.innerHTML = '<img src="' + r.data.avatar_url + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+      }
+    }).catch(function() {});
+  }).catch(function() {});
 }
 
 
