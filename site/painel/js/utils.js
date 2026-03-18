@@ -291,7 +291,7 @@ var _notifAlunosCache = {};
 async function checkNotifications() {
   if (!window.sb) return;
   try {
-    // Load alunos cache if empty
+    // Load alunos cache
     if (Object.keys(_notifAlunosCache).length === 0) {
       var { data: alunos } = await sb.from('alunos').select('id, nome');
       if (alunos) {
@@ -301,18 +301,93 @@ async function checkNotifications() {
       }
     }
 
-    var { data, count } = await sb
-      .from('atividades')
-      .select('*', { count: 'exact' })
-      .eq('status', 'pendente')
-      .order('created_at', { ascending: false })
-      .limit(20);
+    var notifications = [];
+    var now = new Date();
+    var in3days = new Date(now);
+    in3days.setDate(in3days.getDate() + 3);
+    var in7days = new Date(now);
+    in7days.setDate(in7days.getDate() + 7);
 
-    _notifData = data || [];
+    // 1. Atividades Studeo vencendo nos próximos 3 dias (URGENTE)
+    try {
+      var { data: urgentes } = await sb.from('studeo_sync')
+        .select('aluno_id, atividade, data_final, disciplina')
+        .eq('respondida', false)
+        .gte('data_final', now.toISOString())
+        .lte('data_final', in3days.toISOString())
+        .order('data_final', { ascending: true })
+        .limit(10);
+      (urgentes || []).forEach(function (u) {
+        var deadline = new Date(u.data_final);
+        var diffH = Math.ceil((deadline - now) / (1000*60*60));
+        var tempo = diffH <= 24 ? 'Vence hoje!' : 'Vence em ' + Math.ceil(diffH/24) + 'd';
+        notifications.push({
+          icon: '🔴', text: (_notifAlunosCache[u.aluno_id] || 'Aluno') + ' — ' + (u.atividade || u.disciplina),
+          sub: tempo, link: 'rastreio.html', priority: 1
+        });
+      });
+    } catch(e) {}
+
+    // 2. Atividades pendentes (tabela atividades)
+    try {
+      var { data: pendentes, count: pendCount } = await sb.from('atividades')
+        .select('*', { count: 'exact' })
+        .eq('status', 'pendente')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (pendCount > 0) {
+        notifications.push({
+          icon: '📋', text: pendCount + ' atividade' + (pendCount > 1 ? 's' : '') + ' pendente' + (pendCount > 1 ? 's' : ''),
+          sub: 'Aguardando revisão', link: 'atividades.html', priority: 2
+        });
+      }
+    } catch(e) {}
+
+    // 3. Eventos da agenda nos próximos 7 dias
+    try {
+      var todayStr = now.toISOString().split('T')[0];
+      var weekStr = in7days.toISOString().split('T')[0];
+      var { data: eventos } = await sb.from('eventos_agenda')
+        .select('titulo, data')
+        .gte('data', todayStr)
+        .lte('data', weekStr)
+        .order('data', { ascending: true })
+        .limit(5);
+      (eventos || []).forEach(function (ev) {
+        var evDate = new Date(ev.data + 'T00:00:00');
+        var diffDays = Math.ceil((evDate - now) / (1000*60*60*24));
+        var quando = diffDays <= 0 ? 'Hoje' : diffDays === 1 ? 'Amanhã' : 'Em ' + diffDays + ' dias';
+        notifications.push({
+          icon: '📅', text: ev.titulo, sub: quando, link: 'agenda.html', priority: 3
+        });
+      });
+    } catch(e) {}
+
+    // 4. Alunos sem sync (nunca sincronizados)
+    try {
+      var { data: allAlunos } = await sb.from('alunos').select('id').not('studeo_senha', 'is', null).neq('studeo_senha', '');
+      var { data: synced } = await sb.from('studeo_sync').select('aluno_id');
+      var syncedIds = {};
+      (synced || []).forEach(function(s) { syncedIds[s.aluno_id] = true; });
+      var naoSync = (allAlunos || []).filter(function(a) { return !syncedIds[a.id]; }).length;
+      if (naoSync > 0) {
+        notifications.push({
+          icon: '🔄', text: naoSync + ' aluno' + (naoSync > 1 ? 's' : '') + ' nunca sincronizado' + (naoSync > 1 ? 's' : ''),
+          sub: 'Clique para sincronizar', link: 'rastreio.html', priority: 4
+        });
+      }
+    } catch(e) {}
+
+    // Ordenar por prioridade
+    notifications.sort(function(a, b) { return a.priority - b.priority; });
+    _notifData = notifications;
+
+    // Badge
     var badge = document.getElementById('notif-badge');
+    var urgentCount = notifications.filter(function(n) { return n.priority <= 2; }).length;
     if (badge) {
-      if (count > 0) {
-        badge.textContent = count > 99 ? '99+' : count;
+      if (urgentCount > 0) {
+        badge.textContent = urgentCount > 99 ? '99+' : urgentCount;
         badge.style.display = 'flex';
       } else {
         badge.style.display = 'none';
@@ -373,23 +448,20 @@ function renderNotifPanel() {
   if (!body) return;
 
   if (!_notifData.length) {
-    body.innerHTML = '<div class="notif-empty">Nenhuma atividade pendente 🎉</div>';
+    body.innerHTML = '<div class="notif-empty">Tudo em dia! 🎉</div>';
     return;
   }
 
   var html = '';
   for (var i = 0; i < _notifData.length; i++) {
     var item = _notifData[i];
-    var alunoNome = _notifAlunosCache[item.aluno_id] || 'Aluno';
-    var tipo = item.tipo || 'atividade';
-    var data = new Date(item.created_at);
-    var tempo = timeAgo(data);
+    var urgentClass = item.priority <= 1 ? ' notif-urgent' : '';
 
-    html += '<a href="atividades.html" class="notif-item">';
-    html += '<div class="notif-item-icon">📋</div>';
+    html += '<a href="' + (item.link || '#') + '" class="notif-item' + urgentClass + '">';
+    html += '<div class="notif-item-icon">' + item.icon + '</div>';
     html += '<div class="notif-item-content">';
-    html += '<div class="notif-item-text"><strong>' + escapeHtml(alunoNome) + '</strong> — ' + escapeHtml(tipo) + ' pendente</div>';
-    html += '<div class="notif-item-time">' + tempo + '</div>';
+    html += '<div class="notif-item-text">' + escapeHtml(item.text) + '</div>';
+    html += '<div class="notif-item-time">' + escapeHtml(item.sub) + '</div>';
     html += '</div>';
     html += '</a>';
   }
