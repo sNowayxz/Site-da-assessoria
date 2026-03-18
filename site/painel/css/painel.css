@@ -1311,18 +1311,15 @@ tbody tr:last-child td {
 /* ═══ NOTIFICATION PANEL ═══ */
 .notif-panel {
   display: none;
-  position: absolute;
-  bottom: 100%;
-  left: 0;
+  position: fixed;
   width: 320px;
   max-height: 400px;
   background: var(--white);
   border: 1px solid var(--gray-200);
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-  z-index: 1000;
+  z-index: 9999;
   overflow: hidden;
-  margin-bottom: 8px;
 }
 .notif-panel.open { display: block; }
 .notif-panel-header {

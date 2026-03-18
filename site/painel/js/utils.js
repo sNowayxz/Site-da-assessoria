@@ -327,13 +327,22 @@ function initNotifications() {
   var btn = document.getElementById('btn-notificacoes');
   if (!btn) return;
 
-  // Create dropdown panel
+  // Create dropdown panel on body (avoid sidebar overflow clipping)
   var panel = document.createElement('div');
   panel.className = 'notif-panel';
   panel.id = 'notif-panel';
   panel.innerHTML = '<div class="notif-panel-header">Notificações</div><div class="notif-panel-body" id="notif-panel-body"></div>';
-  btn.parentElement.style.position = 'relative';
-  btn.parentElement.appendChild(panel);
+  document.body.appendChild(panel);
+
+  function positionPanel() {
+    var rect = btn.getBoundingClientRect();
+    var panelHeight = panel.offsetHeight || 300;
+    // Position above the button, aligned to left of sidebar
+    var top = rect.top - panelHeight - 8;
+    if (top < 8) top = 8; // don't go above viewport
+    panel.style.left = rect.left + 'px';
+    panel.style.top = top + 'px';
+  }
 
   btn.addEventListener('click', function (e) {
     e.preventDefault();
@@ -345,6 +354,7 @@ function initNotifications() {
     }
     renderNotifPanel();
     panel.classList.add('open');
+    positionPanel();
   });
 
   // Close on click outside
