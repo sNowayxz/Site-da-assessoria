@@ -94,17 +94,21 @@ document.getElementById('form-pedido').addEventListener('submit', async function
 
     if (error) throw new Error(error.message);
 
-    // 1b. Também inserir na tabela solicitacoes para acompanhamento
-    await sb.from('solicitacoes').insert({
-      aluno_nome: nome,
-      ra: ra,
-      horas: ch,
-      valor_hora: valor / ch,
-      valor_pago: 0,
-      status: 'aguardando',
-      origem: 'aluno',
-      observacoes: 'Tema: ' + tema + (curso ? ' | Curso: ' + curso : '')
-    });
+    // 1b. Também inserir na tabela solicitacoes para acompanhamento (non-blocking)
+    try {
+      await sb.from('solicitacoes').insert({
+        aluno_nome: nome,
+        ra: ra,
+        horas: ch,
+        valor_hora: valor / ch,
+        valor_pago: 0,
+        status: 'aguardando',
+        origem: 'aluno',
+        observacoes: 'Tema: ' + tema + (curso ? ' | Curso: ' + curso : '')
+      });
+    } catch (e) {
+      console.warn('[pedido] Erro ao inserir solicitacao:', e.message);
+    }
 
     // 2. Criar preferência Mercado Pago
     var resp = await fetch('https://site-da-assessoria.vercel.app/api/create-preference', {

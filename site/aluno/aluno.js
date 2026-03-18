@@ -129,6 +129,12 @@ function loadAluno(ra) {
 
     // Load extensão (projeto de extensão pelo RA)
     supaGet('solicitacoes?ra=eq.' + encodeURIComponent(ra) + '&select=*&order=created_at.desc').then(function(exts) {
+      console.log('[aluno] extensões encontradas:', exts);
+      // Handle Supabase error object
+      if (exts && exts.message) {
+        console.error('[aluno] Erro solicitacoes:', exts.message);
+        exts = [];
+      }
       exts = exts || [];
       var panel = document.getElementById('panel-extensao');
       var container = document.getElementById('extensao-content');
@@ -160,25 +166,37 @@ function loadAluno(ra) {
         if (evolucao > 100) evolucao = 100;
         var statusText = STATUS_LABELS[s.status] || s.status;
         var statusColor = STATUS_COLORS[s.status] || '#888';
+        var isComplete = evolucao >= 100;
+        var barGradient = isComplete
+          ? 'linear-gradient(90deg, #16a34a, #34d399)'
+          : 'linear-gradient(90deg, #f0c030, #f5d45a)';
+        var obs = s.observacoes || '';
+        var tema = '';
+        if (obs.indexOf('Tema: ') === 0) {
+          tema = obs.split(' | ')[0].replace('Tema: ', '');
+        }
 
-        return '<div class="extensao-card">' +
+        return '<div class="extensao-card' + (isComplete ? ' complete' : '') + '">' +
           '<div class="extensao-header">' +
             '<span class="extensao-status" style="background:' + statusColor + '15;color:' + statusColor + ';">' + statusText + '</span>' +
             '<span class="extensao-date">' + formatDate(s.created_at) + '</span>' +
           '</div>' +
+          (tema ? '<div style="font-size:0.88rem;color:#4a5568;margin-bottom:14px;font-weight:500;">' + escapeHtml(tema) + '</div>' : '') +
           '<div class="extensao-progress">' +
             '<div class="extensao-bar">' +
-              '<div class="extensao-bar-fill" style="width:' + evolucao + '%;background:' + (evolucao >= 100 ? '#16a34a' : '#f0c030') + ';"></div>' +
+              '<div class="extensao-bar-fill" style="width:' + evolucao + '%;background:' + barGradient + ';"></div>' +
             '</div>' +
             '<span class="extensao-pct">' + evolucao + '%</span>' +
           '</div>' +
           '<div class="extensao-details">' +
-            '<div class="extensao-detail"><strong>' + horas + '</strong><small>Horas Contratadas</small></div>' +
-            '<div class="extensao-detail"><strong>' + validadas + '</strong><small>Horas Validadas</small></div>' +
-            '<div class="extensao-detail"><strong>' + restantes + '</strong><small>Horas Restantes</small></div>' +
+            '<div class="extensao-detail"><strong>' + horas + '</strong><small>Contratadas</small></div>' +
+            '<div class="extensao-detail"><strong>' + validadas + '</strong><small>Validadas</small></div>' +
+            '<div class="extensao-detail"><strong>' + restantes + '</strong><small>Restantes</small></div>' +
           '</div>' +
           '</div>';
       }).join('');
+    }).catch(function(err) {
+      console.error('[aluno] Erro ao carregar extensões:', err);
     });
 
   }).catch(function() {
