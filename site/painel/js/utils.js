@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   Utils — Dark Mode, Toasts, PDF Export
+   Utils — Dark Mode, Toasts, PDF Export, Notifications
    ═══════════════════════════════════════════ */
 
 // ─── Dark Mode ───
