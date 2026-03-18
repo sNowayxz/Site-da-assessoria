@@ -676,7 +676,7 @@ var PAGE_ACCESS = {
   admin: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil'],
   dono: ['app', 'agenda', 'chat', 'alunos', 'importar', 'atividades', 'modulos', 'extensoes', 'kanban', 'financeiro', 'pedidos', 'relatorios', 'rastreio', 'audit', 'perfil'],
   extensao: ['chat', 'extensoes', 'perfil'],
-  assessoria: ['chat', 'perfil'],
+  assessoria: ['chat', 'solicitar', 'perfil'],
   assessor: ['app', 'agenda', 'chat', 'alunos', 'atividades', 'extensoes', 'kanban', 'perfil'],
   visualizador: ['app', 'agenda', 'perfil']
 };
