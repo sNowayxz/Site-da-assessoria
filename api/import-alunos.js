@@ -98,7 +98,7 @@ module.exports = async function handler(req, res) {
         curso: a.curso || '',
         studeo_senha: a.studeo_senha || a.senha || '',
         telefone: a.telefone || '',
-        tipo: 'mensalista',
+        tipo: a.tipo || 'mensalista',
         situacao: a.situacao || 'cursando',
         observacoes: a.observacoes || a.polo || '',
         email: a.email || '',
