@@ -75,8 +75,15 @@ async function loadSyncData() {
   var alunoId = document.getElementById('filter-aluno-rastreio').value;
   var statusFilter = document.getElementById('filter-status-rastreio').value;
 
+  // Build alunos cache (avoid FK join issues)
+  if (!window._alunosCache) {
+    var { data: alunos } = await sb.from('alunos').select('id, nome, ra');
+    window._alunosCache = {};
+    (alunos || []).forEach(function (a) { window._alunosCache[a.id] = a; });
+  }
+
   var query = sb.from('studeo_sync')
-    .select('*, alunos(nome, ra)')
+    .select('*')
     .order('synced_at', { ascending: false });
 
   if (alunoId) query = query.eq('aluno_id', alunoId);
@@ -85,6 +92,12 @@ async function loadSyncData() {
 
   var { data, error } = await query;
   if (error) { console.error(error); return; }
+
+  // Attach aluno info from cache
+  (data || []).forEach(function (item) {
+    var aluno = window._alunosCache[item.aluno_id];
+    item.alunos = aluno ? { nome: aluno.nome, ra: aluno.ra } : null;
+  });
 
   window._syncData = data || [];
   renderSyncData(data || []);
@@ -272,7 +285,8 @@ async function handleSyncAll() {
 }
 
 async function saveResults(alunoId, resultado) {
-  var count = 0;
+  var now = new Date().toISOString();
+  var records = [];
 
   for (var i = 0; i < resultado.length; i++) {
     var disc = resultado[i];
@@ -282,7 +296,7 @@ async function saveResults(alunoId, resultado) {
       var ativ = allActivities[j];
       if (!ativ.descricao) continue;
 
-      var record = {
+      records.push({
         aluno_id: alunoId,
         disciplina: disc.disciplina,
         cd_shortname: disc.cd_shortname,
@@ -293,17 +307,20 @@ async function saveResults(alunoId, resultado) {
         data_inicial: ativ.dataInicial || null,
         data_final: ativ.dataFinal || null,
         respondida: ativ.respondida || false,
-        synced_at: new Date().toISOString(),
-      };
-
-      // Upsert (insert ou update se já existe)
-      var { error } = await sb.from('studeo_sync').upsert(record, {
-        onConflict: 'aluno_id,cd_shortname,atividade',
+        synced_at: now,
       });
-
-      if (error) console.error('Upsert error:', error);
-      else count++;
     }
+  }
+
+  // Batch upsert in chunks of 200
+  var count = 0;
+  for (var i = 0; i < records.length; i += 200) {
+    var chunk = records.slice(i, i + 200);
+    var { error } = await sb.from('studeo_sync').upsert(chunk, {
+      onConflict: 'aluno_id,cd_shortname,atividade',
+    });
+    if (error) console.error('Upsert batch error:', error);
+    else count += chunk.length;
   }
 
   return count;
