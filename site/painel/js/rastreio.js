@@ -102,7 +102,7 @@ async function loadSyncData() {
   var alunoId = filterAluno ? filterAluno.value : '';
   var grupoFilter = (document.getElementById('filter-grupo-rastreio') || {}).value || '';
   var diasInput = document.getElementById('filter-dias');
-  var dias = diasInput ? parseInt(diasInput.value) || 10 : 10;
+  var dias = diasInput ? parseInt(diasInput.value) || 60 : 60;
 
   // Build alunos cache with tipo
   if (!window._alunosCache) {
