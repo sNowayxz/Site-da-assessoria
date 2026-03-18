@@ -265,10 +265,11 @@
               <th>Validadas</th>
               <th>Evolução</th>
               <th>Data</th>
+              <th style="width:50px;"></th>
             </tr>
           </thead>
           <tbody id="solic-tbody">
-            <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--gray-400);">Carregando...</td></tr>
+            <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--gray-400);">Carregando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -353,7 +354,7 @@
 
       var tbody = document.getElementById('solic-tbody');
       if (!data || !data.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--gray-400);">Nenhuma solicitação ainda.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--gray-400);">Nenhuma solicitação ainda.</td></tr>';
         return;
       }
 
@@ -367,6 +368,10 @@
         var evolucao = horas > 0 ? Math.round((validadas / horas) * 100) : 0;
         if (evolucao > 100) evolucao = 100;
 
+        // Só pode excluir se for aguardando e se for o próprio assessor ou admin/dono
+        var canDelete = (s.status === 'aguardando') &&
+          (currentRole === 'admin' || currentRole === 'dono' || s.assessor_id === currentUserId);
+
         html += '<tr>';
         html += '<td><span class="badge-status ' + badgeClass + '">' + statusText + '</span></td>';
         html += '<td style="font-weight:600;">' + escapeHtml(s.aluno_nome) + '</td>';
@@ -375,10 +380,23 @@
         html += '<td style="text-align:center;">' + (validadas || '—') + '</td>';
         html += '<td><div class="evolucao-bar"><div class="evolucao-fill" style="width:' + evolucao + '%"></div><div class="evolucao-text">' + (evolucao > 0 ? evolucao + '%' : '') + '</div></div></td>';
         html += '<td style="font-size:0.78rem;color:var(--gray-400);">' + dt + '</td>';
+        html += '<td>' + (canDelete ? '<button onclick="deleteSolicitacao(\'' + s.id + '\')" style="background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:1rem;padding:4px;" title="Excluir">🗑️</button>' : '') + '</td>';
         html += '</tr>';
       });
 
       tbody.innerHTML = html;
+    }
+
+    async function deleteSolicitacao(id) {
+      if (!confirm('Tem certeza que deseja excluir esta solicitação?')) return;
+      try {
+        var { error } = await sb.from('solicitacoes').delete().eq('id', id);
+        if (error) throw error;
+        showToast('Solicitação excluída', 'success');
+        await loadSolicitacoes();
+      } catch (err) {
+        showToast('Erro ao excluir: ' + (err.message || err), 'error');
+      }
     }
   </script>
 </body>

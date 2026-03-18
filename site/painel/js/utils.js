@@ -290,6 +290,14 @@ var _notifAlunosCache = {};
 
 async function checkNotifications() {
   if (!window.sb) return;
+  var userRole = window._cachedRole || null;
+
+  // Assessoria/extensao: skip heavy notifications (studeo, atividades, agenda, alunos)
+  if (userRole === 'assessoria' || userRole === 'extensao') {
+    _notifData = [];
+    return;
+  }
+
   try {
     // Load alunos cache
     if (Object.keys(_notifAlunosCache).length === 0) {
