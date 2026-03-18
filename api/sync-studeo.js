@@ -50,50 +50,47 @@ module.exports = async function handler(req, res) {
       if (!senha) return res.status(400).json({ error: 'Campo "senha" obrigatório para sync' });
 
       const token = await studeoLogin(ra, senha);
-      const disciplinas = await buscarDisciplinas(ra);
-      const resultado = [];
 
-      for (const disc of disciplinas) {
-        const nomeUpper = (disc.nm_disciplina || '').toUpperCase();
+      // 1. Buscar disciplinas matriculadas (endpoint real do Studeo)
+      const matriculadas = await buscarDisciplinasMatriculadas(token);
+      console.log(`[sync] ${matriculadas.length} disciplinas matriculadas`);
+
+      // 2. Buscar quais disciplinas têm atividades "a fazer"
+      const shortnames = matriculadas.map(d => d.cdShortname);
+      const afazer = await buscarAtividadesAFazer(token, shortnames);
+      const afazerMap = {};
+      for (const item of afazer) {
+        afazerMap[item.shortname] = item.somaAtividades;
+      }
+      console.log(`[sync] ${afazer.length} disciplinas com atividades a fazer`);
+
+      // 3. Só buscar detalhes das disciplinas que TÊM atividades pendentes
+      const resultado = [];
+      const discsComPendencia = matriculadas.filter(d => afazerMap[d.cdShortname] > 0);
+
+      for (const disc of discsComPendencia) {
+        const nomeUpper = (disc.nmDisciplina || '').toUpperCase();
         if (EXCLUIR.some(e => nomeUpper.includes(e))) continue;
 
         try {
           const [atividades, mapa] = await Promise.all([
-            buscarAtividades(token, disc.cd_shortname),
-            buscarMapa(token, disc.cd_shortname),
+            buscarAtividades(token, disc.cdShortname),
+            buscarMapa(token, disc.cdShortname),
           ]);
 
           const atividadesNorm = normalizarAtividades(atividades, 'AV');
           const mapaNorm = normalizarAtividades(mapa, 'MAPA');
 
-          // Log para debug
-          console.log(`[sync] ${disc.nm_disciplina}: ${(atividades||[]).length} raw AV → ${atividadesNorm.length} norm | ${(mapa||[]).length} raw MAPA → ${mapaNorm.length} norm`);
-          if ((atividades||[]).length > 0 && atividadesNorm.length === 0) {
-            console.log('[sync] Sample raw AV:', JSON.stringify((atividades||[]).slice(0,1)).substring(0, 500));
-          }
-          if ((mapa||[]).length > 0 && mapaNorm.length === 0) {
-            console.log('[sync] Sample raw MAPA:', JSON.stringify((mapa||[]).slice(0,1)).substring(0, 500));
-          }
-
           resultado.push({
-            disciplina: disc.nm_disciplina,
-            cd_shortname: disc.cd_shortname,
+            disciplina: disc.nmDisciplina,
+            cd_shortname: disc.cdShortname,
             ano: disc.ano || null,
-            modulo: disc.modulo || null,
+            modulo: disc.semestre ? String(disc.semestre) : null,
             atividades: atividadesNorm,
             mapa: mapaNorm,
           });
         } catch (err) {
-          console.error(`[sync] Erro em ${disc.nm_disciplina}:`, err.message);
-          resultado.push({
-            disciplina: disc.nm_disciplina,
-            cd_shortname: disc.cd_shortname,
-            ano: disc.ano || null,
-            modulo: disc.modulo || null,
-            atividades: [],
-            mapa: [],
-            erro: err.message,
-          });
+          console.error(`[sync] Erro em ${disc.nmDisciplina}:`, err.message);
         }
       }
 
@@ -273,6 +270,42 @@ async function buscarDisciplinas(ra) {
   }
 
   return activeDiscs;
+}
+
+// Busca disciplinas matriculadas diretamente da API do Studeo (não do Papiron)
+async function buscarDisciplinasMatriculadas(token) {
+  try {
+    const resp = await fetch(
+      `${STUDEO_API}/ambiente-api-controller/api/aluno/disciplina/matriculados`,
+      { headers: { ...HEADERS_BASE, Authorization: token } }
+    );
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error('[sync] Erro ao buscar matriculadas:', err.message);
+    return [];
+  }
+}
+
+// Busca quais disciplinas têm atividades "a fazer" (pendentes reais)
+async function buscarAtividadesAFazer(token, shortnames) {
+  try {
+    const resp = await fetch(
+      `${STUDEO_API}/objeto-ensino-api-controller/api/questionario/afazer/`,
+      {
+        method: 'POST',
+        headers: { ...HEADERS_BASE, Authorization: token },
+        body: JSON.stringify({ cdShortname: shortnames }),
+      }
+    );
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error('[sync] Erro ao buscar afazer:', err.message);
+    return [];
+  }
 }
 
 function extractArray(data) {
