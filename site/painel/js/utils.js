@@ -268,13 +268,13 @@ async function doGlobalSearch(q, resultsBox) {
   }
 
   if (!results.length) {
-    resultsBox.innerHTML = '<div class="search-empty">Nenhum resultado para "' + q + '"</div>';
+    resultsBox.innerHTML = '<div class="search-empty">Nenhum resultado para "' + escapeHtml(q) + '"</div>';
   } else {
     resultsBox.innerHTML = results.map(function (r) {
-      return '<a href="' + r.url + '" class="search-result-item">' +
-        '<span class="search-result-type">' + r.type + '</span>' +
-        '<span class="search-result-name">' + r.name + '</span>' +
-        '<span class="search-result-detail">' + r.detail + '</span>' +
+      return '<a href="' + escapeHtml(r.url) + '" class="search-result-item">' +
+        '<span class="search-result-type">' + escapeHtml(r.type) + '</span>' +
+        '<span class="search-result-name">' + escapeHtml(r.name) + '</span>' +
+        '<span class="search-result-detail">' + escapeHtml(r.detail) + '</span>' +
         '</a>';
     }).join('');
   }
