@@ -258,8 +258,9 @@
               <div class="form-group">
                 <label for="new-assessor-role">Permiss&atilde;o</label>
                 <select id="new-assessor-role">
-                  <option value="assessor">Assessor</option>
-                  <option value="visualizador">Visualizador</option>
+                  <option value="assessoria">Assessoria</option>
+                  <option value="extensao">Extensão</option>
+                  <option value="dono">Dono</option>
                   <option value="admin">Administrador</option>
                 </select>
               </div>
@@ -284,7 +285,7 @@
     document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });
 
     document.addEventListener('DOMContentLoaded', async function () {
-      var result = await requireRole(['admin', 'assessor', 'visualizador']);
+      var result = await requireRole(['admin', 'dono', 'extensao', 'assessoria', 'assessor', 'visualizador']);
       if (!result) return;
       var user = result.user;
       var role = result.role;
@@ -463,7 +464,7 @@
       });
 
       // ─── ADMIN: Gerenciar Assessores ───
-      if (role === 'admin') {
+      if (role === 'admin' || role === 'dono') {
         document.getElementById('admin-section').classList.remove('role-hidden');
         loadAssessores();
 
@@ -534,8 +535,8 @@
         // Get emails from auth (we need to match by id)
         // Since we can't list auth users from frontend, we store nome in assessores
         tbody.innerHTML = data.map(function (a) {
-          var roleLabels = { admin: '👑 Admin', assessor: '📋 Assessor', visualizador: '👁️ Visualizador' };
-          var roleBadge = roleLabels[a.role] || a.role;
+          var roleLabels = { admin: '👑 Admin', dono: '🏛️ Dono', extensao: '📂 Extensão', assessoria: '📋 Assessoria', assessor: '📋 Assessor', visualizador: '👁️ Visualizador' };
+          var roleBadge = (a.label ? a.label : roleLabels[a.role]) || a.role;
           var dt = a.created_at ? new Date(a.created_at).toLocaleDateString('pt-BR') : '—';
 
           return '<tr data-id="' + a.id + '">' +
@@ -544,6 +545,9 @@
             '<td>' +
               '<select class="role-select" onchange="changeRole(\'' + a.id + '\', this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid var(--gray-200);font-size:0.82rem;font-family:inherit;">' +
                 '<option value="admin"' + (a.role === 'admin' ? ' selected' : '') + '>👑 Admin</option>' +
+                '<option value="dono"' + (a.role === 'dono' ? ' selected' : '') + '>🏛️ Dono</option>' +
+                '<option value="extensao"' + (a.role === 'extensao' ? ' selected' : '') + '>📂 Extensão</option>' +
+                '<option value="assessoria"' + (a.role === 'assessoria' ? ' selected' : '') + '>📋 Assessoria</option>' +
                 '<option value="assessor"' + (a.role === 'assessor' ? ' selected' : '') + '>📋 Assessor</option>' +
                 '<option value="visualizador"' + (a.role === 'visualizador' ? ' selected' : '') + '>👁️ Visualizador</option>' +
               '</select>' +
@@ -561,7 +565,14 @@
     }
 
     // ─── Change role ───
+    var GUSTAVO_ID = '005494a9-ed2b-47d7-9dec-46761923cb12';
     async function changeRole(id, newRole) {
+      // Proteger Gustavo (admin imutável)
+      if (id === GUSTAVO_ID && _cachedRole !== 'admin') {
+        showToast('Não é possível alterar o Administrador principal.', 'error');
+        loadAssessores();
+        return;
+      }
       try {
         var { error } = await sb.from('assessores').update({ role: newRole }).eq('id', id);
         if (error) throw error;
