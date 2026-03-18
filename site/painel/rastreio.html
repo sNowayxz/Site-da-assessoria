@@ -83,8 +83,8 @@
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Discipline Cards */
-    .disc-card {
+    /* Aluno Cards (estilo Modelitos) */
+    .aluno-card {
       background: var(--white);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow);
@@ -93,82 +93,80 @@
       transition: all var(--transition);
       border: 1px solid transparent;
     }
-    .disc-card:hover {
+    .aluno-card:hover {
       box-shadow: var(--shadow-lg);
       border-color: var(--gray-100);
     }
-    .disc-header {
+    .aluno-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      padding: 20px 24px;
+      align-items: center;
+      padding: 18px 24px;
       background: var(--gray-50);
       border-bottom: 1px solid var(--gray-100);
       gap: 16px;
-      flex-wrap: wrap;
     }
-    .disc-info h3 {
+    .aluno-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .aluno-info h3 {
       font-size: 1rem;
       font-weight: 700;
-      color: var(--gray-800);
-      margin-bottom: 4px;
+      color: var(--primary);
+      margin: 0;
     }
-    .disc-meta {
-      display: block;
-      font-size: 0.78rem;
+    .aluno-ra {
+      font-size: 0.82rem;
       color: var(--gray-400);
       font-family: monospace;
     }
-    .disc-badges {
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
 
-    .disc-activities {
-      padding: 0;
-    }
-    .ativ-row {
+    /* Disciplina rows dentro do card do aluno */
+    .disc-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 24px;
+      padding: 14px 24px;
       border-bottom: 1px solid var(--gray-100);
+      border-left: 3px solid var(--primary);
       gap: 12px;
       transition: background 0.2s;
     }
-    .ativ-row:last-child { border-bottom: none; }
-    .ativ-row:hover { background: rgba(240,192,48,0.03); }
+    .disc-row:last-child { border-bottom: none; }
+    .disc-row:hover { background: rgba(240,192,48,0.04); }
+    .disc-urgente { border-left-color: #ef4444; background: rgba(239,68,68,0.03); }
 
-    .ativ-pendente { border-left: 3px solid #f59e0b; }
-    .ativ-respondida { border-left: 3px solid #22c55e; }
-    .ativ-urgente { border-left: 3px solid #ef4444; background: rgba(239,68,68,0.04); }
-    .ativ-data-urgente { color: #ef4444 !important; font-weight: 600; }
-
-    .ativ-info {
+    .disc-row-info {
       display: flex;
       align-items: center;
       gap: 10px;
       flex: 1;
       min-width: 0;
+      flex-wrap: wrap;
     }
-    .ativ-nome {
-      font-size: 0.88rem;
+    .disc-nome {
+      font-size: 0.92rem;
+      font-weight: 600;
       color: var(--gray-800);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
-    .ativ-extra {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .disc-pendencias {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--gray-500);
+    }
+    .disc-row-prazo {
       flex-shrink: 0;
     }
-    .ativ-data {
-      font-size: 0.78rem;
-      color: var(--gray-400);
+    .prazo-text {
+      font-size: 0.82rem;
+      color: var(--gray-500);
       white-space: nowrap;
+    }
+    .prazo-urgente {
+      color: #ef4444 !important;
+      font-weight: 700;
     }
 
     .badge-mapa { background: rgba(139,92,246,0.12); color: #7c3aed; }
@@ -180,6 +178,14 @@
       gap: 12px;
       margin-bottom: 20px;
       flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-dias {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      color: var(--gray-600);
     }
     .filters-rastreio select {
       padding: 9px 14px;
@@ -226,18 +232,21 @@
     @media (max-width: 768px) {
       .sync-bar { flex-direction: column; align-items: stretch; }
       .sync-bar select { min-width: unset; width: 100%; }
-      .disc-header { flex-direction: column; }
-      .ativ-row { flex-direction: column; align-items: flex-start; }
-      .ativ-extra { margin-top: 8px; }
+      .aluno-header { flex-direction: column; align-items: flex-start; }
+      .aluno-info { flex-direction: column; gap: 4px; }
+      .disc-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .disc-row-prazo { margin-top: 2px; }
       .filters-rastreio { flex-direction: column; }
       .filters-rastreio select { min-width: unset; width: 100%; }
     }
 
     [data-theme="dark"] .sync-bar { background: #1c2128; border: 1px solid #30363d; }
     [data-theme="dark"] .sync-bar select { background: #161b22; border-color: #30363d; color: #e6edf3; }
-    [data-theme="dark"] .disc-header { background: #161b22; border-bottom-color: #30363d; }
-    [data-theme="dark"] .ativ-row { border-bottom-color: #21262d; }
-    [data-theme="dark"] .ativ-row:hover { background: rgba(240,192,48,0.04); }
+    [data-theme="dark"] .aluno-header { background: #161b22; border-bottom-color: #30363d; }
+    [data-theme="dark"] .aluno-info h3 { color: var(--primary-light, #f0c030); }
+    [data-theme="dark"] .disc-row { border-bottom-color: #21262d; }
+    [data-theme="dark"] .disc-row:hover { background: rgba(240,192,48,0.04); }
+    [data-theme="dark"] .disc-nome { color: #e6edf3; }
     [data-theme="dark"] .tabs-bar { background: #1c2128; }
     [data-theme="dark"] .tab-btn:hover:not(.active) { background: #21262d; }
     [data-theme="dark"] .filters-rastreio select { background: #1c2128; border-color: #30363d; color: #e6edf3; }
@@ -457,11 +466,11 @@
         <select id="filter-aluno-rastreio">
           <option value="">Todos os mensalistas</option>
         </select>
-        <select id="filter-status-rastreio">
-          <option value="">Todos os status</option>
-          <option value="pendente">Pendentes</option>
-          <option value="respondida">Respondidas</option>
-        </select>
+        <div class="filter-dias">
+          <label>Próximos</label>
+          <input type="number" id="filter-dias" value="10" min="1" max="90" style="width:55px;padding:8px;border-radius:var(--radius);border:1px solid var(--gray-200);text-align:center;">
+          <label>dias</label>
+        </div>
       </div>
 
       <!-- Results -->

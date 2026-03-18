@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('btn-sync').addEventListener('click', handleSync);
   document.getElementById('btn-sync-all').addEventListener('click', handleSyncAll);
   document.getElementById('filter-aluno-rastreio').addEventListener('change', loadSyncData);
-  document.getElementById('filter-status-rastreio').addEventListener('change', loadSyncData);
+  document.getElementById('filter-dias').addEventListener('change', loadSyncData);
 
   // Tab listeners
   document.querySelectorAll('.tab-btn').forEach(function (btn) {
@@ -73,7 +73,8 @@ async function loadMensalistas() {
 
 async function loadSyncData() {
   var alunoId = document.getElementById('filter-aluno-rastreio').value;
-  var statusFilter = document.getElementById('filter-status-rastreio').value;
+  var diasInput = document.getElementById('filter-dias');
+  var dias = diasInput ? parseInt(diasInput.value) || 10 : 10;
 
   // Build alunos cache (avoid FK join issues)
   if (!window._alunosCache) {
@@ -82,34 +83,28 @@ async function loadSyncData() {
     (alunos || []).forEach(function (a) { window._alunosCache[a.id] = a; });
   }
 
-  // Por padrão: só pendentes com prazo aberto
+  // Só pendentes, ordenadas por data_final
   var query = sb.from('studeo_sync')
     .select('*')
     .eq('respondida', false)
     .order('data_final', { ascending: true });
 
   if (alunoId) query = query.eq('aluno_id', alunoId);
-  if (statusFilter === 'respondida') {
-    // Se explicitamente pedir respondidas, remove o filtro pendente
-    query = sb.from('studeo_sync')
-      .select('*')
-      .eq('respondida', true)
-      .order('data_final', { ascending: true });
-    if (alunoId) query = query.eq('aluno_id', alunoId);
-  }
 
   var { data, error } = await query;
   if (error) { console.error(error); return; }
 
-  // Filtrar client-side: só atividades com data_final no futuro (prazo aberto)
+  // Filtrar: só atividades com prazo dentro dos próximos X dias
   var now = new Date();
   now.setHours(0, 0, 0, 0);
-  if (statusFilter !== 'respondida') {
-    data = (data || []).filter(function (item) {
-      if (!item.data_final) return true; // sem prazo = sempre mostrar
-      return new Date(item.data_final) >= now;
-    });
-  }
+  var limite = new Date(now);
+  limite.setDate(limite.getDate() + dias);
+
+  data = (data || []).filter(function (item) {
+    if (!item.data_final) return false; // sem prazo = não mostrar
+    var df = new Date(item.data_final);
+    return df >= now && df <= limite;
+  });
 
   // Attach aluno info from cache
   (data || []).forEach(function (item) {
@@ -135,107 +130,99 @@ function updateCounters(data) {
 function renderSyncData(data) {
   var container = document.getElementById('sync-results');
   if (!data.length) {
-    container.innerHTML = '<div class="empty-state" style="padding:48px;text-align:center;">Nenhuma atividade sincronizada. Clique em "Sincronizar" para buscar dados do Studeo.</div>';
+    container.innerHTML = '<div class="empty-state" style="padding:48px;text-align:center;">Nenhuma atividade pendente encontrada. Clique em "Sincronizar" para buscar dados do Studeo.</div>';
     return;
   }
 
-  // Agrupar por disciplina
-  var grouped = {};
+  // Agrupar por aluno → disciplina (estilo Modelitos)
+  var byAluno = {};
   data.forEach(function (item) {
-    var key = item.cd_shortname;
-    if (!grouped[key]) {
-      grouped[key] = {
+    var alunoKey = item.aluno_id || 'unknown';
+    if (!byAluno[alunoKey]) {
+      byAluno[alunoKey] = {
+        nome: item.alunos ? item.alunos.nome : 'N/A',
+        ra: item.alunos ? item.alunos.ra : '',
+        disciplinas: {}
+      };
+    }
+    var discKey = item.cd_shortname;
+    if (!byAluno[alunoKey].disciplinas[discKey]) {
+      byAluno[alunoKey].disciplinas[discKey] = {
         disciplina: item.disciplina,
         cd_shortname: item.cd_shortname,
-        ano: item.ano,
-        modulo: item.modulo,
-        aluno: item.alunos ? item.alunos.nome : 'N/A',
-        ra: item.alunos ? item.alunos.ra : '',
         items: []
       };
     }
-    grouped[key].items.push(item);
+    byAluno[alunoKey].disciplinas[discKey].items.push(item);
   });
-
-  // Filtrar por aba ativa/passada
-  var groups = Object.values(grouped);
-  if (currentTab === 'ativas') groups = groups.filter(isActiveDisc);
-  if (currentTab === 'passadas') groups = groups.filter(function (g) { return !isActiveDisc(g); });
-
-  // Ordenar grupos: disciplinas com prazo mais próximo primeiro
-  groups.sort(function (a, b) {
-    var aMin = getEarliestDeadline(a.items);
-    var bMin = getEarliestDeadline(b.items);
-    if (!aMin) return 1;
-    if (!bMin) return -1;
-    return aMin - bMin;
-  });
-
-  if (!groups.length) {
-    container.innerHTML = '<div class="empty-state" style="padding:48px;text-align:center;">Nenhuma disciplina ' + (currentTab === 'ativas' ? 'ativa' : currentTab === 'passadas' ? 'passada' : '') + ' encontrada.</div>';
-    return;
-  }
 
   var html = '';
-  groups.forEach(function (group) {
-    var pendentes = group.items.filter(function (i) { return !i.respondida; }).length;
-    var total = group.items.length;
+  var alunos = Object.values(byAluno);
 
-    html += '<div class="disc-card">'
-      + '<div class="disc-header">'
-      + '<div class="disc-info">'
-      + '<h3>' + escapeHtml(group.disciplina) + '</h3>'
-      + '<span class="disc-meta">' + escapeHtml(group.cd_shortname)
-      + (group.ano ? ' | ' + group.ano + '/' + group.modulo : '') + '</span>'
-      + '<span class="disc-meta">Aluno: ' + escapeHtml(group.aluno) + ' (' + escapeHtml(group.ra) + ')</span>'
-      + '</div>'
-      + '<div class="disc-badges">'
-      + '<span class="badge badge-pendente">' + pendentes + ' pendente' + (pendentes !== 1 ? 's' : '') + '</span>'
-      + '<span class="badge badge-entregue">' + (total - pendentes) + ' respondida' + ((total - pendentes) !== 1 ? 's' : '') + '</span>'
-      + '</div>'
-      + '</div>'
-      + '<div class="disc-activities">';
+  // Ordenar alunos por nome
+  alunos.sort(function (a, b) { return (a.nome || '').localeCompare(b.nome || ''); });
 
-    group.items.forEach(function (item) {
-      var statusClass = item.respondida ? 'respondida' : 'pendente';
-      var statusLabel = item.respondida ? 'Respondida' : 'Pendente';
-      var tipoClass = item.tipo_atividade === 'MAPA' ? 'badge-mapa' : 'badge-av';
-      var prazoInfo = '';
+  alunos.forEach(function (aluno) {
+    var discs = Object.values(aluno.disciplinas);
+    var totalPendentes = 0;
+    discs.forEach(function (d) {
+      totalPendentes += d.items.filter(function (i) { return !i.respondida; }).length;
+    });
+
+    // Ordenar disciplinas pelo prazo mais próximo
+    discs.sort(function (a, b) {
+      var aMin = getEarliestDeadline(a.items);
+      var bMin = getEarliestDeadline(b.items);
+      if (!aMin) return 1;
+      if (!bMin) return -1;
+      return aMin - bMin;
+    });
+
+    html += '<div class="aluno-card">'
+      + '<div class="aluno-header">'
+      + '<div class="aluno-info">'
+      + '<h3>' + escapeHtml(aluno.nome) + '</h3>'
+      + '<span class="aluno-ra">' + escapeHtml(aluno.ra) + '</span>'
+      + '</div>'
+      + '<span class="badge badge-pendente">' + totalPendentes + ' pendência' + (totalPendentes !== 1 ? 's' : '') + '</span>'
+      + '</div>';
+
+    discs.forEach(function (disc) {
+      var pendentes = disc.items.filter(function (i) { return !i.respondida; }).length;
+      // Prazo mais próximo desta disciplina
+      var deadline = getEarliestDeadline(disc.items);
+      var prazoText = '';
       var urgente = false;
 
-      if (item.data_final) {
-        var deadline = new Date(item.data_final);
+      if (deadline) {
         var hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
         var diffDays = Math.ceil((deadline - hoje) / (1000 * 60 * 60 * 24));
         if (diffDays <= 0) {
-          prazoInfo = 'Vence hoje!';
+          prazoText = 'Vence hoje!';
           urgente = true;
         } else if (diffDays <= 3) {
-          prazoInfo = 'Vence em ' + diffDays + ' dia' + (diffDays > 1 ? 's' : '') + '!';
+          prazoText = 'Vence em ' + diffDays + ' dia' + (diffDays > 1 ? 's' : '') + '!';
           urgente = true;
         } else if (diffDays <= 7) {
-          prazoInfo = 'Vence em ' + diffDays + ' dias';
+          prazoText = 'Vence em ' + diffDays + ' dias';
         } else {
-          prazoInfo = 'Até ' + formatDate(item.data_final);
+          prazoText = 'Entrega até: ' + formatDate(deadline);
         }
       }
 
-      var rowClass = 'ativ-row ativ-' + statusClass + (urgente ? ' ativ-urgente' : '');
-
-      html += '<div class="' + rowClass + '">'
-        + '<div class="ativ-info">'
-        + '<span class="badge ' + tipoClass + '">' + escapeHtml(item.tipo_atividade || 'AV') + '</span>'
-        + '<span class="ativ-nome">' + escapeHtml(item.atividade) + '</span>'
+      html += '<div class="disc-row' + (urgente ? ' disc-urgente' : '') + '">'
+        + '<div class="disc-row-info">'
+        + '<span class="disc-nome">' + escapeHtml(disc.disciplina) + '</span>'
+        + '<span class="disc-pendencias">(' + pendentes + ' pendência' + (pendentes !== 1 ? 's' : '') + ')</span>'
         + '</div>'
-        + '<div class="ativ-extra">'
-        + (prazoInfo ? '<span class="ativ-data' + (urgente ? ' ativ-data-urgente' : '') + '">' + prazoInfo + '</span>' : '')
-        + '<span class="badge badge-' + statusClass + '">' + statusLabel + '</span>'
+        + '<div class="disc-row-prazo">'
+        + (prazoText ? '<span class="prazo-text' + (urgente ? ' prazo-urgente' : '') + '">' + prazoText + '</span>' : '')
         + '</div>'
         + '</div>';
     });
 
-    html += '</div></div>';
+    html += '</div>';
   });
 
   container.innerHTML = html;
@@ -330,15 +317,25 @@ async function handleSyncAll() {
 
 async function saveResults(alunoId, resultado) {
   var now = new Date().toISOString();
+  var seen = {};
   var records = [];
 
   for (var i = 0; i < resultado.length; i++) {
     var disc = resultado[i];
+    // Combina atividades e mapa, deduplicando por descricao
     var allActivities = (disc.atividades || []).concat(disc.mapa || []);
 
     for (var j = 0; j < allActivities.length; j++) {
       var ativ = allActivities[j];
       if (!ativ.descricao) continue;
+
+      // Deduplicar: mesmo shortname + descricao = mesma atividade
+      var key = disc.cd_shortname + '|' + ativ.descricao;
+      if (seen[key]) continue;
+      seen[key] = true;
+
+      // Determinar tipo: se descricao começa com "MAPA" é MAPA, senão AV
+      var tipo = (ativ.descricao || '').toUpperCase().indexOf('MAPA') === 0 ? 'MAPA' : 'AV';
 
       records.push({
         aluno_id: alunoId,
@@ -347,7 +344,7 @@ async function saveResults(alunoId, resultado) {
         ano: disc.ano ? String(disc.ano) : null,
         modulo: disc.modulo ? String(disc.modulo) : null,
         atividade: ativ.descricao,
-        tipo_atividade: ativ.tipo || 'AV',
+        tipo_atividade: tipo,
         data_inicial: ativ.dataInicial || null,
         data_final: ativ.dataFinal || null,
         respondida: ativ.respondida || false,
@@ -356,15 +353,30 @@ async function saveResults(alunoId, resultado) {
     }
   }
 
-  // Batch upsert in chunks of 200
+  if (!records.length) return 0;
+
+  // Limpar registros antigos deste aluno e inserir novos
+  var { error: delError } = await sb.from('studeo_sync')
+    .delete()
+    .eq('aluno_id', alunoId);
+  if (delError) console.error('Delete error:', delError);
+
+  // Inserir em chunks de 200
   var count = 0;
   for (var i = 0; i < records.length; i += 200) {
     var chunk = records.slice(i, i + 200);
-    var { error } = await sb.from('studeo_sync').upsert(chunk, {
-      onConflict: 'aluno_id,cd_shortname,atividade',
-    });
-    if (error) console.error('Upsert batch error:', error);
-    else count += chunk.length;
+    var { error } = await sb.from('studeo_sync').insert(chunk);
+    if (error) {
+      console.error('Insert batch error:', error);
+      // Tentar inserir um a um como fallback
+      for (var k = 0; k < chunk.length; k++) {
+        var { error: errSingle } = await sb.from('studeo_sync').insert([chunk[k]]);
+        if (!errSingle) count++;
+        else console.error('Insert single error:', errSingle, chunk[k]);
+      }
+    } else {
+      count += chunk.length;
+    }
   }
 
   return count;
