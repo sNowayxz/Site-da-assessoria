@@ -95,12 +95,14 @@ module.exports = async function handler(req, res) {
       .map(a => ({
         ra: String(a.ra).trim(),
         nome: a.nome || '',
-        curso: a.curso || null,
+        curso: a.curso || '',
         studeo_senha: a.studeo_senha || a.senha || '',
         telefone: a.telefone || '',
         tipo: 'mensalista',
         situacao: a.situacao || 'cursando',
-        observacoes: a.observacoes || a.polo || null,
+        observacoes: a.observacoes || a.polo || '',
+        email: a.email || '',
+        cpf: a.cpf || '',
       }));
 
     let inserted = 0;
