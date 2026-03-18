@@ -715,6 +715,13 @@ function setupSidebarPermissions(role) {
     }
   });
 
+  // For limited roles: hide ALL category labels for a clean flat sidebar
+  if (role === 'assessoria' || role === 'extensao') {
+    document.querySelectorAll('.sidebar-nav-label').forEach(function (label) {
+      label.classList.add('role-hidden');
+    });
+  }
+
   // Update role label in sidebar (use custom label if available)
   var roleEl = document.querySelector('.sidebar-user-role');
   if (roleEl) {
@@ -732,13 +739,6 @@ function setupSidebarPermissions(role) {
   // Hide action buttons for visualizador
   if (role === 'visualizador') {
     document.querySelectorAll('.btn-gold, .btn-novo, [id^="btn-novo"], [id^="btn-nova"]').forEach(function (btn) {
-      btn.classList.add('role-hidden');
-    });
-  }
-
-  // (delete buttons already handled above for non-admin/dono)
-  if (false) {
-    document.querySelectorAll('.btn-danger, .btn-icon.btn-danger').forEach(function (btn) {
       btn.classList.add('role-hidden');
     });
   }
