@@ -25,8 +25,11 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Eventos
   document.getElementById('btn-sync').addEventListener('click', handleSync);
   document.getElementById('btn-sync-all').addEventListener('click', handleSyncAll);
+  document.getElementById('btn-sync-new').addEventListener('click', handleSyncNew);
   document.getElementById('filter-aluno-rastreio').addEventListener('change', loadSyncData);
   document.getElementById('filter-dias').addEventListener('change', loadSyncData);
+  document.getElementById('filter-grupo-rastreio').addEventListener('change', function () { loadAlunos(); loadSyncData(); });
+  document.getElementById('sync-grupo-select').addEventListener('change', loadAlunos);
 
   // Tab listeners
   document.querySelectorAll('.tab-btn').forEach(function (btn) {
@@ -41,45 +44,59 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 async function loadMensalistas() {
   var { data, error } = await sb.from('alunos')
-    .select('id, ra, nome, studeo_senha')
-    .eq('tipo', 'mensalista')
+    .select('id, ra, nome, studeo_senha, tipo')
     .order('nome');
 
   if (error) { console.error(error); return; }
-  window._mensalistas = data || [];
+  window._todosAlunos = data || [];
 
-  var select = document.getElementById('filter-aluno-rastreio');
+  // Contadores por grupo
+  var counts = { mensalista: 0, recorrente: 0, extensao: 0 };
+  (data || []).forEach(function (a) { counts[a.tipo] = (counts[a.tipo] || 0) + 1; });
+  document.getElementById('count-mensalistas').textContent = (data || []).length;
+
+  loadAlunos();
+}
+
+function loadAlunos() {
+  var grupoSync = (document.getElementById('sync-grupo-select') || {}).value || '';
+  var grupoFilter = (document.getElementById('filter-grupo-rastreio') || {}).value || '';
+  var all = window._todosAlunos || [];
+
+  // Filtrar por grupo para o sync select
+  var syncFiltered = grupoSync ? all.filter(function (a) { return a.tipo === grupoSync; }) : all;
   var syncSelect = document.getElementById('sync-aluno-select');
-
-  // Populate filter select
-  select.innerHTML = '<option value="">Todos os mensalistas</option>';
-  (data || []).forEach(function (a) {
-    select.innerHTML += '<option value="' + a.id + '">' + escapeHtml(a.nome) + ' (' + escapeHtml(a.ra) + ')</option>';
-  });
-
-  // Populate sync select
   if (syncSelect) {
     syncSelect.innerHTML = '<option value="">Selecione um aluno</option>';
-    (data || []).forEach(function (a) {
+    syncFiltered.forEach(function (a) {
       var hasSenha = a.studeo_senha ? '' : ' [sem senha]';
+      var grupoTag = ' [' + (a.tipo === 'extensao' ? 'EXT' : a.tipo === 'recorrente' ? 'REC' : 'MEN') + ']';
       syncSelect.innerHTML += '<option value="' + a.id + '"' + (!a.studeo_senha ? ' disabled' : '') + '>'
-        + escapeHtml(a.nome) + ' (' + escapeHtml(a.ra) + ')' + hasSenha + '</option>';
+        + escapeHtml(a.nome) + ' (' + escapeHtml(a.ra) + ')' + grupoTag + hasSenha + '</option>';
     });
   }
 
-  // Update counter
-  document.getElementById('count-mensalistas').textContent = (data || []).length;
+  // Filtrar por grupo para o filtro de visualização
+  var filterFiltered = grupoFilter ? all.filter(function (a) { return a.tipo === grupoFilter; }) : all;
+  var select = document.getElementById('filter-aluno-rastreio');
+  if (select) {
+    select.innerHTML = '<option value="">Todos os alunos</option>';
+    filterFiltered.forEach(function (a) {
+      select.innerHTML += '<option value="' + a.id + '">' + escapeHtml(a.nome) + ' (' + escapeHtml(a.ra) + ')</option>';
+    });
+  }
 }
 
 async function loadSyncData() {
   var filterAluno = document.getElementById('filter-aluno-rastreio');
   var alunoId = filterAluno ? filterAluno.value : '';
+  var grupoFilter = (document.getElementById('filter-grupo-rastreio') || {}).value || '';
   var diasInput = document.getElementById('filter-dias');
   var dias = diasInput ? parseInt(diasInput.value) || 10 : 10;
 
-  // Build alunos cache (avoid FK join issues)
+  // Build alunos cache with tipo
   if (!window._alunosCache) {
-    var { data: alunos } = await sb.from('alunos').select('id, nome, ra');
+    var { data: alunos } = await sb.from('alunos').select('id, nome, ra, tipo');
     window._alunosCache = {};
     (alunos || []).forEach(function (a) { window._alunosCache[a.id] = a; });
   }
@@ -91,6 +108,14 @@ async function loadSyncData() {
     .order('data_final', { ascending: true });
 
   if (alunoId) query = query.eq('aluno_id', alunoId);
+
+  // Filtrar por grupo: pegar IDs dos alunos do grupo selecionado
+  if (grupoFilter && !alunoId) {
+    var grupoIds = Object.keys(window._alunosCache).filter(function (id) {
+      return window._alunosCache[id].tipo === grupoFilter;
+    });
+    if (grupoIds.length > 0) query = query.in('aluno_id', grupoIds);
+  }
 
   var { data, error } = await query;
   if (error) { console.error(error); return; }
@@ -235,7 +260,7 @@ async function handleSync() {
   if (!alunoId) { alert('Selecione um aluno para sincronizar.'); return; }
   if (syncInProgress) { alert('Sincronização em andamento, aguarde...'); return; }
 
-  var aluno = (window._mensalistas || []).find(function (a) { return a.id === alunoId; });
+  var aluno = (window._todosAlunos || []).find(function (a) { return a.id === alunoId; });
   if (!aluno) { alert('Aluno não encontrado.'); return; }
   if (!aluno.studeo_senha) { alert('Este aluno não tem senha do Studeo cadastrada. Edite o aluno na página de Alunos e adicione a senha.'); return; }
 
@@ -273,20 +298,53 @@ async function handleSync() {
 async function handleSyncAll() {
   if (syncInProgress) { alert('Sincronização em andamento, aguarde...'); return; }
 
-  var mensalistas = (window._mensalistas || []).filter(function (a) { return a.studeo_senha; });
-  if (!mensalistas.length) {
-    alert('Nenhum mensalista com senha do Studeo cadastrada.');
+  var grupoSync = (document.getElementById('sync-grupo-select') || {}).value || '';
+  var all = (window._todosAlunos || []).filter(function (a) { return a.studeo_senha; });
+
+  // Filtrar por grupo se selecionado
+  var alunosList = grupoSync ? all.filter(function (a) { return a.tipo === grupoSync; }) : all;
+  var grupoLabel = grupoSync ? (' do grupo ' + grupoSync) : '';
+
+  if (!alunosList.length) {
+    alert('Nenhum aluno com senha do Studeo' + grupoLabel + '.');
     return;
   }
 
+  await syncBatch(alunosList, 'Sync' + grupoLabel);
+}
+
+async function handleSyncNew() {
+  if (syncInProgress) { alert('Sincronização em andamento, aguarde...'); return; }
+
+  var grupoSync = (document.getElementById('sync-grupo-select') || {}).value || '';
+  var all = (window._todosAlunos || []).filter(function (a) { return a.studeo_senha; });
+  if (grupoSync) all = all.filter(function (a) { return a.tipo === grupoSync; });
+
+  // Buscar quais alunos já têm sync
+  var { data: synced } = await sb.from('studeo_sync').select('aluno_id');
+  var syncedIds = {};
+  (synced || []).forEach(function (s) { syncedIds[s.aluno_id] = true; });
+
+  // Filtrar apenas os que NUNCA foram sincronizados
+  var novos = all.filter(function (a) { return !syncedIds[a.id]; });
+
+  if (!novos.length) {
+    showSyncStatus('Todos os alunos já foram sincronizados!', 'success');
+    return;
+  }
+
+  await syncBatch(novos, 'Novos (' + novos.length + ')');
+}
+
+async function syncBatch(alunosList, label) {
   syncInProgress = true;
-  var total = mensalistas.length;
+  var total = alunosList.length;
   var erros = 0;
   var totalAtiv = 0;
 
-  for (var i = 0; i < mensalistas.length; i++) {
-    var aluno = mensalistas[i];
-    showSyncStatus('Sincronizando ' + (i + 1) + '/' + total + ': ' + aluno.nome + '...', 'loading');
+  for (var i = 0; i < alunosList.length; i++) {
+    var aluno = alunosList[i];
+    showSyncStatus(label + ': ' + (i + 1) + '/' + total + ' — ' + aluno.nome + '...', 'loading');
 
     try {
       var resp = await fetch(SYNC_API_URL, {
@@ -307,7 +365,7 @@ async function handleSyncAll() {
   }
 
   showSyncStatus(
-    'Concluído! ' + totalAtiv + ' atividades de ' + (total - erros) + '/' + total + ' alunos.'
+    label + ' concluído! ' + totalAtiv + ' atividades de ' + (total - erros) + '/' + total + ' alunos.'
     + (erros ? ' (' + erros + ' erro' + (erros > 1 ? 's' : '') + ')' : ''),
     erros ? 'warning' : 'success'
   );
