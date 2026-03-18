@@ -66,13 +66,25 @@ module.exports = async function handler(req, res) {
             buscarMapa(token, disc.cd_shortname),
           ]);
 
+          const atividadesNorm = normalizarAtividades(atividades, 'AV');
+          const mapaNorm = normalizarAtividades(mapa, 'MAPA');
+
+          // Log para debug
+          console.log(`[sync] ${disc.nm_disciplina}: ${(atividades||[]).length} raw AV → ${atividadesNorm.length} norm | ${(mapa||[]).length} raw MAPA → ${mapaNorm.length} norm`);
+          if ((atividades||[]).length > 0 && atividadesNorm.length === 0) {
+            console.log('[sync] Sample raw AV:', JSON.stringify((atividades||[]).slice(0,1)).substring(0, 500));
+          }
+          if ((mapa||[]).length > 0 && mapaNorm.length === 0) {
+            console.log('[sync] Sample raw MAPA:', JSON.stringify((mapa||[]).slice(0,1)).substring(0, 500));
+          }
+
           resultado.push({
             disciplina: disc.nm_disciplina,
             cd_shortname: disc.cd_shortname,
             ano: disc.ano || null,
             modulo: disc.modulo || null,
-            atividades: normalizarAtividades(atividades, 'AV'),
-            mapa: normalizarAtividades(mapa, 'MAPA'),
+            atividades: atividadesNorm,
+            mapa: mapaNorm,
           });
         } catch (err) {
           console.error(`[sync] Erro em ${disc.nm_disciplina}:`, err.message);
@@ -102,15 +114,29 @@ module.exports = async function handler(req, res) {
 function normalizarAtividades(arr, tipo) {
   if (!Array.isArray(arr)) return [];
   return arr
-    .filter(a => a && (a.descricao || a.nome || a.titulo || a.title))
-    .map(a => ({
-      descricao: a.descricao || a.nome || a.titulo || a.title || '',
-      idQuestionario: a.idQuestionario || a.id || null,
-      dataInicial: normalizarData(a.dataInicial || a.dataInicio || a.data_inicio || a.dtInicio || null),
-      dataFinal:   normalizarData(a.dataFinal   || a.dataFim    || a.data_fim    || a.dtFim    || null),
-      tipo,
-      respondida: !!(a.respondida || a.concluida || a.finalizada || a.status === 'concluida'),
-    }));
+    .filter(a => {
+      if (!a) return false;
+      // Accept anything with a name-like field
+      return a.descricao || a.nome || a.titulo || a.title || a.nm_questionario || a.nmQuestionario || a.name;
+    })
+    .map(a => {
+      const desc = a.descricao || a.nm_questionario || a.nmQuestionario || a.nome || a.titulo || a.title || a.name || '';
+      const respondida = !!(
+        a.respondida || a.concluida || a.finalizada
+        || a.status === 'concluida' || a.status === 'CONCLUIDA'
+        || a.flRespondida === 'S' || a.flRespondida === true
+        || a.situacao === 'RESPONDIDA' || a.situacao === 'CONCLUIDA'
+      );
+
+      return {
+        descricao: desc,
+        idQuestionario: a.idQuestionario || a.id || a.cdQuestionario || null,
+        dataInicial: normalizarData(a.dataInicial || a.dataInicio || a.data_inicio || a.dtInicio || a.dtLiberacao || null),
+        dataFinal:   normalizarData(a.dataFinal   || a.dataFim    || a.data_fim    || a.dtFim    || a.dtEncerramento || null),
+        tipo,
+        respondida,
+      };
+    });
 }
 
 function normalizarData(val) {
@@ -245,6 +271,16 @@ async function buscarDisciplinas(ra) {
   return activeDiscs;
 }
 
+function extractArray(data) {
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === 'object') {
+    // Try common wrapper fields
+    return data.content || data.data || data.items || data.questionarios
+      || data.atividades || data.result || data.results || [];
+  }
+  return [];
+}
+
 async function buscarAtividades(token, cdShortname) {
   try {
     const resp = await fetch(
@@ -253,7 +289,7 @@ async function buscarAtividades(token, cdShortname) {
     );
     if (!resp.ok) return [];
     const data = await resp.json();
-    return Array.isArray(data) ? data : (data && (data.content || data.data || data.items || []));
+    return extractArray(data);
   } catch { return []; }
 }
 
@@ -265,6 +301,6 @@ async function buscarMapa(token, cdShortname) {
     );
     if (!resp.ok) return [];
     const data = await resp.json();
-    return Array.isArray(data) ? data : (data && (data.content || data.data || data.items || []));
+    return extractArray(data);
   } catch { return []; }
 }

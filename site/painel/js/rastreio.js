@@ -106,7 +106,7 @@ async function loadSyncData() {
 
   // Build alunos cache with tipo
   if (!window._alunosCache) {
-    var { data: alunos } = await sb.from('alunos').select('id, nome, ra, tipo');
+    var { data: alunos } = await sb.from('alunos').select('id, nome, ra, tipo, studeo_senha');
     window._alunosCache = {};
     (alunos || []).forEach(function (a) { window._alunosCache[a.id] = a; });
   }
@@ -145,7 +145,7 @@ async function loadSyncData() {
   // Attach aluno info from cache
   (data || []).forEach(function (item) {
     var aluno = window._alunosCache[item.aluno_id];
-    item.alunos = aluno ? { nome: aluno.nome, ra: aluno.ra } : null;
+    item.alunos = aluno ? { nome: aluno.nome, ra: aluno.ra, studeo_senha: aluno.studeo_senha } : null;
   });
 
   window._syncData = data || [];
@@ -194,6 +194,7 @@ function renderSyncData(data) {
       byAluno[alunoKey] = {
         nome: item.alunos ? item.alunos.nome : 'N/A',
         ra: item.alunos ? item.alunos.ra : '',
+        senha: item.alunos ? item.alunos.studeo_senha : '',
         disciplinas: {}
       };
     }
@@ -234,7 +235,10 @@ function renderSyncData(data) {
       + '<div class="aluno-header">'
       + '<div class="aluno-info">'
       + '<h3>' + escapeHtml(aluno.nome) + '</h3>'
-      + '<span class="aluno-ra">' + escapeHtml(aluno.ra) + '</span>'
+      + '<div class="aluno-credentials">'
+      + '<span class="aluno-ra" title="RA">👤 ' + escapeHtml(aluno.ra) + '</span>'
+      + (aluno.senha ? '<span class="aluno-senha" title="Senha Studeo">🔑 <code>' + escapeHtml(aluno.senha) + '</code></span>' : '')
+      + '</div>'
       + '</div>'
       + '<span class="badge badge-pendente">' + totalPendentes + ' pendência' + (totalPendentes !== 1 ? 's' : '') + '</span>'
       + '</div>';
