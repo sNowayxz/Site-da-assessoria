@@ -31,6 +31,16 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('filter-status').addEventListener('change', filterGabaritos);
   document.getElementById('filter-tipo').addEventListener('change', filterGabaritos);
   document.getElementById('filter-busca').addEventListener('input', debounce(filterGabaritos, 300));
+
+  // Responder Atividades
+  await loadAlunosResp();
+  document.getElementById('btn-buscar-pendentes').addEventListener('click', buscarPendentes);
+  document.getElementById('btn-preencher-selecionadas').addEventListener('click', preencherSelecionadas);
+  document.getElementById('check-all-pendentes').addEventListener('change', function () {
+    var checks = document.querySelectorAll('.check-pendente');
+    for (var i = 0; i < checks.length; i++) checks[i].checked = this.checked;
+    toggleBtnPreencher();
+  });
 });
 
 async function loadGabaritos() {
@@ -183,4 +193,139 @@ async function deleteGabarito(id) {
   logAudit('delete_gabarito', 'gabaritos', id, {});
   showToast('Gabarito exclu\u00eddo!', 'success');
   await loadGabaritos();
+}
+
+/* ═══════════════════════════════════════════
+   Responder Atividades — Modelitos
+   ═══════════════════════════════════════════ */
+
+var PROXY_URL = 'https://site-da-assessoria.vercel.app/api/preencher-atividade';
+var _pendentes = [];
+
+async function loadAlunosResp() {
+  var { data } = await sb.from('alunos').select('id, nome, ra').order('nome');
+  var select = document.getElementById('resp-aluno');
+  select.innerHTML = '<option value="">Selecione o aluno</option>';
+  (data || []).forEach(function (a) {
+    select.innerHTML += '<option value="' + escapeHtml(a.ra) + '">' + escapeHtml(a.nome) + ' (' + escapeHtml(a.ra) + ')</option>';
+  });
+}
+
+async function buscarPendentes() {
+  var ra = document.getElementById('resp-aluno').value;
+  if (!ra) { showToast('Selecione um aluno', 'error'); return; }
+
+  var btn = document.getElementById('btn-buscar-pendentes');
+  var info = document.getElementById('pendentes-info');
+  btn.disabled = true; btn.textContent = 'Buscando...';
+  info.textContent = 'Consultando Modelitos...';
+
+  try {
+    var resp = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verificar', ra: ra }),
+    });
+    var data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Erro desconhecido');
+
+    _pendentes = data.pendentes || [];
+    info.textContent = _pendentes.length + ' atividade(s) pendente(s) encontrada(s)';
+    renderPendentes(_pendentes);
+  } catch (err) {
+    info.textContent = 'Erro: ' + err.message;
+    showToast('Erro ao buscar pendentes: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Buscar Pendentes';
+  }
+}
+
+function renderPendentes(pendentes) {
+  var tbody = document.getElementById('pendentes-table');
+  if (!pendentes.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Nenhuma atividade pendente</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = pendentes.map(function (p, i) {
+    return '<tr>' +
+      '<td><input type="checkbox" class="check-pendente" data-idx="' + i + '" onchange="toggleBtnPreencher()"></td>' +
+      '<td><code>' + escapeHtml(p.idQuestionario || '') + '</code></td>' +
+      '<td><small>' + escapeHtml(p.shortname || '') + '</small></td>' +
+      '<td>' + escapeHtml(p.descricao || '—') + '</td>' +
+      '<td><button class="btn-icon" onclick="preencherUma(' + i + ')" title="Preencher">&#9654;&#65039;</button></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function toggleBtnPreencher() {
+  var checked = document.querySelectorAll('.check-pendente:checked');
+  document.getElementById('btn-preencher-selecionadas').disabled = checked.length === 0;
+}
+
+async function preencherUma(idx) {
+  var p = _pendentes[idx];
+  if (!p) return;
+  if (!confirm('Preencher atividade ' + p.idQuestionario + '?')) return;
+
+  var status = document.getElementById('preencher-status');
+  status.textContent = 'Preenchendo ' + p.idQuestionario + '...';
+
+  try {
+    var resp = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'preencher', idQuestionario: p.idQuestionario, finalizar: true }),
+    });
+    var data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Erro');
+
+    showToast('Atividade ' + p.idQuestionario + ' preenchida!', 'success');
+    status.textContent = 'Concluído: ' + p.idQuestionario;
+    logAudit('preencher_atividade', 'gabaritos', p.idQuestionario, { shortname: p.shortname });
+  } catch (err) {
+    showToast('Erro: ' + err.message, 'error');
+    status.textContent = 'Erro: ' + err.message;
+  }
+}
+
+async function preencherSelecionadas() {
+  var checks = document.querySelectorAll('.check-pendente:checked');
+  if (!checks.length) return;
+  if (!confirm('Preencher ' + checks.length + ' atividade(s) selecionada(s)?')) return;
+
+  var btn = document.getElementById('btn-preencher-selecionadas');
+  var status = document.getElementById('preencher-status');
+  btn.disabled = true;
+
+  var total = checks.length;
+  var ok = 0;
+  var erros = 0;
+
+  for (var i = 0; i < checks.length; i++) {
+    var idx = parseInt(checks[i].getAttribute('data-idx'));
+    var p = _pendentes[idx];
+    if (!p) continue;
+
+    status.textContent = 'Preenchendo ' + (i + 1) + '/' + total + ': ' + p.idQuestionario + '...';
+
+    try {
+      var resp = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'preencher', idQuestionario: p.idQuestionario, finalizar: true }),
+      });
+      var data = await resp.json();
+      if (!data.ok) throw new Error(data.error);
+      ok++;
+      logAudit('preencher_atividade', 'gabaritos', p.idQuestionario, { shortname: p.shortname });
+    } catch (err) {
+      erros++;
+      console.error('Erro em ' + p.idQuestionario + ':', err.message);
+    }
+  }
+
+  status.textContent = 'Resultado: ' + ok + ' preenchida(s), ' + erros + ' erro(s)';
+  showToast(ok + ' atividade(s) preenchida(s)' + (erros ? ', ' + erros + ' erro(s)' : ''), ok ? 'success' : 'error');
+  btn.disabled = false;
 }

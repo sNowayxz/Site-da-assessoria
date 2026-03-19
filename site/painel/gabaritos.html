@@ -171,6 +171,45 @@
           </div>
         </div>
       </div>
+
+      <!-- Responder Atividades -->
+      <div class="panel" style="margin-top:20px;">
+        <div class="panel-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--gray-200);">
+          <h3 style="margin:0;font-size:1.05rem;">Responder Atividades (Modelitos)</h3>
+        </div>
+        <div class="panel-body" style="padding:20px;">
+          <div class="form-row" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+            <div class="form-group" style="flex:1;min-width:200px;">
+              <label for="resp-aluno">Aluno (RA)</label>
+              <select id="resp-aluno">
+                <option value="">Selecione o aluno</option>
+              </select>
+            </div>
+            <button class="btn btn-gold" id="btn-buscar-pendentes" style="height:40px;">Buscar Pendentes</button>
+          </div>
+          <div id="pendentes-info" style="margin-top:12px;color:var(--gray-500);font-size:0.9rem;"></div>
+          <div class="table-wrap" style="margin-top:12px;">
+            <table>
+              <thead>
+                <tr>
+                  <th><input type="checkbox" id="check-all-pendentes"></th>
+                  <th>ID</th>
+                  <th>Shortname</th>
+                  <th>Descri&ccedil;&atilde;o</th>
+                  <th>A&ccedil;&atilde;o</th>
+                </tr>
+              </thead>
+              <tbody id="pendentes-table">
+                <tr><td colspan="5" class="empty-state">Selecione um aluno e clique em "Buscar Pendentes"</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:12px;">
+            <button class="btn btn-gold" id="btn-preencher-selecionadas" disabled>Preencher Selecionadas</button>
+            <span id="preencher-status" style="align-self:center;font-size:0.9rem;color:var(--gray-500);"></span>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
