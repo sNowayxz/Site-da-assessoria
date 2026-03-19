@@ -80,71 +80,46 @@
       .sheet-frame { min-height: 400px; }
     }
 
-    /* ─── Calculadora de Extensão ─── */
+    /* ─── Calculadora de Extensão (compact) ─── */
     .calc-container {
       display: none;
-      padding: 24px;
-      max-width: 720px;
+      padding: 16px 20px;
+      max-width: 960px;
       margin: 0 auto;
+      gap: 12px;
+      flex-direction: column;
+      height: calc(100% - 50px);
+      overflow: hidden;
     }
-    .calc-container.visible { display: block; }
-    .calc-card {
+    .calc-container.visible { display: flex; }
+    .calc-header-card {
       background: var(--white, #fff);
       border: 1px solid var(--gray-200, #e5e7eb);
-      border-radius: 14px;
-      padding: 28px;
-      margin-bottom: 20px;
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
     }
-    .calc-card h3 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--dark, #1a1a2e);
-      margin: 0 0 20px;
+    .calc-field {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .calc-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--gray-100, #f3f4f6);
-    }
-    .calc-row:last-child { border-bottom: none; }
-    .calc-row-label {
-      font-size: 0.88rem;
-      color: var(--gray-500, #6b7280);
-      font-weight: 500;
-    }
-    .calc-row-value {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--dark, #1a1a2e);
-    }
-    .calc-row-value.highlight {
-      font-size: 1.15rem;
-      color: var(--gold, #f0c030);
-    }
-    .calc-input-group {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .calc-input-group label {
-      font-size: 0.88rem;
+    .calc-field label {
+      font-size: 0.82rem;
       font-weight: 600;
       color: var(--gray-600, #4b5563);
       white-space: nowrap;
     }
     .calc-input {
-      width: 120px;
-      padding: 10px 14px;
+      width: 100px;
+      padding: 8px 10px;
       border: 1.5px solid var(--gray-200, #e5e7eb);
-      border-radius: 10px;
-      font-size: 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
       font-weight: 700;
       font-family: inherit;
       text-align: center;
@@ -157,87 +132,117 @@
       border-color: var(--gold, #f0c030);
       box-shadow: 0 0 0 3px rgba(240,192,48,0.15);
     }
-    .calc-input-suffix {
-      font-size: 0.85rem;
+    .calc-suffix {
+      font-size: 0.8rem;
       color: var(--gray-400, #8892a4);
       font-weight: 500;
     }
-    .calc-total-row {
+    .calc-rs {
+      font-weight: 700;
+      color: var(--gray-500);
+      font-size: 0.85rem;
+    }
+    .calc-total-box {
+      margin-left: auto;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 14px 18px;
-      background: linear-gradient(135deg, rgba(240,192,48,0.1), rgba(240,192,48,0.05));
-      border-radius: 10px;
-      margin-top: 12px;
+      gap: 10px;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, rgba(240,192,48,0.12), rgba(240,192,48,0.05));
+      border-radius: 8px;
     }
     .calc-total-label {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--dark, #1a1a2e);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--gray-600, #4b5563);
     }
     .calc-total-value {
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: 700;
       color: var(--gold, #f0c030);
     }
-    .calc-option-title {
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: var(--dark, #1a1a2e);
-      margin: 0 0 12px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--gold, #f0c030);
-      display: inline-block;
-    }
-    .calc-option-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      background: rgba(34,197,94,0.12);
-      color: #16a34a;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
-    .calc-options-grid {
+    .calc-options {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
     }
-    @media (min-width: 600px) {
-      .calc-options-grid {
-        grid-template-columns: 1fr 1fr 1fr;
-      }
-    }
-    .calc-option-card {
+    .calc-opt {
       background: var(--white, #fff);
       border: 1px solid var(--gray-200, #e5e7eb);
       border-radius: 12px;
-      padding: 20px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
       transition: all 0.2s;
     }
-    .calc-option-card:hover {
+    .calc-opt:hover {
       box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-      transform: translateY(-2px);
+      transform: translateY(-1px);
     }
-    .calc-option-card.recommended {
+    .calc-opt.best {
       border-color: var(--gold, #f0c030);
       box-shadow: 0 0 0 1px var(--gold, #f0c030);
     }
-    .calc-parcelas-group {
+    .calc-opt-head {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-top: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--gold, #f0c030);
     }
-    .calc-parcelas-input {
-      width: 60px;
-      padding: 6px 8px;
-      border: 1.5px solid var(--gray-200, #e5e7eb);
-      border-radius: 8px;
+    .calc-opt-icon { font-size: 1.1rem; }
+    .calc-opt-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--dark, #1a1a2e);
+    }
+    .calc-opt-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      background: rgba(34,197,94,0.12);
+      color: #16a34a;
+      margin-left: auto;
+    }
+    .calc-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--gray-100, #f3f4f6);
+    }
+    .calc-line:last-child { border-bottom: none; }
+    .calc-line-label {
+      font-size: 0.78rem;
+      color: var(--gray-500, #6b7280);
+      font-weight: 500;
+    }
+    .calc-line-val {
       font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--dark, #1a1a2e);
+    }
+    .calc-line-val.green { color: #16a34a; }
+    .calc-line-val.gold {
+      font-size: 1.05rem;
+      color: var(--gold, #f0c030);
+    }
+    .calc-line-input {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .calc-mini-input {
+      width: 50px;
+      padding: 4px 6px;
+      border: 1.5px solid var(--gray-200, #e5e7eb);
+      border-radius: 6px;
+      font-size: 0.8rem;
       font-weight: 600;
       font-family: inherit;
       text-align: center;
@@ -245,8 +250,27 @@
       background: var(--white, #fff);
       color: var(--dark, #1a1a2e);
     }
-    .calc-parcelas-input:focus {
+    .calc-mini-input:focus {
       border-color: var(--gold, #f0c030);
+    }
+    .calc-opt-result {
+      margin-top: auto;
+      padding: 8px 10px;
+      background: linear-gradient(135deg, rgba(240,192,48,0.1), rgba(240,192,48,0.04));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .calc-opt-result-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--gray-600, #4b5563);
+    }
+    .calc-opt-result-val {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gold, #f0c030);
     }
     .calc-copy-btn {
       display: flex;
@@ -254,17 +278,17 @@
       justify-content: center;
       gap: 6px;
       width: 100%;
-      margin-top: 20px;
       padding: 10px 18px;
       border: 1.5px solid var(--gold, #f0c030);
       border-radius: 10px;
       background: transparent;
       color: var(--gold, #f0c030);
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 700;
       font-family: inherit;
       cursor: pointer;
       transition: all 0.2s;
+      flex-shrink: 0;
     }
     .calc-copy-btn:hover {
       background: var(--gold, #f0c030);
@@ -275,20 +299,27 @@
       border-color: #16a34a;
       color: #fff;
     }
+    @media (max-width: 768px) {
+      .calc-container { height: auto; overflow: auto; }
+      .calc-header-card { flex-direction: column; align-items: stretch; gap: 10px; }
+      .calc-total-box { margin-left: 0; justify-content: space-between; }
+      .calc-options { grid-template-columns: 1fr; }
+    }
 
-    /* Dark mode */
-    [data-theme="dark"] .calc-card { background: #1c2128; border-color: #30363d; }
-    [data-theme="dark"] .calc-card h3 { color: #e6edf3; }
-    [data-theme="dark"] .calc-row { border-bottom-color: #21262d; }
-    [data-theme="dark"] .calc-row-label { color: #8b949e; }
-    [data-theme="dark"] .calc-row-value { color: #e6edf3; }
+    /* Dark mode calc */
+    [data-theme="dark"] .calc-header-card { background: #1c2128; border-color: #30363d; }
     [data-theme="dark"] .calc-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
-    [data-theme="dark"] .calc-total-row { background: linear-gradient(135deg, rgba(240,192,48,0.12), rgba(240,192,48,0.05)); }
-    [data-theme="dark"] .calc-total-label { color: #e6edf3; }
-    [data-theme="dark"] .calc-option-title { color: #e6edf3; }
-    [data-theme="dark"] .calc-option-card { background: #1c2128; border-color: #30363d; }
-    [data-theme="dark"] .calc-option-card.recommended { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
-    [data-theme="dark"] .calc-parcelas-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .calc-total-box { background: linear-gradient(135deg, rgba(240,192,48,0.12), rgba(240,192,48,0.05)); }
+    [data-theme="dark"] .calc-total-label { color: #8b949e; }
+    [data-theme="dark"] .calc-opt { background: #1c2128; border-color: #30363d; }
+    [data-theme="dark"] .calc-opt.best { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+    [data-theme="dark"] .calc-opt-name { color: #e6edf3; }
+    [data-theme="dark"] .calc-line { border-bottom-color: #21262d; }
+    [data-theme="dark"] .calc-line-label { color: #8b949e; }
+    [data-theme="dark"] .calc-line-val { color: #e6edf3; }
+    [data-theme="dark"] .calc-mini-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .calc-opt-result { background: linear-gradient(135deg, rgba(240,192,48,0.12), rgba(240,192,48,0.04)); }
+    [data-theme="dark"] .calc-opt-result-label { color: #8b949e; }
 
     /* ─── Assessor View: Project List ─── */
     .ext-projects {
@@ -444,94 +475,97 @@
 
       <!-- CALCULADORA -->
       <div class="calc-container" id="calc-container">
-        <div class="calc-card">
-          <h3>🧮 Calculadora de Extensão</h3>
-          <div class="calc-input-group">
-            <label>Carga Horária:</label>
-            <input type="number" class="calc-input" id="calc-horas" value="178" min="1" max="9999" oninput="calcExtensao()">
-            <span class="calc-input-suffix">horas</span>
-            <label style="margin-left:16px;">Valor/Hora:</label>
-            <span style="font-weight:700;color:var(--gray-500);">R$</span>
-            <input type="number" class="calc-input" id="calc-valor-hora" value="2.50" min="0.01" step="0.01" oninput="calcExtensao()" style="width:90px;">
+        <div class="calc-header-card">
+          <div class="calc-field">
+            <label>Carga Hor&aacute;ria</label>
+            <input type="number" class="calc-input" id="calc-horas" placeholder="178" min="1" max="9999" oninput="calcExtensao()">
+            <span class="calc-suffix">horas</span>
           </div>
-          <div class="calc-total-row">
-            <span class="calc-total-label">Valor Total</span>
-            <span class="calc-total-value" id="calc-total">R$ 445,00</span>
+          <div class="calc-field">
+            <label>Valor/Hora</label>
+            <span class="calc-rs">R$</span>
+            <input type="number" class="calc-input" id="calc-valor-hora" placeholder="2.50" min="0.01" step="0.01" oninput="calcExtensao()" style="width:85px;">
           </div>
-        </div>
-
-        <div class="calc-card">
-          <h3>💳 Modalidades de Pagamento</h3>
-          <div class="calc-options-grid">
-
-            <!-- Opção 1 -->
-            <div class="calc-option-card recommended">
-              <div class="calc-option-title">1ª Opção — Cartão de Crédito<span class="calc-option-badge">Mais recomendado</span></div>
-              <div class="calc-row">
-                <span class="calc-row-label">Desconto aplicado</span>
-                <span class="calc-row-value" style="color:#16a34a;">15%</span>
-              </div>
-              <div class="calc-row">
-                <span class="calc-row-label">Valor com desconto</span>
-                <span class="calc-row-value" id="calc-op1-total">R$ 378,25</span>
-              </div>
-              <div class="calc-row">
-                <span class="calc-row-label">Parcelas</span>
-                <div class="calc-parcelas-group">
-                  <input type="number" class="calc-parcelas-input" id="calc-op1-parcelas" value="6" min="1" max="12" oninput="calcExtensao()">
-                  <span class="calc-input-suffix">x</span>
-                </div>
-              </div>
-              <div class="calc-row">
-                <span class="calc-row-label">Valor por parcela</span>
-                <span class="calc-row-value highlight" id="calc-op1-parcela">R$ 63,04</span>
-              </div>
-            </div>
-
-            <!-- Opção 2 -->
-            <div class="calc-option-card">
-              <div class="calc-option-title">2ª Opção — Sinal + Parcelamento</div>
-              <div class="calc-row">
-                <span class="calc-row-label">Sinal (entrada)</span>
-                <div class="calc-parcelas-group">
-                  <span style="font-weight:600;color:var(--gray-500);font-size:0.85rem;">R$</span>
-                  <input type="number" class="calc-parcelas-input" id="calc-op2-sinal" value="200" min="0" step="10" oninput="calcExtensao()" style="width:80px;">
-                </div>
-              </div>
-              <div class="calc-row">
-                <span class="calc-row-label">Restante</span>
-                <span class="calc-row-value" id="calc-op2-restante">R$ 245,00</span>
-              </div>
-              <div class="calc-row">
-                <span class="calc-row-label">Parcelas</span>
-                <div class="calc-parcelas-group">
-                  <input type="number" class="calc-parcelas-input" id="calc-op2-parcelas" value="6" min="1" max="12" oninput="calcExtensao()">
-                  <span class="calc-input-suffix">x</span>
-                </div>
-              </div>
-              <div class="calc-row">
-                <span class="calc-row-label">Valor por parcela</span>
-                <span class="calc-row-value highlight" id="calc-op2-parcela">R$ 40,83</span>
-              </div>
-            </div>
-
-            <!-- Opção 3 -->
-            <div class="calc-option-card">
-              <div class="calc-option-title">3ª Opção — Pix à Vista</div>
-              <div class="calc-row">
-                <span class="calc-row-label">Desconto aplicado</span>
-                <span class="calc-row-value" style="color:#16a34a;">20%</span>
-              </div>
-              <div class="calc-row">
-                <span class="calc-row-label">Valor à vista</span>
-                <span class="calc-row-value highlight" id="calc-op3-total">R$ 356,00</span>
-              </div>
-            </div>
+          <div class="calc-total-box">
+            <span class="calc-total-label">Total</span>
+            <span class="calc-total-value" id="calc-total">R$ 0,00</span>
           </div>
         </div>
 
-        <!-- Botão copiar resumo -->
-        <button class="calc-copy-btn" id="calc-copy-btn" onclick="copyCalcResumo()">📋 Copiar Resumo para Enviar ao Aluno</button>
+        <div class="calc-options">
+          <div class="calc-opt best">
+            <div class="calc-opt-head">
+              <span class="calc-opt-icon">&#128179;</span>
+              <span class="calc-opt-name">Cart&atilde;o de Cr&eacute;dito</span>
+              <span class="calc-opt-badge">Recomendado</span>
+            </div>
+            <div class="calc-line">
+              <span class="calc-line-label">Desconto</span>
+              <span class="calc-line-val green">15%</span>
+            </div>
+            <div class="calc-line">
+              <span class="calc-line-label">Com desconto</span>
+              <span class="calc-line-val" id="calc-op1-total">R$ 0,00</span>
+            </div>
+            <div class="calc-line">
+              <span class="calc-line-label">Parcelas</span>
+              <div class="calc-line-input">
+                <input type="number" class="calc-mini-input" id="calc-op1-parcelas" value="6" min="1" max="12" oninput="calcExtensao()">
+                <span class="calc-suffix">x</span>
+              </div>
+            </div>
+            <div class="calc-opt-result">
+              <span class="calc-opt-result-label">Parcela</span>
+              <span class="calc-opt-result-val" id="calc-op1-parcela">R$ 0,00</span>
+            </div>
+          </div>
+
+          <div class="calc-opt">
+            <div class="calc-opt-head">
+              <span class="calc-opt-icon">&#128176;</span>
+              <span class="calc-opt-name">Sinal + Parcelas</span>
+            </div>
+            <div class="calc-line">
+              <span class="calc-line-label">Sinal (entrada)</span>
+              <div class="calc-line-input">
+                <span class="calc-rs" style="font-size:0.75rem;">R$</span>
+                <input type="number" class="calc-mini-input" id="calc-op2-sinal" placeholder="200" min="0" step="10" oninput="calcExtensao()" style="width:65px;">
+              </div>
+            </div>
+            <div class="calc-line">
+              <span class="calc-line-label">Restante</span>
+              <span class="calc-line-val" id="calc-op2-restante">R$ 0,00</span>
+            </div>
+            <div class="calc-line">
+              <span class="calc-line-label">Parcelas</span>
+              <div class="calc-line-input">
+                <input type="number" class="calc-mini-input" id="calc-op2-parcelas" value="6" min="1" max="12" oninput="calcExtensao()">
+                <span class="calc-suffix">x</span>
+              </div>
+            </div>
+            <div class="calc-opt-result">
+              <span class="calc-opt-result-label">Parcela</span>
+              <span class="calc-opt-result-val" id="calc-op2-parcela">R$ 0,00</span>
+            </div>
+          </div>
+
+          <div class="calc-opt">
+            <div class="calc-opt-head">
+              <span class="calc-opt-icon">&#129001;</span>
+              <span class="calc-opt-name">Pix &agrave; Vista</span>
+            </div>
+            <div class="calc-line">
+              <span class="calc-line-label">Desconto</span>
+              <span class="calc-line-val green">20%</span>
+            </div>
+            <div class="calc-opt-result" style="margin-top:auto;">
+              <span class="calc-opt-result-label">&Agrave; vista</span>
+              <span class="calc-opt-result-val" id="calc-op3-total">R$ 0,00</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="calc-copy-btn" id="calc-copy-btn" onclick="copyCalcResumo()">&#128203; Copiar Resumo para WhatsApp</button>
       </div>
 
       <!-- ASSESSOR VIEW: Project List -->
