@@ -631,10 +631,13 @@ aside.sidebar.compact .sidebar-link {
 aside.sidebar.compact .sidebar-link svg {
   margin: 0;
   flex-shrink: 0;
+  stroke: var(--gray-400) !important;
 }
-aside.sidebar.compact .sidebar-link:hover,
-aside.sidebar.compact .sidebar-link.active {
-  color: transparent;
+aside.sidebar.compact .sidebar-link:hover svg {
+  stroke: var(--gold-light) !important;
+}
+aside.sidebar.compact .sidebar-link.active svg {
+  stroke: var(--gold) !important;
 }
 aside.sidebar.compact .sidebar-user {
   flex-direction: column;
