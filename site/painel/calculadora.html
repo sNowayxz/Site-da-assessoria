@@ -3,91 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Extensões — Painel Assessoria</title>
+  <title>Calculadora — Painel Assessoria</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://lztfoprapoyicldunhzw.supabase.co">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/painel.css?v=7">
   <style>
-    .sheet-container {
-      flex: 1; display: flex; flex-direction: column; overflow: hidden;
-      border-radius: 12px; border: 1px solid var(--gray-200, #e5e7eb);
-      background: var(--white, #fff);
-    }
-    .sheet-toolbar {
-      display: flex; align-items: center; gap: 10px; padding: 10px 16px;
-      border-bottom: 1px solid var(--gray-100, #f3f4f6);
-      flex-wrap: wrap;
-    }
-    .sheet-toolbar .tab-btn {
-      padding: 7px 16px; border: 1px solid var(--gray-200, #e5e7eb);
-      border-radius: 8px; font-size: 0.82rem; font-weight: 600;
-      cursor: pointer; background: transparent; color: var(--gray-500, #6b7280);
-      font-family: inherit; transition: all 0.15s;
-    }
-    .sheet-toolbar .tab-btn.active {
-      background: var(--gold, #f0c030); color: var(--dark, #0f172a);
-      border-color: var(--gold, #f0c030);
-    }
-    .sheet-toolbar .tab-btn:hover:not(.active) {
-      border-color: var(--gray-300); color: var(--gray-700);
-    }
-    .sheet-spacer { flex: 1; }
-    .btn-open-sheet {
-      padding: 7px 14px; border: 1px solid var(--gray-200, #e5e7eb);
-      border-radius: 8px; font-size: 0.8rem; text-decoration: none;
-      color: var(--gray-500, #6b7280); font-weight: 600;
-      display: flex; align-items: center; gap: 4px;
-    }
-    .btn-open-sheet:hover { border-color: var(--gray-300); color: var(--gray-700); }
-    .btn-fullscreen {
-      padding: 7px 12px; border: 1px solid var(--gray-200, #e5e7eb);
-      border-radius: 8px; font-size: 0.8rem; cursor: pointer;
-      background: transparent; color: var(--gray-500); font-family: inherit;
-    }
-    .btn-fullscreen:hover { border-color: var(--gray-300); color: var(--gray-700); }
-
-    .sheet-frame {
-      flex: 1; width: 100%; border: none; min-height: 500px;
-    }
-
-    /* Make main-content fill height */
-    .main-content {
-      display: flex; flex-direction: column;
-    }
-    .main-content > .topbar { flex-shrink: 0; }
-    .sheet-container { flex: 1; margin: 0; }
-
-    /* Fullscreen mode */
-    .sheet-container.fullscreen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      z-index: 9999; border-radius: 0; border: none;
-      display: flex; flex-direction: column;
-      background: var(--white, #fff);
-    }
-    .sheet-container.fullscreen .sheet-toolbar {
-      flex-shrink: 0;
-      background: var(--white, #fff);
-      border-bottom: 1px solid var(--gray-200, #e5e7eb);
-      padding: 12px 20px;
-    }
-    .sheet-container.fullscreen .sheet-frame {
-      flex: 1; min-height: 0; height: 0; width: 100%;
-    }
-
-    @media (max-width: 768px) {
-      .sheet-frame { min-height: 400px; }
-    }
-
-    /* ─── Calculadora de Extensão ─── */
     .calc-container {
-      display: none;
       padding: 24px;
       max-width: 720px;
       margin: 0 auto;
     }
-    .calc-container.visible { display: block; }
     .calc-card {
       background: var(--white, #fff);
       border: 1px solid var(--gray-200, #e5e7eb);
@@ -289,56 +216,6 @@
     [data-theme="dark"] .calc-option-card { background: #1c2128; border-color: #30363d; }
     [data-theme="dark"] .calc-option-card.recommended { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
     [data-theme="dark"] .calc-parcelas-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
-
-    /* ─── Assessor View: Project List ─── */
-    .ext-projects {
-      padding: 24px;
-    }
-    .ext-project-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 20px;
-      background: var(--white, #fff);
-      border: 1px solid var(--gray-200, #e5e7eb);
-      border-radius: 10px;
-      margin-bottom: 12px;
-      transition: all 0.2s;
-    }
-    .ext-project-card:hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-      transform: translateY(-1px);
-    }
-    .ext-project-info { flex: 1; }
-    .ext-project-name {
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: var(--dark, #1a1a2e);
-    }
-    .ext-project-meta {
-      font-size: 0.8rem;
-      color: var(--gray-400, #8892a4);
-      margin-top: 4px;
-    }
-    .ext-project-badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.74rem;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-    .ext-badge-pendente { background: rgba(245,158,11,0.12); color: #d97706; }
-    .ext-badge-em_andamento { background: rgba(59,130,246,0.12); color: #2563eb; }
-    .ext-badge-concluido { background: rgba(34,197,94,0.12); color: #16a34a; }
-    .ext-badge-cancelado { background: rgba(107,114,128,0.12); color: #6b7280; }
-    .ext-empty {
-      text-align: center;
-      padding: 48px 20px;
-      color: var(--gray-400);
-      font-size: 0.95rem;
-    }
-    [data-theme="dark"] .ext-project-card { background: #1c2128; border-color: #30363d; }
-    [data-theme="dark"] .ext-project-name { color: #e6edf3; }
   </style>
 </head>
 <body>
@@ -382,8 +259,8 @@
         <div class="sidebar-nav-label" data-category="extensao">Extens&atilde;o<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
         <div class="sidebar-category-links">
           <a href="acompanhar.html" class="sidebar-link"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Acompanhar</a>
-          <a href="extensoes.html" class="sidebar-link active"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Extens&otilde;es</a>
-          <a href="calculadora.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="12" y1="10" x2="14" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="12" y1="14" x2="14" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>Calculadora</a>
+          <a href="extensoes.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Extens&otilde;es</a>
+          <a href="calculadora.html" class="sidebar-link active"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="12" y1="10" x2="14" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="12" y1="14" x2="14" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>Calculadora</a>
           <a href="depoimentos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Depoimentos</a>
         </div>
         <div class="sidebar-nav-label" data-category="financeiro">Financeiro<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
@@ -417,37 +294,18 @@
           <button class="mobile-toggle" id="mobile-toggle">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
-          <h1>Extens&otilde;es</h1>
+          <h1>Calculadora de Extens&atilde;o</h1>
         </div>
         <div class="topbar-actions">
-          <button class="btn-notif-bell" id="btn-notif-bell" title="Notificações" style="position:relative;background:none;border:none;cursor:pointer;font-size:1.2rem;padding:6px;">🔔<span class="notif-badge" id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#ef4444;color:white;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;"></span></button>
-          </div>
-      </div>
-
-      <!-- ADMIN VIEW: Google Sheets -->
-      <div class="sheet-container" id="sheet-container">
-        <div class="sheet-toolbar">
-          <button class="tab-btn active" onclick="switchTab(0, this)">📋 Alunos</button>
-          <button class="tab-btn" onclick="switchTab(1023205118, this)">💰 Pre&ccedil;os</button>
-          <button class="tab-btn" onclick="showCalc(this)">🧮 Calculadora</button>
-          <span class="sheet-spacer"></span>
-          <a href="https://docs.google.com/spreadsheets/d/1yeFlBBZSMHqTziM7QBB3IVkMJQgXqTbvDEz9SvXXKDw/edit" target="_blank" class="btn-open-sheet">📊 Abrir no Google Sheets</a>
-          <button class="btn-fullscreen" onclick="toggleFullscreen()" id="btn-fs" title="Tela cheia">⛶</button>
+          <button class="btn-notif-bell" id="btn-notif-bell" title="Notifica&ccedil;&otilde;es" style="position:relative;background:none;border:none;cursor:pointer;font-size:1.2rem;padding:6px;">&#128276;<span class="notif-badge" id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#ef4444;color:white;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;"></span></button>
         </div>
-        <iframe
-          id="sheet-frame"
-          class="sheet-frame"
-          src="https://docs.google.com/spreadsheets/d/1yeFlBBZSMHqTziM7QBB3IVkMJQgXqTbvDEz9SvXXKDw/edit?gid=0&rm=minimal"
-          allowfullscreen>
-        </iframe>
       </div>
 
-      <!-- CALCULADORA -->
-      <div class="calc-container" id="calc-container">
+      <div class="calc-container">
         <div class="calc-card">
-          <h3>🧮 Calculadora de Extensão</h3>
+          <h3>&#129518; Calculadora de Extens&atilde;o</h3>
           <div class="calc-input-group">
-            <label>Carga Horária:</label>
+            <label>Carga Hor&aacute;ria:</label>
             <input type="number" class="calc-input" id="calc-horas" value="178" min="1" max="9999" oninput="calcExtensao()">
             <span class="calc-input-suffix">horas</span>
             <label style="margin-left:16px;">Valor/Hora:</label>
@@ -461,12 +319,12 @@
         </div>
 
         <div class="calc-card">
-          <h3>💳 Modalidades de Pagamento</h3>
+          <h3>&#128179; Modalidades de Pagamento</h3>
           <div class="calc-options-grid">
 
             <!-- Opção 1 -->
             <div class="calc-option-card recommended">
-              <div class="calc-option-title">1ª Opção — Cartão de Crédito<span class="calc-option-badge">Mais recomendado</span></div>
+              <div class="calc-option-title">1&ordf; Op&ccedil;&atilde;o &mdash; Cart&atilde;o de Cr&eacute;dito<span class="calc-option-badge">Mais recomendado</span></div>
               <div class="calc-row">
                 <span class="calc-row-label">Desconto aplicado</span>
                 <span class="calc-row-value" style="color:#16a34a;">15%</span>
@@ -490,7 +348,7 @@
 
             <!-- Opção 2 -->
             <div class="calc-option-card">
-              <div class="calc-option-title">2ª Opção — Sinal + Parcelamento</div>
+              <div class="calc-option-title">2&ordf; Op&ccedil;&atilde;o &mdash; Sinal + Parcelamento</div>
               <div class="calc-row">
                 <span class="calc-row-label">Sinal (entrada)</span>
                 <div class="calc-parcelas-group">
@@ -517,33 +375,20 @@
 
             <!-- Opção 3 -->
             <div class="calc-option-card">
-              <div class="calc-option-title">3ª Opção — Pix à Vista</div>
+              <div class="calc-option-title">3&ordf; Op&ccedil;&atilde;o &mdash; Pix &agrave; Vista</div>
               <div class="calc-row">
                 <span class="calc-row-label">Desconto aplicado</span>
                 <span class="calc-row-value" style="color:#16a34a;">20%</span>
               </div>
               <div class="calc-row">
-                <span class="calc-row-label">Valor à vista</span>
+                <span class="calc-row-label">Valor &agrave; vista</span>
                 <span class="calc-row-value highlight" id="calc-op3-total">R$ 356,00</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Botão copiar resumo -->
-        <button class="calc-copy-btn" id="calc-copy-btn" onclick="copyCalcResumo()">📋 Copiar Resumo para Enviar ao Aluno</button>
-      </div>
-
-      <!-- ASSESSOR VIEW: Project List -->
-      <div id="assessor-view" class="role-hidden">
-        <div class="panel">
-          <div class="panel-header">
-            <h2>📋 Projetos dos Meus Alunos</h2>
-          </div>
-          <div class="panel-body ext-projects" id="ext-projects-list">
-            <div class="ext-empty">Carregando...</div>
-          </div>
-        </div>
+        <button class="calc-copy-btn" id="calc-copy-btn" onclick="copyCalcResumo()">&#128203; Copiar Resumo para Enviar ao Aluno</button>
       </div>
     </main>
   </div>
@@ -553,47 +398,12 @@
   <script src="js/auth.js?v=7"></script>
   <script src="js/utils.js?v=7"></script>
   <script>
-    var SHEET_ID = '1yeFlBBZSMHqTziM7QBB3IVkMJQgXqTbvDEz9SvXXKDw';
-
-    function switchTab(gid, btn) {
-      _calcShowingCalc = false;
-      document.getElementById('calc-container').classList.remove('visible');
-      document.getElementById('sheet-frame').style.display = '';
-      document.getElementById('sheet-frame').src =
-        'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/edit?gid=' + gid + '&rm=minimal';
-      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-    }
-
-    function toggleFullscreen() {
-      var container = document.getElementById('sheet-container');
-      container.classList.toggle('fullscreen');
-      document.body.style.overflow = container.classList.contains('fullscreen') ? 'hidden' : '';
-      var btn = document.getElementById('btn-fs');
-      btn.textContent = container.classList.contains('fullscreen') ? '✕' : '⛶';
-    }
-
-    // ─── Calculadora de Extensão ───
-    var _calcShowingCalc = false;
-
-    function showCalc(btn) {
-      _calcShowingCalc = true;
-      document.getElementById('sheet-frame').style.display = 'none';
-      document.getElementById('calc-container').classList.add('visible');
-      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      calcExtensao();
-    }
-
-    function switchTabOriginal(gid, btn) {
-      _calcShowingCalc = false;
-      document.getElementById('calc-container').classList.remove('visible');
-      document.getElementById('sheet-frame').style.display = '';
-      document.getElementById('sheet-frame').src =
-        'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/edit?gid=' + gid + '&rm=minimal';
-      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-    }
+    document.getElementById('mobile-toggle').addEventListener('click', function () {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+    document.getElementById('sidebar-overlay').addEventListener('click', function () {
+      document.getElementById('sidebar').classList.remove('open');
+    });
 
     function formatBRL(val) {
       return 'R$ ' + val.toFixed(2).replace('.', ',');
@@ -640,30 +450,30 @@
       var vlrParcela2 = parcelas2 > 0 ? restante / parcelas2 : restante;
       var desconto3 = total * 0.80;
 
-      var texto = '📋 *' + horas + ' Horas a serem cumpridas*\n\n' +
-        'Carga Horária: ' + horas + ' hrs\n' +
+      var texto = '\ud83d\udccb *' + horas + ' Horas a serem cumpridas*\n\n' +
+        'Carga Hor\u00e1ria: ' + horas + ' hrs\n' +
         'Valor por Hora: ' + formatBRL(valorHora) + '\n' +
         '*Valor Total: ' + formatBRL(total) + '*\n\n' +
-        '━━━━━━━━━━━━━━━━━━━━\n\n' +
-        '💳 *1ª Opção — Cartão de Crédito sem Juros (Mais recomendado)*\n' +
+        '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\n' +
+        '\ud83d\udcb3 *1\u00aa Op\u00e7\u00e3o \u2014 Cart\u00e3o de Cr\u00e9dito sem Juros (Mais recomendado)*\n' +
         'Desconto: 15%\n' +
         'Valor com desconto: ' + formatBRL(desconto1) + '\n' +
         'Parcelas: ' + parcelas1 + 'x de ' + formatBRL(vlrParcela1) + '\n\n' +
-        '💰 *2ª Opção — Sinal + Parcelamento sem Juros*\n' +
+        '\ud83d\udcb0 *2\u00aa Op\u00e7\u00e3o \u2014 Sinal + Parcelamento sem Juros*\n' +
         'Sinal: ' + formatBRL(sinal) + '\n' +
         'Parcelas: ' + parcelas2 + 'x de ' + formatBRL(vlrParcela2) + '\n\n' +
-        '🟢 *3ª Opção — Pix à Vista*\n' +
+        '\ud83d\udfe2 *3\u00aa Op\u00e7\u00e3o \u2014 Pix \u00e0 Vista*\n' +
         'Desconto: 20%\n' +
-        'Valor à vista: ' + formatBRL(desconto3);
+        'Valor \u00e0 vista: ' + formatBRL(desconto3);
 
       var btn = document.getElementById('calc-copy-btn');
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(texto).then(function() {
           btn.classList.add('copied');
-          btn.innerHTML = '✅ Copiado!';
+          btn.innerHTML = '\u2705 Copiado!';
           setTimeout(function() {
             btn.classList.remove('copied');
-            btn.innerHTML = '📋 Copiar Resumo para Enviar ao Aluno';
+            btn.innerHTML = '\ud83d\udccb Copiar Resumo para Enviar ao Aluno';
           }, 2000);
         });
       } else {
@@ -674,32 +484,16 @@
         document.execCommand('copy');
         document.body.removeChild(ta);
         btn.classList.add('copied');
-        btn.innerHTML = '✅ Copiado!';
+        btn.innerHTML = '\u2705 Copiado!';
         setTimeout(function() {
           btn.classList.remove('copied');
-          btn.innerHTML = '📋 Copiar Resumo para Enviar ao Aluno';
+          btn.innerHTML = '\ud83d\udccb Copiar Resumo para Enviar ao Aluno';
         }, 2000);
       }
     }
 
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        var container = document.getElementById('sheet-container');
-        if (container.classList.contains('fullscreen')) {
-          toggleFullscreen();
-        }
-      }
-    });
-
-    document.getElementById('mobile-toggle').addEventListener('click', function () {
-      document.getElementById('sidebar').classList.toggle('open');
-    });
-    document.getElementById('sidebar-overlay').addEventListener('click', function () {
-      document.getElementById('sidebar').classList.remove('open');
-    });
-
     document.addEventListener('DOMContentLoaded', async function () {
-      var result = await requireRole(['admin', 'dono', 'extensao', 'assessor']);
+      var result = await requireRole(['admin', 'dono', 'extensao']);
       if (!result) return;
       var user = result.user;
       var role = result.role;
@@ -709,80 +503,8 @@
       document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
       document.getElementById('user-name').textContent = name;
 
-      if (role === 'admin' || role === 'dono' || role === 'extensao') {
-        // Admin/Extensao: show spreadsheet
-        document.getElementById('sheet-container').classList.remove('role-hidden');
-      } else {
-        // Assessor: hide spreadsheet, show project list
-        document.getElementById('sheet-container').classList.add('role-hidden');
-        document.getElementById('assessor-view').classList.remove('role-hidden');
-        loadAssessorProjects(user.id);
-      }
+      calcExtensao();
     });
-
-    // ─── Assessor: Load their students' extension projects ───
-    async function loadAssessorProjects(userId) {
-      var container = document.getElementById('ext-projects-list');
-      try {
-        // Get assessor's students
-        var { data: alunos, error } = await sb.from('alunos')
-          .select('id, nome, ra, curso')
-          .eq('assessor_id', userId)
-          .order('nome');
-
-        if (error) throw error;
-
-        if (!alunos || !alunos.length) {
-          container.innerHTML = '<div class="ext-empty">Nenhum aluno atribu&iacute;do a voc&ecirc;.</div>';
-          return;
-        }
-
-        // Get activities for these students (extension-type)
-        var alunoIds = alunos.map(function(a) { return a.id; });
-        var { data: atividades } = await sb.from('atividades')
-          .select('id, aluno_id, tipo, descricao, status, dt_entrega')
-          .in('aluno_id', alunoIds)
-          .order('created_at', { ascending: false });
-
-        var html = '';
-        alunos.forEach(function(aluno) {
-          var alunoAtivs = (atividades || []).filter(function(a) { return a.aluno_id === aluno.id; });
-          var statusCounts = { pendente: 0, em_andamento: 0, entregue: 0 };
-          alunoAtivs.forEach(function(a) {
-            if (statusCounts[a.status] !== undefined) statusCounts[a.status]++;
-          });
-
-          var badgeClass = 'ext-badge-pendente';
-          var badgeText = 'Sem atividades';
-          if (alunoAtivs.length > 0) {
-            if (statusCounts.entregue === alunoAtivs.length) {
-              badgeClass = 'ext-badge-concluido';
-              badgeText = 'Tudo entregue';
-            } else if (statusCounts.em_andamento > 0) {
-              badgeClass = 'ext-badge-em_andamento';
-              badgeText = statusCounts.em_andamento + ' em andamento';
-            } else {
-              badgeClass = 'ext-badge-pendente';
-              badgeText = statusCounts.pendente + ' pendente(s)';
-            }
-          }
-
-          html += '<div class="ext-project-card">' +
-            '<div class="ext-project-info">' +
-              '<div class="ext-project-name">' + aluno.nome + '</div>' +
-              '<div class="ext-project-meta">RA: ' + aluno.ra + ' &middot; ' + (aluno.curso || 'Sem curso') + ' &middot; ' + alunoAtivs.length + ' atividade(s)</div>' +
-            '</div>' +
-            '<span class="ext-project-badge ' + badgeClass + '">' + badgeText + '</span>' +
-          '</div>';
-        });
-
-        container.innerHTML = html || '<div class="ext-empty">Nenhum projeto encontrado.</div>';
-      } catch (e) {
-        console.error('[extensoes]', e);
-        container.innerHTML = '<div class="ext-empty">Erro ao carregar projetos.</div>';
-      }
-    }
   </script>
-
 </body>
 </html>
