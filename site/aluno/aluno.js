@@ -265,7 +265,24 @@ function formatStatus(s) {
 
 function formatDate(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('pt-BR');
+  var date = parseDate(d);
+  if (!date || isNaN(date.getTime())) return d;
+  return date.toLocaleDateString('pt-BR');
+}
+
+function parseDate(d) {
+  if (!d) return null;
+  // Se já é Date
+  if (d instanceof Date) return d;
+  // ISO format (2026-03-19T...)
+  if (typeof d === 'string' && d.indexOf('T') !== -1) return new Date(d);
+  // DD/MM/YYYY
+  if (typeof d === 'string' && d.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+    var parts = d.split('/');
+    return new Date(parts[2], parseInt(parts[1]) - 1, parseInt(parts[0]));
+  }
+  // MM/DD/YYYY (fallback)
+  return new Date(d);
 }
 
 function escapeHtml(t) {
@@ -369,7 +386,7 @@ function loadStudeoActivities(alunoId) {
     var urgentes = 0, proximas = 0, total = atvs.length;
     atvs.forEach(function(a) {
       if (a.data_final) {
-        var diff = Math.ceil((new Date(a.data_final) - now) / (1000*60*60*24));
+        var diff = Math.ceil((parseDate(a.data_final) - now) / (1000*60*60*24));
         if (diff <= 3) urgentes++;
         else if (diff <= 7) proximas++;
       }
@@ -382,7 +399,7 @@ function loadStudeoActivities(alunoId) {
 
     // Render activities
     container.innerHTML = atvs.map(function(a) {
-      var deadline = a.data_final ? new Date(a.data_final) : null;
+      var deadline = a.data_final ? parseDate(a.data_final) : null;
       var diffDays = deadline ? Math.ceil((deadline - now) / (1000*60*60*24)) : null;
       var prazoText = '—';
       var prazoClass = '';
