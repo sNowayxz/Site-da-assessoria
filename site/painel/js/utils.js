@@ -8,6 +8,19 @@
   document.documentElement.setAttribute('data-theme', saved);
 })();
 
+// ─── Sidebar Compact (apply from saved config) ───
+(function initSidebarCompact() {
+  try {
+    var cfg = JSON.parse(localStorage.getItem('painel-config')) || {};
+    if (cfg.sidebarCompact) {
+      document.addEventListener('DOMContentLoaded', function () {
+        var sidebar = document.getElementById('sidebar');
+        if (sidebar) sidebar.classList.add('compact');
+      });
+    }
+  } catch (e) {}
+})();
+
 function toggleTheme() {
   var current = document.documentElement.getAttribute('data-theme');
   var next = current === 'dark' ? 'light' : 'dark';

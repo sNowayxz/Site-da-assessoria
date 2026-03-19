@@ -10,9 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/painel.css">
   <style>
-    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px; }
+    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 960px; }
     @media (max-width: 768px) { .config-grid { grid-template-columns: 1fr; } }
-
     .config-card {
       background: var(--white);
       border-radius: var(--radius-lg);
@@ -22,170 +21,127 @@
     }
     .config-card:hover { box-shadow: var(--shadow-lg); }
     .config-card-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 16px 20px;
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px;
       border-bottom: 1px solid var(--gray-100);
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--primary);
+      font-size: 0.92rem; font-weight: 700; color: var(--primary);
     }
-    .config-card-header .config-icon {
-      font-size: 1.15rem;
-    }
-    .config-card-body { padding: 16px 20px; }
-
+    .config-icon { font-size: 1.1rem; }
+    .config-card-body { padding: 14px 20px; }
     .config-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--gray-50);
-      gap: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; border-bottom: 1px solid var(--gray-50); gap: 12px;
     }
     .config-item:last-child { border-bottom: none; }
     .config-item-info { flex: 1; min-width: 0; }
-    .config-item-label {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--gray-800);
-    }
-    .config-item-desc {
-      font-size: 0.75rem;
-      color: var(--gray-400);
-      margin-top: 2px;
-    }
+    .config-item-label { font-size: 0.86rem; font-weight: 600; color: var(--gray-800); }
+    .config-item-desc { font-size: 0.73rem; color: var(--gray-400); margin-top: 1px; }
+    .config-card.full-width { grid-column: 1 / -1; }
 
     /* Toggle switch */
-    .toggle-switch {
-      position: relative;
-      width: 44px;
-      height: 24px;
-      flex-shrink: 0;
-    }
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
+    .toggle-switch { position: relative; width: 42px; height: 22px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      inset: 0;
-      background: var(--gray-200);
-      border-radius: 24px;
-      transition: 0.3s;
+      position: absolute; cursor: pointer; inset: 0;
+      background: var(--gray-200); border-radius: 22px; transition: 0.3s;
     }
     .toggle-slider:before {
-      content: "";
-      position: absolute;
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background: white;
-      border-radius: 50%;
-      transition: 0.3s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      content: ""; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px;
+      background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
-    .toggle-switch input:checked + .toggle-slider {
-      background: var(--gold);
-    }
-    .toggle-switch input:checked + .toggle-slider:before {
-      transform: translateX(20px);
-    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--gold); }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
 
-    /* Profile mini card */
-    .profile-mini {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 20px;
-      cursor: pointer;
-      transition: background 0.2s;
-      text-decoration: none;
-      color: inherit;
+    .config-select {
+      padding: 5px 26px 5px 10px; border: 1.5px solid var(--gray-200); border-radius: 8px;
+      font-size: 0.82rem; color: var(--gray-700); background: var(--white); outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center; cursor: pointer;
     }
-    .profile-mini:hover { background: var(--gray-50); }
-    .profile-mini-avatar {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: var(--gold-glow);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--gold);
-      font-size: 1.4rem;
-      font-weight: 800;
-      flex-shrink: 0;
+    .config-select:focus { border-color: var(--gold); }
+
+    /* Profile section */
+    .profile-header {
+      display: flex; align-items: center; gap: 20px; padding: 20px;
     }
-    .profile-mini-info { flex: 1; }
-    .profile-mini-name { font-size: 1rem; font-weight: 700; color: var(--primary); }
-    .profile-mini-email { font-size: 0.82rem; color: var(--gray-400); }
-    .profile-mini-role {
-      display: inline-block;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 2px 8px;
-      border-radius: 4px;
-      margin-top: 4px;
+    .profile-avatar-wrap { position: relative; flex-shrink: 0; }
+    .profile-avatar-lg {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--gold-glow); display: flex; align-items: center; justify-content: center;
+      color: var(--gold); font-size: 1.8rem; font-weight: 800;
+      cursor: pointer; overflow: hidden; transition: opacity 0.2s;
+    }
+    .profile-avatar-lg:hover { opacity: 0.85; }
+    .profile-avatar-cam {
+      position: absolute; bottom: 0; right: 0;
+      background: var(--gold); border-radius: 50%; width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .profile-info { flex: 1; min-width: 0; }
+    .profile-name-row { display: flex; align-items: center; gap: 8px; }
+    .profile-name {
+      font-size: 1.1rem; font-weight: 700; color: var(--primary);
+      border: none; background: none; padding: 0; outline: none;
+      font-family: inherit; width: 100%; max-width: 300px;
+    }
+    .profile-name:focus { border-bottom: 2px solid var(--gold); }
+    .profile-email { font-size: 0.82rem; color: var(--gray-400); margin-top: 2px; }
+    .profile-role-badge {
+      display: inline-block; font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      padding: 2px 8px; border-radius: 4px; margin-top: 4px;
     }
     .role-admin { background: rgba(239,68,68,0.1); color: #ef4444; }
     .role-dono { background: rgba(139,92,246,0.1); color: #7c3aed; }
     .role-assessor, .role-assessoria { background: rgba(59,130,246,0.1); color: #2563eb; }
     .role-extensao { background: rgba(34,197,94,0.1); color: #16a34a; }
     .role-visualizador { background: rgba(156,163,175,0.1); color: #6b7280; }
-    .profile-mini-arrow {
-      color: var(--gray-300);
-      font-size: 1.2rem;
-    }
 
-    /* Select estilizado */
-    .config-select {
-      padding: 6px 28px 6px 10px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: 8px;
-      font-size: 0.82rem;
-      color: var(--gray-700);
-      background: var(--white);
-      outline: none;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 8px center;
-      cursor: pointer;
+    .profile-actions {
+      display: flex; gap: 8px; padding: 0 20px 16px; flex-wrap: wrap;
     }
-    .config-select:focus { border-color: var(--gold); }
+    .profile-actions .btn { font-size: 0.8rem; padding: 6px 14px; }
 
-    .config-card.full-width { grid-column: 1 / -1; }
+    .profile-msg {
+      display: none; padding: 8px 14px; margin: 0 20px 12px; border-radius: 8px;
+      font-size: 0.82rem; text-align: center;
+    }
+    .profile-msg.show { display: block; }
+    .profile-msg.success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: #16a34a; }
+    .profile-msg.error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #dc2626; }
+
+    /* Password inline */
+    .pwd-row {
+      display: flex; gap: 8px; padding: 0 20px 16px; align-items: flex-end; flex-wrap: wrap;
+    }
+    .pwd-row input {
+      flex: 1; min-width: 140px; padding: 7px 12px; border: 1.5px solid var(--gray-200);
+      border-radius: 8px; font-size: 0.84rem; font-family: inherit; outline: none;
+    }
+    .pwd-row input:focus { border-color: var(--gold); }
+
+    /* Assessor table */
+    .assessor-section { max-width: 960px; margin-top: 20px; }
 
     .config-success {
-      display: none;
-      padding: 10px 14px;
-      border-radius: 8px;
-      background: rgba(34,197,94,0.1);
-      border: 1px solid rgba(34,197,94,0.2);
-      color: #16a34a;
-      font-size: 0.85rem;
-      margin-top: 12px;
-      text-align: center;
+      display: none; padding: 8px 14px; border-radius: 8px;
+      background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);
+      color: #16a34a; font-size: 0.82rem; margin-top: 12px; text-align: center;
     }
     .config-success.show { display: block; }
 
-    /* Dark mode overrides */
+    /* Dark */
     [data-theme="dark"] .config-card { background: #1c2128; border: 1px solid #30363d; }
     [data-theme="dark"] .config-card-header { border-bottom-color: #30363d; color: var(--gold); }
     [data-theme="dark"] .config-item { border-bottom-color: #21262d; }
     [data-theme="dark"] .config-item-label { color: #e6edf3; }
     [data-theme="dark"] .config-item-desc { color: #8b949e; }
     [data-theme="dark"] .config-select { background: #161b22; border-color: #30363d; color: #e6edf3; }
-    [data-theme="dark"] .profile-mini:hover { background: #21262d; }
-    [data-theme="dark"] .profile-mini-name { color: #e6edf3; }
+    [data-theme="dark"] .profile-name { color: #e6edf3; }
     [data-theme="dark"] .toggle-slider { background: #30363d; }
+    [data-theme="dark"] .pwd-row input { background: #161b22; border-color: #30363d; color: #e6edf3; }
   </style>
 </head>
 <body>
@@ -261,80 +217,79 @@
         </div>
       </div>
 
-      <!-- Profile Card -->
-      <div class="config-card full-width" style="margin-bottom:24px;">
-        <a href="perfil.html" class="profile-mini">
-          <div class="profile-mini-avatar" id="config-avatar">A</div>
-          <div class="profile-mini-info">
-            <div class="profile-mini-name" id="config-name">Carregando...</div>
-            <div class="profile-mini-email" id="config-email"></div>
-            <span class="profile-mini-role" id="config-role-badge"></span>
+      <!-- Perfil -->
+      <div class="config-card full-width" style="max-width:960px;margin-bottom:20px;">
+        <div class="profile-header">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar-lg" id="profile-avatar" title="Alterar foto" onclick="document.getElementById('avatar-input').click()">A</div>
+            <div class="profile-avatar-cam" onclick="document.getElementById('avatar-input').click()">&#128247;</div>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none;">
           </div>
-          <span class="profile-mini-arrow">&#8250;</span>
-        </a>
+          <div class="profile-info">
+            <div class="profile-name-row">
+              <input type="text" class="profile-name" id="profile-nome" placeholder="Seu nome">
+            </div>
+            <div class="profile-email" id="profile-email"></div>
+            <span class="profile-role-badge" id="config-role-badge"></span>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-gold" id="btn-save-profile">Salvar Nome</button>
+          <button class="btn btn-outline" id="btn-toggle-pwd" style="font-size:0.8rem;">Alterar Senha</button>
+        </div>
+        <div class="pwd-row" id="pwd-row" style="display:none;">
+          <input type="password" id="pwd-nova" placeholder="Nova senha (min. 6)" minlength="6">
+          <input type="password" id="pwd-confirma" placeholder="Confirmar senha">
+          <button class="btn btn-gold" id="btn-save-pwd" style="font-size:0.8rem;white-space:nowrap;">Alterar</button>
+        </div>
+        <div class="profile-msg" id="profile-msg"></div>
       </div>
 
+      <!-- Settings Grid -->
       <div class="config-grid">
-
         <!-- Apar&ecirc;ncia -->
         <div class="config-card">
-          <div class="config-card-header">
-            <span class="config-icon">&#127912;</span> Apar&ecirc;ncia
-          </div>
+          <div class="config-card-header"><span class="config-icon">&#127912;</span> Apar&ecirc;ncia</div>
           <div class="config-card-body">
             <div class="config-item">
               <div class="config-item-info">
                 <div class="config-item-label">Modo Escuro</div>
-                <div class="config-item-desc">Ativa o tema dark em todo o painel</div>
+                <div class="config-item-desc">Tema dark em todo o painel</div>
               </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="config-dark-mode">
-                <span class="toggle-slider"></span>
-              </label>
+              <label class="toggle-switch"><input type="checkbox" id="config-dark-mode"><span class="toggle-slider"></span></label>
             </div>
             <div class="config-item">
               <div class="config-item-info">
                 <div class="config-item-label">Sidebar Compacta</div>
-                <div class="config-item-desc">Reduz o tamanho da sidebar lateral</div>
+                <div class="config-item-desc">Apenas &iacute;cones na sidebar</div>
               </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="config-sidebar-compact">
-                <span class="toggle-slider"></span>
-              </label>
+              <label class="toggle-switch"><input type="checkbox" id="config-sidebar-compact"><span class="toggle-slider"></span></label>
             </div>
             <div class="config-item">
               <div class="config-item-info">
                 <div class="config-item-label">Anima&ccedil;&otilde;es</div>
-                <div class="config-item-desc">Efeitos de transi&ccedil;&atilde;o e entrada</div>
+                <div class="config-item-desc">Transi&ccedil;&otilde;es e efeitos visuais</div>
               </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="config-animations" checked>
-                <span class="toggle-slider"></span>
-              </label>
+              <label class="toggle-switch"><input type="checkbox" id="config-animations" checked><span class="toggle-slider"></span></label>
             </div>
           </div>
         </div>
 
         <!-- Prefer&ecirc;ncias -->
         <div class="config-card">
-          <div class="config-card-header">
-            <span class="config-icon">&#9881;&#65039;</span> Prefer&ecirc;ncias
-          </div>
+          <div class="config-card-header"><span class="config-icon">&#9881;&#65039;</span> Prefer&ecirc;ncias</div>
           <div class="config-card-body">
             <div class="config-item">
               <div class="config-item-info">
-                <div class="config-item-label">Finalizar ao preencher</div>
-                <div class="config-item-desc">Finaliza atividades automaticamente ap&oacute;s preencher</div>
+                <div class="config-item-label">Auto-finalizar</div>
+                <div class="config-item-desc">Finalizar atividades ap&oacute;s preencher</div>
               </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="config-auto-finalizar" checked>
-                <span class="toggle-slider"></span>
-              </label>
+              <label class="toggle-switch"><input type="checkbox" id="config-auto-finalizar" checked><span class="toggle-slider"></span></label>
             </div>
             <div class="config-item">
               <div class="config-item-info">
-                <div class="config-item-label">Prazo padr&atilde;o do rastreio</div>
-                <div class="config-item-desc">Filtro de dias padr&atilde;o ao abrir o Rastreio</div>
+                <div class="config-item-label">Prazo padr&atilde;o</div>
+                <div class="config-item-desc">Filtro de dias no Rastreio</div>
               </div>
               <select class="config-select" id="config-prazo-default">
                 <option value="7">7 dias</option>
@@ -346,27 +301,8 @@
             </div>
             <div class="config-item">
               <div class="config-item-info">
-                <div class="config-item-label">Notifica&ccedil;&otilde;es sonoras</div>
-                <div class="config-item-desc">Tocar som em novas notifica&ccedil;&otilde;es</div>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="config-notif-sound">
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Rastreio (assessor+) -->
-        <div class="config-card" id="card-rastreio-config">
-          <div class="config-card-header">
-            <span class="config-icon">&#128269;</span> Rastreio
-          </div>
-          <div class="config-card-body">
-            <div class="config-item">
-              <div class="config-item-info">
                 <div class="config-item-label">Grupo padr&atilde;o</div>
-                <div class="config-item-desc">Grupo de alunos exibido ao abrir o Rastreio</div>
+                <div class="config-item-desc">Grupo de alunos ao abrir Rastreio</div>
               </div>
               <select class="config-select" id="config-grupo-default">
                 <option value="">Todos</option>
@@ -375,55 +311,123 @@
                 <option value="extensao">Extens&atilde;o</option>
               </select>
             </div>
-            <div class="config-item">
-              <div class="config-item-info">
-                <div class="config-item-label">Mostrar senha do aluno</div>
-                <div class="config-item-desc">Exibir senha do Studeo nos cards de rastreio</div>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="config-show-senha" checked>
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
           </div>
         </div>
 
         <!-- Admin (admin/dono) -->
         <div class="config-card" id="card-admin-config" style="display:none;">
-          <div class="config-card-header">
-            <span class="config-icon">&#128272;</span> Administra&ccedil;&atilde;o
-          </div>
+          <div class="config-card-header"><span class="config-icon">&#128272;</span> Administra&ccedil;&atilde;o</div>
           <div class="config-card-body">
             <div class="config-item">
               <div class="config-item-info">
                 <div class="config-item-label">Logs de auditoria</div>
-                <div class="config-item-desc">Registrar a&ccedil;&otilde;es no log de auditoria</div>
+                <div class="config-item-desc">Registrar a&ccedil;&otilde;es no log</div>
               </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="config-audit-log" checked>
-                <span class="toggle-slider"></span>
-              </label>
+              <label class="toggle-switch"><input type="checkbox" id="config-audit-log" checked><span class="toggle-slider"></span></label>
             </div>
             <div class="config-item">
               <div class="config-item-info">
-                <div class="config-item-label">Confirma&ccedil;&atilde;o em massa</div>
-                <div class="config-item-desc">Pedir confirma&ccedil;&atilde;o antes de preencher em massa</div>
+                <div class="config-item-label">Confirmar em massa</div>
+                <div class="config-item-desc">Pedir confirma&ccedil;&atilde;o antes de preencher</div>
               </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="config-confirm-massa" checked>
-                <span class="toggle-slider"></span>
-              </label>
+              <label class="toggle-switch"><input type="checkbox" id="config-confirm-massa" checked><span class="toggle-slider"></span></label>
             </div>
-            <div class="config-item" style="border-bottom:none;">
-              <a href="perfil.html" class="btn btn-outline" style="font-size:0.82rem;width:100%;text-align:center;">Gerenciar Assessores &amp; Backup</a>
+            <div class="config-item">
+              <div class="config-item-info">
+                <div class="config-item-label">Mostrar senhas</div>
+                <div class="config-item-desc">Exibir senha Studeo nos cards</div>
+              </div>
+              <label class="toggle-switch"><input type="checkbox" id="config-show-senha" checked><span class="toggle-slider"></span></label>
             </div>
           </div>
         </div>
 
+        <!-- Seguran&ccedil;a -->
+        <div class="config-card">
+          <div class="config-card-header"><span class="config-icon">&#128274;</span> Seguran&ccedil;a</div>
+          <div class="config-card-body">
+            <div class="config-item">
+              <div class="config-item-info">
+                <div class="config-item-label">2FA</div>
+                <div class="config-item-desc" id="2fa-status-text">Carregando...</div>
+              </div>
+              <button class="btn btn-outline" id="btn-2fa-action" style="font-size:0.78rem;padding:5px 12px;" disabled>...</button>
+            </div>
+            <div class="config-item" id="card-backup" style="display:none;">
+              <div class="config-item-info">
+                <div class="config-item-label">Backup</div>
+                <div class="config-item-desc">Exportar dados do sistema</div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-outline" id="btn-backup-json" style="font-size:0.75rem;padding:4px 10px;">JSON</button>
+                <button class="btn btn-outline" id="btn-backup-excel" style="font-size:0.75rem;padding:4px 10px;">Excel</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="config-success" id="config-saved" style="max-width:900px;margin-top:16px;">Configura&ccedil;&otilde;es salvas!</div>
+      <!-- Gerenciar Assessores (admin/dono) -->
+      <div class="assessor-section" id="assessor-section" style="display:none;">
+        <div class="config-card full-width">
+          <div class="config-card-header" style="justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="config-icon">&#128101;</span> Equipe
+            </div>
+            <button class="btn btn-gold" id="btn-novo-assessor" style="font-size:0.8rem;padding:6px 14px;">+ Novo</button>
+          </div>
+          <div class="config-card-body" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nome</th><th>ID</th><th>Role</th><th>Criado</th><th>A&ccedil;&otilde;es</th></tr></thead>
+                <tbody id="assessores-list"><tr><td colspan="5" class="empty-state">Carregando...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-success" id="config-saved" style="max-width:960px;margin-top:12px;">Configura&ccedil;&otilde;es salvas!</div>
     </main>
+  </div>
+
+  <!-- Modal: Novo Assessor -->
+  <div class="modal-overlay" id="modal-novo-assessor">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Novo Assessor</h3>
+        <button class="modal-close" onclick="document.getElementById('modal-novo-assessor').classList.remove('open')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-novo-assessor">
+          <div class="form-group">
+            <label for="new-assessor-nome">Nome</label>
+            <input type="text" id="new-assessor-nome" required placeholder="Nome completo">
+          </div>
+          <div class="form-group">
+            <label for="new-assessor-email">E-mail</label>
+            <input type="email" id="new-assessor-email" required placeholder="email@exemplo.com">
+          </div>
+          <div class="form-group">
+            <label for="new-assessor-senha">Senha Tempor&aacute;ria</label>
+            <input type="text" id="new-assessor-senha" required minlength="6" placeholder="M&iacute;nimo 6 caracteres">
+          </div>
+          <div class="form-group">
+            <label for="new-assessor-role">Permiss&atilde;o</label>
+            <select id="new-assessor-role">
+              <option value="assessoria">Assessoria</option>
+              <option value="extensao">Extens&atilde;o</option>
+              <option value="dono">Dono</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="document.getElementById('modal-novo-assessor').classList.remove('open')">Cancelar</button>
+        <button class="btn-save" id="btn-salvar-assessor">Criar Assessor</button>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -439,11 +443,11 @@
     });
 
     var CONFIG_KEY = 'painel-config';
+    var _currentUser = null;
+    var _currentRole = null;
 
     function loadConfig() {
-      try {
-        return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {};
-      } catch (e) { return {}; }
+      try { return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {}; } catch (e) { return {}; }
     }
 
     function saveConfig(cfg) {
@@ -453,46 +457,40 @@
       setTimeout(function () { el.classList.remove('show'); }, 2000);
     }
 
+    function showProfileMsg(msg, type) {
+      var el = document.getElementById('profile-msg');
+      el.textContent = msg;
+      el.className = 'profile-msg show ' + type;
+      setTimeout(function () { el.classList.remove('show'); }, 3000);
+    }
+
     function applyConfig(cfg) {
-      // Dark mode
       var isDark = cfg.darkMode || false;
       document.getElementById('config-dark-mode').checked = isDark;
       document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 
-      // Sidebar compact
       document.getElementById('config-sidebar-compact').checked = cfg.sidebarCompact || false;
-      if (cfg.sidebarCompact) {
-        document.getElementById('sidebar').classList.add('compact');
-      } else {
-        document.getElementById('sidebar').classList.remove('compact');
-      }
+      if (cfg.sidebarCompact) document.getElementById('sidebar').classList.add('compact');
+      else document.getElementById('sidebar').classList.remove('compact');
 
-      // Animations
       document.getElementById('config-animations').checked = cfg.animations !== false;
-      if (cfg.animations === false) {
-        document.documentElement.style.setProperty('--transition', '0s');
-      }
+      if (cfg.animations === false) document.documentElement.style.setProperty('--transition', '0s');
 
-      // Preferences
       document.getElementById('config-auto-finalizar').checked = cfg.autoFinalizar !== false;
       document.getElementById('config-prazo-default').value = cfg.prazoDefault || '60';
-      document.getElementById('config-notif-sound').checked = cfg.notifSound || false;
-
-      // Rastreio
       document.getElementById('config-grupo-default').value = cfg.grupoDefault || '';
-      document.getElementById('config-show-senha').checked = cfg.showSenha !== false;
 
-      // Admin
       var auditEl = document.getElementById('config-audit-log');
       if (auditEl) auditEl.checked = cfg.auditLog !== false;
       var confirmEl = document.getElementById('config-confirm-massa');
       if (confirmEl) confirmEl.checked = cfg.confirmMassa !== false;
+      var senhaEl = document.getElementById('config-show-senha');
+      if (senhaEl) senhaEl.checked = cfg.showSenha !== false;
     }
 
     function setupConfigListeners() {
       var cfg = loadConfig();
 
-      // Dark mode toggle
       document.getElementById('config-dark-mode').addEventListener('change', function () {
         cfg.darkMode = this.checked;
         document.documentElement.setAttribute('data-theme', this.checked ? 'dark' : 'light');
@@ -500,125 +498,297 @@
         saveConfig(cfg);
       });
 
-      // Sidebar compact
       document.getElementById('config-sidebar-compact').addEventListener('change', function () {
         cfg.sidebarCompact = this.checked;
-        if (this.checked) {
-          document.getElementById('sidebar').classList.add('compact');
-        } else {
-          document.getElementById('sidebar').classList.remove('compact');
-        }
+        if (this.checked) document.getElementById('sidebar').classList.add('compact');
+        else document.getElementById('sidebar').classList.remove('compact');
         saveConfig(cfg);
       });
 
-      // Animations
       document.getElementById('config-animations').addEventListener('change', function () {
         cfg.animations = this.checked;
         document.documentElement.style.setProperty('--transition', this.checked ? '0.2s ease' : '0s');
         saveConfig(cfg);
       });
 
-      // Preferences
       document.getElementById('config-auto-finalizar').addEventListener('change', function () {
-        cfg.autoFinalizar = this.checked;
-        saveConfig(cfg);
+        cfg.autoFinalizar = this.checked; saveConfig(cfg);
       });
-
       document.getElementById('config-prazo-default').addEventListener('change', function () {
-        cfg.prazoDefault = this.value;
-        saveConfig(cfg);
+        cfg.prazoDefault = this.value; saveConfig(cfg);
       });
-
-      document.getElementById('config-notif-sound').addEventListener('change', function () {
-        cfg.notifSound = this.checked;
-        saveConfig(cfg);
-      });
-
-      // Rastreio
       document.getElementById('config-grupo-default').addEventListener('change', function () {
-        cfg.grupoDefault = this.value;
-        saveConfig(cfg);
+        cfg.grupoDefault = this.value; saveConfig(cfg);
       });
 
-      document.getElementById('config-show-senha').addEventListener('change', function () {
-        cfg.showSenha = this.checked;
-        saveConfig(cfg);
-      });
-
-      // Admin
-      var auditEl = document.getElementById('config-audit-log');
-      if (auditEl) auditEl.addEventListener('change', function () {
-        cfg.auditLog = this.checked;
-        saveConfig(cfg);
-      });
-
-      var confirmEl = document.getElementById('config-confirm-massa');
-      if (confirmEl) confirmEl.addEventListener('change', function () {
-        cfg.confirmMassa = this.checked;
-        saveConfig(cfg);
+      ['config-audit-log', 'config-confirm-massa', 'config-show-senha'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('change', function () {
+          cfg[id.replace('config-', '').replace(/-([a-z])/g, function (m, c) { return c.toUpperCase(); })] = this.checked;
+          saveConfig(cfg);
+        });
       });
     }
 
+    // ─── Profile ───
+    function setAvatarImage(url) {
+      var profileAv = document.getElementById('profile-avatar');
+      var sidebarAv = document.getElementById('user-avatar');
+      var imgHtml = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+      profileAv.innerHTML = imgHtml;
+      sidebarAv.innerHTML = imgHtml;
+    }
+
+    // ─── Assessores ───
+    async function loadAssessores() {
+      var tbody = document.getElementById('assessores-list');
+      try {
+        var { data, error } = await sb.from('assessores').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        if (!data || !data.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Nenhum assessor</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.map(function (a) {
+          var dt = a.created_at ? new Date(a.created_at).toLocaleDateString('pt-BR') : '\u2014';
+          return '<tr data-id="' + a.id + '">' +
+            '<td class="aluno-name">' + (a.nome || '\u2014') + '</td>' +
+            '<td class="text-muted" style="font-size:0.78rem;">' + a.id.substring(0, 8) + '...</td>' +
+            '<td><select class="config-select" onchange="changeRole(\'' + a.id + '\', this.value)" style="font-size:0.78rem;">' +
+              '<option value="admin"' + (a.role === 'admin' ? ' selected' : '') + '>Admin</option>' +
+              '<option value="dono"' + (a.role === 'dono' ? ' selected' : '') + '>Dono</option>' +
+              '<option value="extensao"' + (a.role === 'extensao' ? ' selected' : '') + '>Extens\u00e3o</option>' +
+              '<option value="assessoria"' + (a.role === 'assessoria' ? ' selected' : '') + '>Assessoria</option>' +
+              '<option value="assessor"' + (a.role === 'assessor' ? ' selected' : '') + '>Assessor</option>' +
+              '<option value="visualizador"' + (a.role === 'visualizador' ? ' selected' : '') + '>Visualizador</option>' +
+            '</select></td>' +
+            '<td class="text-muted" style="font-size:0.78rem;">' + dt + '</td>' +
+            '<td class="actions"><button class="btn-icon btn-danger" onclick="deleteAssessor(\'' + a.id + '\')" title="Remover">&#128465;&#65039;</button></td>' +
+          '</tr>';
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar</td></tr>';
+      }
+    }
+
+    async function changeRole(id, newRole) {
+      try {
+        var { error } = await sb.from('assessores').update({ role: newRole }).eq('id', id);
+        if (error) throw error;
+        showToast('Role atualizado!', 'success');
+      } catch (e) {
+        showToast('Erro: ' + e.message, 'error');
+        loadAssessores();
+      }
+    }
+
+    async function deleteAssessor(id) {
+      if (!confirm('Remover este assessor?')) return;
+      try {
+        var { error } = await sb.from('assessores').delete().eq('id', id);
+        if (error) throw error;
+        showToast('Assessor removido!', 'success');
+        loadAssessores();
+      } catch (e) { showToast('Erro: ' + e.message, 'error'); }
+    }
+
+    async function createAssessor() {
+      var nome = document.getElementById('new-assessor-nome').value.trim();
+      var email = document.getElementById('new-assessor-email').value.trim();
+      var senha = document.getElementById('new-assessor-senha').value;
+      var newRole = document.getElementById('new-assessor-role').value;
+      if (!nome || !email || !senha) { showToast('Preencha todos os campos', 'error'); return; }
+      if (senha.length < 6) { showToast('Senha min. 6 caracteres', 'error'); return; }
+
+      var btn = document.getElementById('btn-salvar-assessor');
+      btn.disabled = true; btn.textContent = 'Criando...';
+      try {
+        var response = await sb.functions.invoke('create-assessor', {
+          body: { nome: nome, email: email, password: senha, role: newRole }
+        });
+        if (response.error) {
+          var errMsg = response.error.message || 'Erro';
+          if (response.error.context && response.error.context.body) {
+            try { errMsg = JSON.parse(response.error.context.body).error || errMsg; } catch(e2) {}
+          }
+          throw new Error(errMsg);
+        }
+        var result = response.data;
+        if (typeof result === 'string') { try { result = JSON.parse(result); } catch(e2) {} }
+        if (result && result.error) throw new Error(result.error);
+
+        showToast('Assessor "' + nome + '" criado!', 'success');
+        document.getElementById('modal-novo-assessor').classList.remove('open');
+        document.getElementById('form-novo-assessor').reset();
+        loadAssessores();
+      } catch (e) {
+        showToast('Erro: ' + (e.message || 'Falha'), 'error');
+      } finally { btn.disabled = false; btn.textContent = 'Criar Assessor'; }
+    }
+
+    // ─── Init ───
     document.addEventListener('DOMContentLoaded', async function () {
       var result = await requireRole(['admin', 'dono', 'extensao', 'assessoria', 'assessor', 'visualizador']);
       if (!result) return;
-      var user = result.user;
-      var role = result.role;
+      _currentUser = result.user;
+      _currentRole = result.role;
+      var user = _currentUser;
+      var role = _currentRole;
       setupSidebarPermissions(role);
 
       var name = getUserName(user);
       document.getElementById('user-name').textContent = name;
       document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
-      document.getElementById('config-avatar').textContent = name.charAt(0).toUpperCase();
-      document.getElementById('config-name').textContent = name;
-      document.getElementById('config-email').textContent = user.email || '';
+      document.getElementById('profile-avatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('profile-nome').value = user.user_metadata?.nome || name;
+      document.getElementById('profile-email').textContent = user.email || '';
 
-      // Role badge
-      var roleLabels = {
-        admin: 'Administrador',
-        dono: 'Dono',
-        assessor: 'Assessor',
-        assessoria: 'Assessoria',
-        extensao: 'Extens\u00e3o',
-        visualizador: 'Visualizador'
-      };
+      var roleLabels = { admin: 'Administrador', dono: 'Dono', assessor: 'Assessor', assessoria: 'Assessoria', extensao: 'Extens\u00e3o', visualizador: 'Visualizador' };
       var roleBadge = document.getElementById('config-role-badge');
       roleBadge.textContent = roleLabels[role] || role;
-      roleBadge.className = 'profile-mini-role role-' + role;
-
+      roleBadge.className = 'profile-role-badge role-' + role;
       var roleLabel = document.getElementById('user-role-label');
       if (roleLabel) roleLabel.textContent = roleLabels[role] || role;
 
       document.getElementById('btn-logout').addEventListener('click', handleLogout);
 
-      // Load avatar
+      // Avatar
       try {
         var { data } = await sb.from('assessores').select('avatar_url').eq('id', user.id).single();
-        if (data && data.avatar_url) {
-          document.getElementById('config-avatar').innerHTML = '<img src="' + data.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-          document.getElementById('user-avatar').innerHTML = '<img src="' + data.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-        }
+        if (data && data.avatar_url) setAvatarImage(data.avatar_url);
       } catch (e) {}
 
-      // Show admin config for admin/dono
+      document.getElementById('avatar-input').addEventListener('change', async function (e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { showToast('Max 2MB', 'error'); return; }
+        var ext = file.name.split('.').pop();
+        var path = 'avatars/' + user.id + '.' + ext;
+        try {
+          await sb.storage.from('chat-files').upload(path, file, { cacheControl: '3600', upsert: true });
+          var { data: urlData } = sb.storage.from('chat-files').getPublicUrl(path);
+          var avatarUrl = urlData.publicUrl + '?t=' + Date.now();
+          await sb.from('assessores').update({ avatar_url: avatarUrl }).eq('id', user.id);
+          setAvatarImage(avatarUrl);
+          showProfileMsg('Foto atualizada!', 'success');
+        } catch (err) { showProfileMsg('Erro: ' + (err.message || err), 'error'); }
+      });
+
+      // Save name
+      document.getElementById('btn-save-profile').addEventListener('click', async function () {
+        var nome = document.getElementById('profile-nome').value.trim();
+        if (!nome) return;
+        await sb.auth.updateUser({ data: { nome: nome } });
+        try { await sb.from('assessores').update({ nome: nome }).eq('id', user.id); } catch(e) {}
+        document.getElementById('user-name').textContent = nome;
+        document.getElementById('user-avatar').textContent = nome.charAt(0).toUpperCase();
+        document.getElementById('profile-avatar').textContent = nome.charAt(0).toUpperCase();
+        showProfileMsg('Nome salvo!', 'success');
+      });
+
+      // Password toggle & save
+      document.getElementById('btn-toggle-pwd').addEventListener('click', function () {
+        var row = document.getElementById('pwd-row');
+        row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+      });
+      document.getElementById('btn-save-pwd').addEventListener('click', async function () {
+        var nova = document.getElementById('pwd-nova').value;
+        var confirma = document.getElementById('pwd-confirma').value;
+        if (nova !== confirma) { showProfileMsg('Senhas n\u00e3o coincidem', 'error'); return; }
+        if (nova.length < 6) { showProfileMsg('Min. 6 caracteres', 'error'); return; }
+        var { error } = await sb.auth.updateUser({ password: nova });
+        if (error) { showProfileMsg('Erro: ' + error.message, 'error'); return; }
+        document.getElementById('pwd-nova').value = '';
+        document.getElementById('pwd-confirma').value = '';
+        document.getElementById('pwd-row').style.display = 'none';
+        showProfileMsg('Senha alterada!', 'success');
+      });
+
+      // 2FA
+      try {
+        var { data: factors } = await sb.auth.mfa.listFactors();
+        var totpFactor = (factors.totp || []).find(function(f) { return f.status === 'verified'; });
+        var btn2fa = document.getElementById('btn-2fa-action');
+        btn2fa.disabled = false;
+        if (totpFactor) {
+          document.getElementById('2fa-status-text').textContent = 'Ativo';
+          document.getElementById('2fa-status-text').style.color = '#16a34a';
+          btn2fa.textContent = 'Desativar';
+          btn2fa.onclick = async function () {
+            if (!confirm('Desativar 2FA?')) return;
+            try {
+              await sb.auth.mfa.unenroll({ factorId: totpFactor.id });
+              showToast('2FA desativado', 'success');
+              location.reload();
+            } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+          };
+        } else {
+          document.getElementById('2fa-status-text').textContent = 'Desativado';
+          btn2fa.textContent = 'Ativar';
+          btn2fa.onclick = function () { window.location.href = 'perfil.html'; };
+        }
+      } catch(e) {
+        document.getElementById('2fa-status-text').textContent = 'Indispon\u00edvel';
+      }
+
+      // Admin sections
       if (role === 'admin' || role === 'dono') {
         document.getElementById('card-admin-config').style.display = '';
+        document.getElementById('assessor-section').style.display = '';
+        document.getElementById('card-backup').style.display = '';
+        loadAssessores();
+
+        document.getElementById('btn-novo-assessor').addEventListener('click', function () {
+          document.getElementById('modal-novo-assessor').classList.add('open');
+        });
+        document.getElementById('btn-salvar-assessor').addEventListener('click', createAssessor);
+
+        document.getElementById('btn-backup-json').addEventListener('click', async function () {
+          var btn = this; btn.disabled = true; btn.textContent = '...';
+          try {
+            var tables = ['alunos', 'atividades', 'pagamentos', 'modulos', 'disciplinas', 'pedidos_extensao', 'eventos_agenda', 'assessores'];
+            var backup = { exportDate: new Date().toISOString(), tables: {} };
+            var results = await Promise.all(tables.map(function(t) { return sb.from(t).select('*'); }));
+            tables.forEach(function(t, i) { backup.tables[t] = results[i].data || []; });
+            var blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            var link = document.createElement('a'); link.href = URL.createObjectURL(blob);
+            link.download = 'backup-' + new Date().toISOString().slice(0,10) + '.json'; link.click();
+            showToast('JSON exportado!', 'success');
+          } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+          finally { btn.disabled = false; btn.textContent = 'JSON'; }
+        });
+
+        document.getElementById('btn-backup-excel').addEventListener('click', async function () {
+          var btn = this; btn.disabled = true; btn.textContent = '...';
+          try {
+            if (typeof loadXLSX !== 'function') { showToast('Excel n\u00e3o dispon\u00edvel', 'error'); return; }
+            loadXLSX(async function() {
+              var tables = ['alunos', 'atividades', 'pagamentos', 'modulos', 'disciplinas', 'pedidos_extensao', 'eventos_agenda', 'assessores'];
+              var wb = XLSX.utils.book_new();
+              var results = await Promise.all(tables.map(function(t) { return sb.from(t).select('*'); }));
+              tables.forEach(function(t, i) {
+                var d = results[i].data || [];
+                if (d.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(d), t);
+              });
+              XLSX.writeFile(wb, 'backup-' + new Date().toISOString().slice(0,10) + '.xlsx');
+              showToast('Excel exportado!', 'success');
+              btn.disabled = false; btn.textContent = 'Excel';
+            });
+          } catch(e) { showToast('Erro: ' + e.message, 'error'); btn.disabled = false; btn.textContent = 'Excel'; }
+        });
       }
 
-      // Hide rastreio config for visualizador/extensao
+      // Visualizador: disable editing
       if (role === 'visualizador') {
-        document.getElementById('card-rastreio-config').style.display = 'none';
+        document.getElementById('profile-nome').disabled = true;
+        document.getElementById('btn-save-profile').style.display = 'none';
+        document.getElementById('btn-toggle-pwd').style.display = 'none';
       }
 
-      // Load & apply saved config
+      // Config
       var cfg = loadConfig();
-
-      // Sync dark mode from existing localStorage
       var savedTheme = localStorage.getItem('painel-theme');
-      if (savedTheme) {
-        cfg.darkMode = savedTheme === 'dark';
-      }
-
+      if (savedTheme) cfg.darkMode = savedTheme === 'dark';
       applyConfig(cfg);
       setupConfigListeners();
     });
