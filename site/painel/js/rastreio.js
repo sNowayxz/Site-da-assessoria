@@ -565,22 +565,21 @@ function abrirModalPreencher(ra, atividades) {
   document.getElementById('modal-preencher-info').textContent = atividades.length + ' atividade(s) pendente(s) do rastreio';
   document.getElementById('modal-preencher-status').textContent = '';
 
-  var html = '<div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;">'
-    + '<input type="checkbox" id="check-all-modal" onchange="toggleAllModal(this.checked)" checked>'
-    + '<label for="check-all-modal" style="font-size:0.85rem;font-weight:600;cursor:pointer;">Selecionar todas</label>'
-    + '</div>';
+  var html = '';
 
   atividades.forEach(function (a, i) {
     var prazo = a.data_final ? formatDate(a.data_final) : '';
     var tipo = a.tipo_atividade || 'AV';
-    html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:6px;">'
+    html += '<div class="preencher-item">'
       + '<input type="checkbox" class="check-modal-item" data-idx="' + i + '" checked>'
-      + '<div style="flex:1;min-width:0;">'
-      + '<div style="font-size:0.9rem;font-weight:600;color:var(--gray-800);">' + escapeHtml(a.atividade) + '</div>'
-      + '<div style="font-size:0.78rem;color:var(--gray-500);">'
-      + '<span class="badge badge-' + (tipo === 'MAPA' ? 'mapa' : 'av') + '" style="font-size:0.7rem;margin-right:4px;">' + tipo + '</span>'
-      + escapeHtml(a.disciplina) + ' \u2022 ' + escapeHtml(a.cd_shortname)
-      + (prazo ? ' \u2022 Prazo: ' + prazo : '')
+      + '<div class="preencher-item-info">'
+      + '<div class="preencher-item-title">' + escapeHtml(a.atividade) + '</div>'
+      + '<div class="preencher-item-meta">'
+      + '<span class="badge badge-' + (tipo === 'MAPA' ? 'mapa' : 'av') + '">' + tipo + '</span>'
+      + '<span>' + escapeHtml(a.disciplina) + '</span>'
+      + '<span>\u2022</span>'
+      + '<span>' + escapeHtml(a.cd_shortname) + '</span>'
+      + (prazo ? '<span>\u2022 Prazo: ' + prazo + '</span>' : '')
       + '</div>'
       + '</div>'
       + '</div>';
@@ -588,9 +587,13 @@ function abrirModalPreencher(ra, atividades) {
 
   document.getElementById('modal-preencher-list').innerHTML = html;
 
+  // Sync check-all-modal-top
+  var checkAllTop = document.getElementById('check-all-modal-top');
+  if (checkAllTop) checkAllTop.checked = true;
+
   var btnConfirmar = document.getElementById('btn-confirmar-preencher');
   btnConfirmar.disabled = false;
-  btnConfirmar.textContent = 'Preencher Selecionadas';
+  btnConfirmar.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Preencher Selecionadas';
   btnConfirmar.onclick = executarPreenchimento;
 
   openModal('modal-preencher');
@@ -773,10 +776,7 @@ async function preencherEmMassa() {
   document.getElementById('modal-preencher-info').textContent = atividades.length + ' atividade(s) de ' + Object.keys(uniqueRAs).length + ' aluno(s)';
   document.getElementById('modal-preencher-status').textContent = '';
 
-  var html = '<div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;">'
-    + '<input type="checkbox" id="check-all-modal" onchange="toggleAllModal(this.checked)" checked>'
-    + '<label for="check-all-modal" style="font-size:0.85rem;font-weight:600;cursor:pointer;">Selecionar todas</label>'
-    + '</div>';
+  var html = '';
 
   atividades.forEach(function (a, i) {
     var prazo = a.data_final ? formatDate(a.data_final) : '';
@@ -790,25 +790,31 @@ async function preencherEmMassa() {
     var alunoNames = a.alunos.map(function (al) { return al.nome; });
     var alunoPreview = alunoNames.length <= 3 ? alunoNames.join(', ') : alunoNames.slice(0, 3).join(', ') + ' +' + (alunoNames.length - 3);
 
-    html += '<div class="massa-item' + (urgente ? ' massa-urgente' : '') + '" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid ' + (urgente ? '#fca5a5' : 'var(--gray-200)') + ';border-radius:8px;margin-bottom:6px;transition:all 0.2s;">'
-      + '<input type="checkbox" class="check-modal-item" data-idx="' + i + '" checked style="margin-top:3px;">'
-      + '<div style="flex:1;min-width:0;">'
-      + '<div style="font-size:0.9rem;font-weight:600;color:var(--gray-800);">' + escapeHtml(a.atividade) + '</div>'
-      + '<div style="font-size:0.78rem;color:var(--gray-500);">'
-      + '<span class="badge badge-' + (tipo === 'MAPA' ? 'mapa' : 'av') + '" style="font-size:0.7rem;margin-right:4px;">' + tipo + '</span>'
-      + escapeHtml(a.disciplina) + ' \u2022 ' + escapeHtml(a.cd_shortname)
-      + (prazo ? ' \u2022 Prazo: ' + prazo : '')
+    html += '<div class="preencher-item' + (urgente ? ' urgente' : '') + '">'
+      + '<input type="checkbox" class="check-modal-item" data-idx="' + i + '" checked>'
+      + '<div class="preencher-item-info">'
+      + '<div class="preencher-item-title">' + escapeHtml(a.atividade) + '</div>'
+      + '<div class="preencher-item-meta">'
+      + '<span class="badge badge-' + (tipo === 'MAPA' ? 'mapa' : 'av') + '">' + tipo + '</span>'
+      + '<span>' + escapeHtml(a.disciplina) + '</span>'
+      + '<span>\u2022</span>'
+      + '<span>' + escapeHtml(a.cd_shortname) + '</span>'
+      + (prazo ? '<span>\u2022 Prazo: ' + prazo + '</span>' : '')
       + '</div>'
-      + '<div style="font-size:0.75rem;color:var(--gray-400);margin-top:2px;">\uD83D\uDC65 ' + a.alunos.length + ' aluno(s): ' + escapeHtml(alunoPreview) + '</div>'
+      + '<div class="preencher-item-alunos">\uD83D\uDC65 ' + a.alunos.length + ' aluno(s): ' + escapeHtml(alunoPreview) + '</div>'
       + '</div>'
       + '</div>';
   });
 
   document.getElementById('modal-preencher-list').innerHTML = html;
 
+  // Sync check-all-modal-top
+  var checkAllTop = document.getElementById('check-all-modal-top');
+  if (checkAllTop) checkAllTop.checked = true;
+
   var btnConfirmar = document.getElementById('btn-confirmar-preencher');
   btnConfirmar.disabled = false;
-  btnConfirmar.textContent = 'Preencher Selecionadas';
+  btnConfirmar.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Preencher Selecionadas';
   btnConfirmar.onclick = executarMassaPorAtividade;
 
   openModal('modal-preencher');

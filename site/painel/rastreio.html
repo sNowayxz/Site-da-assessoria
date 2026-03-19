@@ -550,24 +550,44 @@
 
   <!-- MODAL: Preencher Atividades -->
   <div class="modal-overlay" id="modal-preencher">
-    <div class="modal" style="max-width:640px;">
-      <div class="modal-header">
-        <h3 id="modal-preencher-title">Preencher Atividades</h3>
+    <div class="modal preencher-modal">
+      <div class="preencher-modal-header">
+        <div class="preencher-modal-header-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div class="preencher-modal-header-text">
+          <h3 id="modal-preencher-title">Preencher Atividades</h3>
+          <p id="modal-preencher-info" class="preencher-modal-subtitle"></p>
+        </div>
         <button class="modal-close" onclick="closeModal('modal-preencher')">&times;</button>
       </div>
-      <div class="modal-body" style="max-height:60vh;overflow-y:auto;">
-        <div id="modal-preencher-info" style="margin-bottom:12px;font-size:0.9rem;color:var(--gray-500);"></div>
-        <div id="modal-preencher-list"></div>
-        <div style="margin-top:16px;padding:12px;background:var(--gray-50);border-radius:8px;display:flex;align-items:center;gap:8px;">
-          <input type="checkbox" id="check-finalizar" checked>
-          <label for="check-finalizar" style="font-size:0.9rem;cursor:pointer;">Finalizar atividades ap&oacute;s preenchimento</label>
+
+      <div class="preencher-modal-toolbar">
+        <label class="preencher-check-all">
+          <input type="checkbox" id="check-all-modal-top" onchange="toggleAllModal(this.checked)" checked>
+          <span>Selecionar todas</span>
+        </label>
+        <div class="preencher-toolbar-right">
+          <span id="modal-preencher-status" class="preencher-status-text"></span>
         </div>
       </div>
-      <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center;">
-        <span id="modal-preencher-status" style="font-size:0.85rem;color:var(--gray-500);"></span>
-        <div style="display:flex;gap:8px;">
+
+      <div class="preencher-modal-list" id="modal-preencher-list">
+        <!-- items rendered by JS -->
+      </div>
+
+      <div class="preencher-modal-footer">
+        <label class="preencher-finalizar-label">
+          <input type="checkbox" id="check-finalizar" checked>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>Finalizar atividades ap&oacute;s preenchimento</span>
+        </label>
+        <div class="preencher-footer-actions">
           <button type="button" class="btn-cancel" onclick="closeModal('modal-preencher')">Cancelar</button>
-          <button type="button" class="btn-save" id="btn-confirmar-preencher">Preencher Selecionadas</button>
+          <button type="button" class="preencher-btn-go" id="btn-confirmar-preencher">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Preencher Selecionadas
+          </button>
         </div>
       </div>
     </div>
