@@ -518,6 +518,7 @@
               <button class="btn btn-sync" id="btn-sync">🔄 Sync</button>
               <button class="btn btn-sync-all" id="btn-sync-all">⚡ Sync Grupo</button>
               <button class="btn btn-sync-new" id="btn-sync-new" title="Sincronizar apenas alunos que nunca foram sincronizados">🆕 Só Novos</button>
+              <button class="btn" id="btn-sync-mensalistas" style="background:#8b5cf6;color:white;" title="Sincronizar TODOS os 124 mensalistas automaticamente">📚 Todos Mensalistas</button>
             </div>
           </div>
         </div>
@@ -568,6 +569,34 @@
       if (user) {
         var name = getUserName(user);
         document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+      }
+
+      // Botão sync todos mensalistas
+      var btnAll = document.getElementById('btn-sync-mensalistas');
+      if (btnAll) {
+        btnAll.addEventListener('click', async function() {
+          if (!confirm('Sincronizar TODOS os mensalistas? Isso pode levar alguns minutos.')) return;
+          btnAll.disabled = true;
+          btnAll.textContent = '⏳ Sincronizando...';
+          try {
+            var resp = await fetch('https://site-da-assessoria.vercel.app/api/sync-all-mensalistas', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ limit: 200 })
+            });
+            var data = await resp.json();
+            if (data.ok) {
+              showToast('Sincronização completa: ' + data.synced + ' alunos, ' + data.errors + ' erros', data.errors > 0 ? 'warning' : 'success');
+            } else {
+              showToast('Erro: ' + (data.error || 'Falha'), 'error');
+            }
+          } catch(e) {
+            showToast('Erro de conexão: ' + e.message, 'error');
+          } finally {
+            btnAll.disabled = false;
+            btnAll.textContent = '📚 Todos Mensalistas';
+          }
+        });
       }
     });
   </script>
