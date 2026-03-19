@@ -739,7 +739,7 @@ async function executarPreenchimento() {
         var r = await fetch(PREENCHER_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'preencher', idQuestionario: match[j].idQuestionario, finalizar: finalizar }),
+          body: JSON.stringify({ action: 'preencher', raw: match[j].raw, idQuestionario: match[j].idQuestionario, finalizar: finalizar }),
         });
         var d = await r.json();
         if (!d.ok) throw new Error(d.error);

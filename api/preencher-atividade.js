@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
-  const { action, idQuestionario, finalizar, ra } = req.body || {};
+  const { action, idQuestionario, finalizar, ra, raw } = req.body || {};
 
   if (!action) return res.status(400).json({ error: 'Campo "action" obrigatório' });
 
@@ -39,8 +39,10 @@ module.exports = async function handler(req, res) {
     }
 
     if (action === 'preencher') {
-      if (!idQuestionario) return res.status(400).json({ error: 'Campo "idQuestionario" obrigatório' });
-      const resultado = await preencherAtividade(session, idQuestionario, finalizar !== false);
+      // Aceita raw (valor completo do checkbox) ou idQuestionario
+      const id = raw || idQuestionario;
+      if (!id) return res.status(400).json({ error: 'Campo "idQuestionario" ou "raw" obrigatório' });
+      const resultado = await preencherAtividade(session, id, finalizar !== false);
       return res.status(200).json({ ok: true, resultado });
     }
 
