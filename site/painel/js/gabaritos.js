@@ -241,20 +241,26 @@ async function buscarPendentes() {
 }
 
 function renderPendentes(pendentes) {
-  var tbody = document.getElementById('pendentes-table');
+  var container = document.getElementById('pendentes-table');
   if (!pendentes.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Nenhuma atividade pendente</td></tr>';
+    container.innerHTML = '<div class="resp-empty-state">' +
+      '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>' +
+      '<p>Nenhuma atividade pendente</p></div>';
     return;
   }
 
-  tbody.innerHTML = pendentes.map(function (p, i) {
-    return '<tr>' +
-      '<td><input type="checkbox" class="check-pendente" data-idx="' + i + '" onchange="toggleBtnPreencher()"></td>' +
-      '<td><code>' + escapeHtml(p.idQuestionario || '') + '</code></td>' +
-      '<td><small>' + escapeHtml(p.shortname || '') + '</small></td>' +
-      '<td>' + escapeHtml(p.descricao || '—') + '</td>' +
-      '<td><button class="btn-icon" onclick="preencherUma(' + i + ')" title="Preencher">&#9654;&#65039;</button></td>' +
-      '</tr>';
+  container.innerHTML = pendentes.map(function (p, i) {
+    return '<div class="resp-pendente-item">' +
+      '<input type="checkbox" class="check-pendente" data-idx="' + i + '" onchange="toggleBtnPreencher()">' +
+      '<div class="resp-pendente-info">' +
+        '<span class="resp-pendente-id">#' + escapeHtml(p.idQuestionario || '') + '</span>' +
+        '<div class="resp-pendente-desc">' + escapeHtml(p.descricao || '—') + '</div>' +
+        '<div class="resp-pendente-short">' + escapeHtml(p.shortname || '') + '</div>' +
+      '</div>' +
+      '<button class="resp-pendente-play" onclick="preencherUma(' + i + ')" title="Preencher">' +
+        '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+      '</button>' +
+    '</div>';
   }).join('');
 }
 

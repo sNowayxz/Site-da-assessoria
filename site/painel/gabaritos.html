@@ -173,40 +173,59 @@
       </div>
 
       <!-- Responder Atividades -->
-      <div class="panel" style="margin-top:20px;">
-        <div class="panel-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--gray-200);">
-          <h3 style="margin:0;font-size:1.05rem;">Responder Atividades (Modelitos)</h3>
+      <div class="resp-section">
+        <div class="resp-header">
+          <div class="resp-header-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div>
+            <h3 class="resp-title">Responder Atividades</h3>
+            <p class="resp-subtitle">Preencha atividades pendentes via Modelitos</p>
+          </div>
         </div>
-        <div class="panel-body" style="padding:20px;">
-          <div class="form-row" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
-            <div class="form-group" style="flex:1;min-width:200px;">
-              <label for="resp-aluno">Aluno (RA)</label>
-              <select id="resp-aluno">
-                <option value="">Selecione o aluno</option>
-              </select>
+
+        <div class="resp-body">
+          <!-- Seleção de Aluno -->
+          <div class="resp-aluno-card">
+            <div class="resp-aluno-row">
+              <div class="resp-aluno-select-wrap">
+                <label class="resp-label" for="resp-aluno">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                  Aluno
+                </label>
+                <select id="resp-aluno" class="resp-select">
+                  <option value="">Selecione o aluno...</option>
+                </select>
+              </div>
+              <button class="btn-buscar-pend" id="btn-buscar-pendentes">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Buscar Pendentes
+              </button>
             </div>
-            <button class="btn btn-gold" id="btn-buscar-pendentes" style="height:40px;">Buscar Pendentes</button>
+            <div id="pendentes-info" class="resp-info"></div>
           </div>
-          <div id="pendentes-info" style="margin-top:12px;color:var(--gray-500);font-size:0.9rem;"></div>
-          <div class="table-wrap" style="margin-top:12px;">
-            <table>
-              <thead>
-                <tr>
-                  <th><input type="checkbox" id="check-all-pendentes"></th>
-                  <th>ID</th>
-                  <th>Shortname</th>
-                  <th>Descri&ccedil;&atilde;o</th>
-                  <th>A&ccedil;&atilde;o</th>
-                </tr>
-              </thead>
-              <tbody id="pendentes-table">
-                <tr><td colspan="5" class="empty-state">Selecione um aluno e clique em "Buscar Pendentes"</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div style="margin-top:12px;display:flex;gap:12px;">
-            <button class="btn btn-gold" id="btn-preencher-selecionadas" disabled>Preencher Selecionadas</button>
-            <span id="preencher-status" style="align-self:center;font-size:0.9rem;color:var(--gray-500);"></span>
+
+          <!-- Lista de Pendentes -->
+          <div class="resp-pendentes-wrap">
+            <div class="resp-pendentes-toolbar">
+              <label class="resp-check-all-label">
+                <input type="checkbox" id="check-all-pendentes">
+                <span>Selecionar todas</span>
+              </label>
+              <div class="resp-pendentes-actions">
+                <span id="preencher-status" class="resp-status-text"></span>
+                <button class="btn-preencher-main" id="btn-preencher-selecionadas" disabled>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Preencher Selecionadas
+                </button>
+              </div>
+            </div>
+            <div class="resp-pendentes-list" id="pendentes-table">
+              <div class="resp-empty-state">
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <p>Selecione um aluno e clique em <strong>"Buscar Pendentes"</strong></p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
