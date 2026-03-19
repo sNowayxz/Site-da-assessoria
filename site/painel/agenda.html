@@ -141,7 +141,6 @@
         </div>
         <div class="sidebar-nav-label" data-category="sistema">Conta<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
         <div class="sidebar-category-links">
-          <a href="#" class="sidebar-link" id="btn-notificacoes" style="position:relative;"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifica&ccedil;&otilde;es<span class="notif-badge" id="notif-badge" style="display:none"></span></a>
           <a href="perfil.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</a>
           <button class="sidebar-link" id="btn-logout"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>
         </div>
@@ -161,6 +160,7 @@
         </div>
         <div class="topbar-actions">
           <button class="btn btn-gold" id="btn-novo-evento">+ Novo Evento</button>
+          <button class="btn-notif-bell" id="btn-notif-bell" title="Notificações" onclick="toggleNotifDropdown()" style="position:relative;background:none;border:none;cursor:pointer;font-size:1.2rem;padding:6px;">🔔<span class="notif-badge" id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#ef4444;color:white;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;"></span></button>
           <button class="theme-toggle" id="btn-theme" title="Alternar tema">🌙</button>
         </div>
       </div>

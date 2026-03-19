@@ -1549,8 +1549,12 @@ tbody tr:last-child td {
 [data-theme="dark"] .notif-item-text { color: #c9d1d9; }
 [data-theme="dark"] .notif-empty { color: #8b949e; }
 
+/* Bell button animation */
+.btn-notif-bell { transition: transform 0.2s; }
+.btn-notif-bell:hover { transform: scale(1.15); }
+
 @media (max-width: 768px) {
-  .notif-panel { width: 280px; left: -20px; }
+  .notif-panel { width: calc(100vw - 32px); right: 16px !important; left: 16px !important; }
 }
 
 /* ═══ DYNAMIC FAVICON ═══ */

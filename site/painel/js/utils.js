@@ -337,9 +337,37 @@ async function checkNotifications() {
     return;
   }
 
-  // Extensao: skip heavy notifications
+  // Extensao: show pending solicitations
   if (userRole === 'extensao') {
-    _notifData = [];
+    try {
+      var notifications = [];
+      var { data: aguardando, count: aguardCount } = await sb.from('solicitacoes')
+        .select('aluno_nome, origem, created_at', { count: 'exact' })
+        .eq('status', 'aguardando')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (aguardCount > 0) {
+        notifications.push({
+          icon: '🆕', text: aguardCount + ' solicita' + (aguardCount > 1 ? 'ções' : 'ção') + ' aguardando',
+          sub: 'Novas para desenvolver', link: 'acompanhar.html', priority: 1
+        });
+      }
+      (aguardando || []).slice(0, 3).forEach(function(s) {
+        var origemLabel = s.origem === 'whatsapp' ? '💬' : s.origem === 'site' ? '🌐' : '📋';
+        notifications.push({
+          icon: origemLabel, text: s.aluno_nome,
+          sub: timeAgo(new Date(s.created_at)), link: 'acompanhar.html', priority: 2
+        });
+      });
+      _notifData = notifications;
+      var badge = document.getElementById('notif-badge');
+      if (badge) {
+        if (aguardCount > 0) {
+          badge.textContent = aguardCount > 99 ? '99+' : aguardCount;
+          badge.style.display = 'flex';
+        } else { badge.style.display = 'none'; }
+      }
+    } catch(e) { _notifData = []; }
     return;
   }
 
@@ -360,6 +388,36 @@ async function checkNotifications() {
     in3days.setDate(in3days.getDate() + 3);
     var in7days = new Date(now);
     in7days.setDate(in7days.getDate() + 7);
+
+    // 0. Solicitações aguardando (extensão)
+    try {
+      var { count: solAguardando } = await sb.from('solicitacoes')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'aguardando');
+      if (solAguardando > 0) {
+        notifications.push({
+          icon: '⏳', text: solAguardando + ' solicita' + (solAguardando > 1 ? 'ções' : 'ção') + ' aguardando',
+          sub: 'Extensão precisa desenvolver', link: 'acompanhar.html', priority: 1
+        });
+      }
+    } catch(e) {}
+
+    // 0b. Novos pedidos do site (últimas 24h)
+    try {
+      var oneDayAgo = new Date(now - 86400000).toISOString();
+      var { data: novosPedidos, count: novosCount } = await sb.from('solicitacoes')
+        .select('aluno_nome', { count: 'exact' })
+        .eq('origem', 'site')
+        .gte('created_at', oneDayAgo)
+        .limit(3);
+      if (novosCount > 0) {
+        notifications.push({
+          icon: '🌐', text: novosCount + ' pedido' + (novosCount > 1 ? 's' : '') + ' pelo site nas últimas 24h',
+          sub: (novosPedidos || []).map(function(p) { return p.aluno_nome; }).join(', '),
+          link: 'acompanhar.html', priority: 1
+        });
+      }
+    } catch(e) {}
 
     // 1. Atividades Studeo vencendo nos próximos 3 dias (URGENTE)
     try {
@@ -452,29 +510,26 @@ async function checkNotifications() {
 }
 
 function initNotifications() {
-  var btn = document.getElementById('btn-notificacoes');
+  var btn = document.getElementById('btn-notif-bell') || document.getElementById('btn-notificacoes');
   if (!btn) return;
 
-  // Create dropdown panel on body (avoid sidebar overflow clipping)
+  // Create dropdown panel on body
   var panel = document.createElement('div');
   panel.className = 'notif-panel';
   panel.id = 'notif-panel';
-  panel.innerHTML = '<div class="notif-panel-header">Notificações</div><div class="notif-panel-body" id="notif-panel-body"></div>';
+  panel.innerHTML = '<div class="notif-panel-header">🔔 Notificações</div><div class="notif-panel-body" id="notif-panel-body"></div>';
   document.body.appendChild(panel);
 
+  // Position panel below bell icon (topbar)
   function positionPanel() {
     var rect = btn.getBoundingClientRect();
-    var panelHeight = panel.offsetHeight || 300;
-    // Position above the button, aligned to left of sidebar
-    var top = rect.top - panelHeight - 8;
-    if (top < 8) top = 8; // don't go above viewport
-    panel.style.left = rect.left + 'px';
-    panel.style.top = top + 'px';
+    panel.style.top = (rect.bottom + 8) + 'px';
+    panel.style.right = (window.innerWidth - rect.right) + 'px';
+    panel.style.left = 'auto';
   }
 
-  btn.addEventListener('click', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
+  // Toggle on click
+  window.toggleNotifDropdown = function() {
     var isOpen = panel.classList.contains('open');
     if (isOpen) {
       panel.classList.remove('open');
@@ -483,6 +538,12 @@ function initNotifications() {
     renderNotifPanel();
     panel.classList.add('open');
     positionPanel();
+  };
+
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleNotifDropdown();
   });
 
   // Close on click outside
