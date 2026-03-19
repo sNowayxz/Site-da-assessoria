@@ -336,23 +336,22 @@
       margin-left: 4px;
     }
 
-    /* ── COPY BUTTON ── */
+    /* ── COPY BUTTON (inline na barra top) ── */
     .calc-copy-btn {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 6px;
-      width: 100%;
-      padding: 6px 16px;
+      gap: 5px;
+      padding: 6px 14px;
       border: 1.5px solid var(--gold, #f0c030);
       border-radius: 8px;
       background: transparent;
       color: var(--gold, #f0c030);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 700;
       font-family: inherit;
       cursor: pointer;
       transition: all 0.2s;
+      white-space: nowrap;
       flex-shrink: 0;
     }
     .calc-copy-btn:hover {
@@ -384,9 +383,6 @@
     }
     .calc-options {
       animation: calcFadeUp 0.4s ease-out 0.1s both;
-    }
-    .calc-copy-btn {
-      animation: calcFadeUp 0.35s ease-out 0.2s both;
     }
 
     /* ── DARK MODE ── */
@@ -528,6 +524,7 @@
             <span class="calc-total-label">Total</span>
             <span class="calc-total-value" id="calc-total">R$ 0,00</span>
           </div>
+          <button class="calc-copy-btn" id="calc-copy-btn" onclick="copyCalcResumo()" title="Copiar resumo para WhatsApp">&#128203; Copiar para WhatsApp</button>
         </div>
 
         <!-- 3 PAYMENT OPTIONS -->
@@ -619,8 +616,6 @@
           </div>
         </div>
 
-        <!-- COPY BUTTON -->
-        <button class="calc-copy-btn" id="calc-copy-btn" onclick="copyCalcResumo()">&#128203; Copiar Resumo para WhatsApp</button>
       </div>
     </main>
   </div>
@@ -764,7 +759,7 @@
           btn.innerHTML = '\u2705 Copiado!';
           setTimeout(function() {
             btn.classList.remove('copied');
-            btn.innerHTML = '\ud83d\udccb Copiar Resumo para WhatsApp';
+            btn.innerHTML = '\ud83d\udccb Copiar para WhatsApp';
           }, 2000);
         });
       } else {
@@ -778,7 +773,7 @@
         btn.innerHTML = '\u2705 Copiado!';
         setTimeout(function() {
           btn.classList.remove('copied');
-          btn.innerHTML = '\ud83d\udccb Copiar Resumo para WhatsApp';
+          btn.innerHTML = '\ud83d\udccb Copiar para WhatsApp';
         }, 2000);
       }
     }
