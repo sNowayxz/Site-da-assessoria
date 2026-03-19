@@ -103,12 +103,25 @@ document.getElementById('form-pedido').addEventListener('submit', async function
         valor_hora: valor / ch,
         valor_pago: 0,
         status: 'aguardando',
-        origem: 'aluno',
+        origem: 'site',
         observacoes: 'Tema: ' + tema + (curso ? ' | Curso: ' + curso : '')
       });
     } catch (e) {
       console.warn('[pedido] Erro ao inserir solicitacao:', e.message);
     }
+
+    // 1c. Notificar extensão (Gessica) sobre novo pedido (non-blocking)
+    fetch('https://site-da-assessoria.vercel.app/api/notify-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        aluno_nome: nome,
+        ra: ra,
+        novo_status: 'novo_pedido',
+        horas: ch,
+        email_aluno: email
+      })
+    }).catch(function() {});
 
     // 2. Criar preferência Mercado Pago
     var resp = await fetch('https://site-da-assessoria.vercel.app/api/create-preference', {

@@ -423,6 +423,14 @@
               assessor_id: null
             });
             if (error) throw error;
+            // Notificar extensão sobre novo cadastro
+            fetch('https://site-da-assessoria.vercel.app/api/notify-status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                aluno_nome: nome, ra: ra, novo_status: 'novo_pedido', horas: horas
+              })
+            }).catch(function() {});
             showToast('Aluno cadastrado!', 'success');
             document.getElementById('add-modal').classList.remove('open');
             await loadSolicitacoes();
