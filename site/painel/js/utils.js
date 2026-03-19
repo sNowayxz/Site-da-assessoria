@@ -182,7 +182,8 @@ function exportTableToPDF(tableId, title, filename) {
     var table = document.querySelector('#' + tableId);
     if (!table) {
       // Tenta pegar do tbody
-      table = document.querySelector('#' + tableId)?.closest('table');
+      var el = document.querySelector('#' + tableId);
+      table = el ? el.closest('table') : null;
     }
 
     // Se passou o ID do tbody, pega a table pai
@@ -221,7 +222,8 @@ function exportTableToPDF(tableId, title, filename) {
           if (data.column.index === data.table.columns.length - 1) {
             var headerText = '';
             try {
-              headerText = data.table.columns[data.column.index].raw?.textContent || '';
+              var rawEl = data.table.columns[data.column.index].raw;
+              headerText = (rawEl && rawEl.textContent) || '';
             } catch (e) {}
             if (headerText.includes('Aç') || headerText.includes('Acoes')) {
               data.cell.styles.cellWidth = 0;

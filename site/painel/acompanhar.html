@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://lztfoprapoyicldunhzw.supabase.co">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="css/painel.css">
+  <link rel="stylesheet" href="css/painel.css?v=7">
   <style>
     .filter-bar {
       display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
@@ -152,7 +152,7 @@
     .section-header {
       display: flex; align-items: center; gap: 10px; cursor: pointer;
       padding: 10px 16px; background: var(--gray-50); border-radius: 10px;
-      margin-bottom: 8px; user-select: none; transition: background 0.2s;
+      margin-bottom: 8px; -webkit-user-select: none; -moz-user-select: none; user-select: none; transition: background 0.2s;
     }
     .section-header:hover { background: var(--gray-100); }
     .section-header h3 { margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--gray-700); }
@@ -374,8 +374,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
-  <script src="js/auth.js?v=6"></script>
-  <script src="js/utils.js?v=6"></script>
+  <script src="js/auth.js?v=7"></script>
+  <script src="js/utils.js?v=7"></script>
   <script>
     var currentUserId = null;
     var currentRole = null;

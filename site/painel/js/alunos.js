@@ -128,11 +128,13 @@ async function handleSaveAluno(e) {
   }
 
   try {
+    var result;
     if (currentEditId) {
-      await sb.from('alunos').update(data).eq('id', currentEditId);
+      result = await sb.from('alunos').update(data).eq('id', currentEditId);
     } else {
-      await sb.from('alunos').insert(data);
+      result = await sb.from('alunos').insert(data);
     }
+    if (result.error) throw result.error;
     logAudit(currentEditId ? 'update_aluno' : 'create_aluno', 'alunos', currentEditId || 'new', { nome: data.nome, ra: data.ra });
     showToast(currentEditId ? 'Aluno atualizado!' : 'Aluno cadastrado!', 'success');
     closeModal('modal-aluno');

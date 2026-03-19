@@ -9,10 +9,10 @@
   <link rel="preconnect" href="https://lztfoprapoyicldunhzw.supabase.co">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <base href="/painel/">
-  <link rel="stylesheet" href="css/painel.css">
+  <link rel="stylesheet" href="css/painel.css?v=7">
   <style>
     .remember-me { margin: 12px 0 4px; }
-    .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.88rem; color: var(--gray-600); user-select: none; }
+    .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.88rem; color: var(--gray-600); -webkit-user-select: none; -moz-user-select: none; user-select: none; }
     .checkbox-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; }
   </style>
 </head>
@@ -73,8 +73,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
-  <script src="js/auth.js?v=6"></script>
-  <script src="js/utils.js?v=6"></script>
+  <script src="js/auth.js?v=7"></script>
+  <script src="js/utils.js?v=7"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       // Se já logado, redireciona
