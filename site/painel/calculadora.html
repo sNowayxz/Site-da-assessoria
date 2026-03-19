@@ -13,10 +13,10 @@
     .calc-page {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 60px);
+      height: calc(100vh - 56px);
       overflow: hidden;
-      padding: 14px 24px;
-      gap: 10px;
+      padding: 10px 20px;
+      gap: 8px;
     }
 
     /* ── TOP ROW: inputs ── */
@@ -24,10 +24,10 @@
       background: var(--white, #fff);
       border: 1px solid var(--gray-200, #e5e7eb);
       border-radius: 12px;
-      padding: 14px 18px;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       flex-wrap: wrap;
       flex-shrink: 0;
     }
@@ -57,8 +57,8 @@
       box-shadow: 0 0 0 3px rgba(240,192,48,0.12);
     }
     .calc-stepper button {
-      width: 30px;
-      height: 34px;
+      width: 28px;
+      height: 30px;
       border: none;
       background: var(--gray-50, #f9fafb);
       color: var(--gray-500, #6b7280);
@@ -80,8 +80,8 @@
       transform: scale(0.92);
     }
     .calc-stepper input {
-      width: 70px;
-      height: 34px;
+      width: 65px;
+      height: 30px;
       border: none;
       border-left: 1px solid var(--gray-200, #e5e7eb);
       border-right: 1px solid var(--gray-200, #e5e7eb);
@@ -174,8 +174,8 @@
     .calc-opt {
       background: var(--white, #fff);
       border: 1px solid var(--gray-200, #e5e7eb);
-      border-radius: 14px;
-      padding: 16px 20px;
+      border-radius: 12px;
+      padding: 12px 16px;
       display: flex;
       flex-direction: column;
       transition: all 0.2s;
@@ -192,8 +192,8 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-bottom: 8px;
-      padding-bottom: 7px;
+      margin-bottom: 6px;
+      padding-bottom: 6px;
       border-bottom: 2px solid var(--gold, #f0c030);
     }
     .calc-opt-icon { font-size: 1rem; }
@@ -215,7 +215,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 0;
+      padding: 6px 0;
       border-bottom: 1px solid var(--gray-100, #f3f4f6);
     }
     .calc-line:last-child { border-bottom: none; }
@@ -307,7 +307,7 @@
     /* Result highlight */
     .calc-opt-result {
       margin-top: auto;
-      padding: 10px 14px;
+      padding: 8px 12px;
       background: linear-gradient(135deg, rgba(240,192,48,0.1), rgba(240,192,48,0.04));
       border-radius: 8px;
       display: flex;
@@ -342,9 +342,9 @@
       justify-content: center;
       gap: 6px;
       width: 100%;
-      padding: 10px 18px;
+      padding: 8px 16px;
       border: 1.5px solid var(--gold, #f0c030);
-      border-radius: 10px;
+      border-radius: 8px;
       background: transparent;
       color: var(--gold, #f0c030);
       font-size: 0.82rem;
@@ -371,6 +371,21 @@
       .calc-total-box { margin-left: 0; }
       .calc-options { grid-template-columns: 1fr; }
       .calc-presets { flex-wrap: wrap; }
+    }
+
+    /* ── LOAD ANIMATION ── */
+    @keyframes calcFadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .calc-top {
+      animation: calcFadeUp 0.35s ease-out both;
+    }
+    .calc-options {
+      animation: calcFadeUp 0.4s ease-out 0.1s both;
+    }
+    .calc-copy-btn {
+      animation: calcFadeUp 0.35s ease-out 0.2s both;
     }
 
     /* ── DARK MODE ── */
@@ -488,24 +503,24 @@
           <div class="calc-field">
             <label>Horas</label>
             <div class="calc-stepper">
-              <button type="button" onclick="stepHoras(-10)">-</button>
-              <input type="number" id="calc-horas" placeholder="178" min="1" max="9999" oninput="calcExtensao()">
-              <button type="button" onclick="stepHoras(10)">+</button>
+              <button type="button" onmousedown="startHold('calc-horas', -5)" onmouseup="stopHold()" onmouseleave="stopHold()">-</button>
+              <input type="number" id="calc-horas" placeholder="0" min="0" max="9999" oninput="calcExtensao()">
+              <button type="button" onmousedown="startHold('calc-horas', 5)" onmouseup="stopHold()" onmouseleave="stopHold()">+</button>
             </div>
           </div>
           <div class="calc-presets">
-            <button class="calc-preset" onclick="setHoras(80, this)">80h</button>
-            <button class="calc-preset" onclick="setHoras(120, this)">120h</button>
-            <button class="calc-preset" onclick="setHoras(178, this)">178h</button>
-            <button class="calc-preset" onclick="setHoras(200, this)">200h</button>
-            <button class="calc-preset" onclick="setHoras(360, this)">360h</button>
+            <button class="calc-preset" onclick="setHoras(20, this)">20h</button>
+            <button class="calc-preset" onclick="setHoras(30, this)">30h</button>
+            <button class="calc-preset" onclick="setHoras(32, this)">32h</button>
+            <button class="calc-preset" onclick="setHoras(35, this)">35h</button>
+            <button class="calc-preset" onclick="setHoras(50, this)">50h</button>
           </div>
           <div class="calc-field">
             <label>R$/hora</label>
             <div class="calc-stepper">
-              <button type="button" onclick="stepValorHora(-0.50)">-</button>
-              <input type="number" id="calc-valor-hora" placeholder="2.50" min="0.50" step="0.50" oninput="calcExtensao()">
-              <button type="button" onclick="stepValorHora(0.50)">+</button>
+              <button type="button" onmousedown="startHold('calc-valor-hora', -0.50)" onmouseup="stopHold()" onmouseleave="stopHold()">-</button>
+              <input type="number" id="calc-valor-hora" placeholder="0.00" min="0" step="0.50" oninput="calcExtensao()">
+              <button type="button" onmousedown="startHold('calc-valor-hora', 0.50)" onmouseup="stopHold()" onmouseleave="stopHold()">+</button>
             </div>
           </div>
           <div class="calc-total-box">
@@ -625,21 +640,37 @@
       return 'R$ ' + val.toFixed(2).replace('.', ',');
     }
 
-    // ── Steppers ──
-    function stepHoras(delta) {
-      var el = document.getElementById('calc-horas');
-      var val = (parseFloat(el.value) || 0) + delta;
-      if (val < 1) val = 1;
-      el.value = val;
-      clearPresets();
-      calcExtensao();
+    // ── Hold-to-repeat stepper ──
+    var _holdTimer = null;
+    var _holdInterval = null;
+
+    function startHold(inputId, delta) {
+      doStep(inputId, delta);
+      _holdTimer = setTimeout(function() {
+        _holdInterval = setInterval(function() {
+          doStep(inputId, delta);
+        }, 80);
+      }, 400);
     }
 
-    function stepValorHora(delta) {
-      var el = document.getElementById('calc-valor-hora');
+    function stopHold() {
+      clearTimeout(_holdTimer);
+      clearInterval(_holdInterval);
+      _holdTimer = null;
+      _holdInterval = null;
+    }
+
+    function doStep(inputId, delta) {
+      var el = document.getElementById(inputId);
       var val = (parseFloat(el.value) || 0) + delta;
-      if (val < 0.50) val = 0.50;
-      el.value = val.toFixed(2);
+      if (val < 0) val = 0;
+      if (inputId === 'calc-valor-hora') {
+        if (val < 0) val = 0;
+        el.value = val.toFixed(2);
+      } else {
+        el.value = Math.round(val);
+      }
+      if (inputId === 'calc-horas') clearPresets();
       calcExtensao();
     }
 
