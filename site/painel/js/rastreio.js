@@ -674,7 +674,20 @@ async function executarPreenchimento() {
   var status = document.getElementById('modal-preencher-status');
   btn.disabled = true;
 
-  // Primeiro busca pendentes do Modelitos para obter os idQuestionario
+  // Buscar senha do aluno no cache
+  var alunoCache = window._alunosCache || {};
+  var alunoData = null;
+  for (var key in alunoCache) {
+    if (alunoCache[key].ra === _preencherRA) { alunoData = alunoCache[key]; break; }
+  }
+  if (!alunoData || !alunoData.studeo_senha) {
+    status.textContent = 'Aluno sem senha do Studeo cadastrada';
+    btn.disabled = false;
+    btn.textContent = 'Preencher Selecionadas';
+    return;
+  }
+
+  // Buscar pendentes do Modelitos para obter os idQuestionario + shortname
   status.textContent = '\u23f3 Consultando Modelitos...';
   btn.textContent = '\u23f3 Consultando...';
 
@@ -705,7 +718,6 @@ async function executarPreenchimento() {
   var total = checks.length;
   var ok = 0, erros = 0, ignorados = 0;
 
-  // Para cada atividade selecionada, tentar encontrar no Modelitos e preencher
   for (var i = 0; i < checks.length; i++) {
     var idx = parseInt(checks[i].getAttribute('data-idx'));
     var a = _preencherAtividades[idx];
@@ -714,17 +726,10 @@ async function executarPreenchimento() {
     status.textContent = '\u23f3 ' + (i + 1) + '/' + total + ': ' + a.atividade + '...';
     btn.textContent = '\u23f3 ' + (i + 1) + '/' + total;
 
-    // Match: buscar no Modelitos por shortname
+    // Match por shortname
     var match = pendentesModelitos.filter(function (p) {
       return p.shortname && a.cd_shortname && p.shortname.includes(a.cd_shortname);
     });
-
-    if (!match.length) {
-      // Tenta match mais amplo
-      match = pendentesModelitos.filter(function (p) {
-        return p.raw && a.cd_shortname && p.raw.includes(a.cd_shortname);
-      });
-    }
 
     if (!match.length) {
       ignorados++;
@@ -733,13 +738,20 @@ async function executarPreenchimento() {
       continue;
     }
 
-    // Preencher todas as matches desta disciplina
+    // Preencher cada match — API agora monta o idQuestionario completo com JWT
     for (var j = 0; j < match.length; j++) {
       try {
         var r = await fetch(PREENCHER_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'preencher', raw: match[j].raw, idQuestionario: match[j].idQuestionario, finalizar: finalizar }),
+          body: JSON.stringify({
+            action: 'preencher',
+            idQuestionario: match[j].idQuestionario,
+            shortname: match[j].shortname,
+            ra: _preencherRA,
+            senha: alunoData.studeo_senha,
+            finalizar: finalizar,
+          }),
         });
         var d = await r.json();
         if (!d.ok) throw new Error(d.error);
