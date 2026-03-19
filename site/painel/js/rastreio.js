@@ -598,47 +598,35 @@ function escapeHtml(text) {
 
 /* ═══════════════════════════════════════════
    Preencher Atividades — Modelitos (Modal)
+   Usa dados já rastreados do studeo_sync
    ═══════════════════════════════════════════ */
 
-var _preencherPendentes = [];
+var _preencherAtividades = [];
 var _preencherRA = '';
 
-async function buscarEPreencherAluno(ra, btn) {
+function buscarEPreencherAluno(ra, btn) {
   if (!ra) return;
-  var origText = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = '\u23f3 Buscando...';
 
-  try {
-    var resp = await fetch(PREENCHER_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'verificar', ra: ra }),
-    });
-    var data = await resp.json();
-    if (!data.ok) throw new Error(data.error || 'Erro');
+  // Pegar atividades do rastreio já carregado (window._syncData)
+  var syncData = window._syncData || [];
+  var atividades = syncData.filter(function (item) {
+    return item.alunos && item.alunos.ra === ra && !item.respondida;
+  });
 
-    var pendentes = data.pendentes || [];
-    if (!pendentes.length) {
-      showSyncStatus('Nenhuma atividade pendente no Modelitos para RA ' + ra, 'warning');
-      return;
-    }
-
-    _preencherPendentes = pendentes;
-    _preencherRA = ra;
-    abrirModalPreencher(ra, pendentes);
-
-  } catch (err) {
-    showSyncStatus('Erro Modelitos: ' + err.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = origText;
+  if (!atividades.length) {
+    showSyncStatus('Nenhuma atividade pendente no rastreio para RA ' + ra, 'warning');
+    return;
   }
+
+  _preencherAtividades = atividades;
+  _preencherRA = ra;
+  abrirModalPreencher(ra, atividades);
 }
 
-function abrirModalPreencher(ra, pendentes) {
-  document.getElementById('modal-preencher-title').textContent = 'Preencher Atividades \u2014 RA ' + ra;
-  document.getElementById('modal-preencher-info').textContent = pendentes.length + ' atividade(s) pendente(s) encontrada(s)';
+function abrirModalPreencher(ra, atividades) {
+  var nome = atividades[0] && atividades[0].alunos ? atividades[0].alunos.nome : ra;
+  document.getElementById('modal-preencher-title').textContent = 'Preencher \u2014 ' + nome + ' (' + ra + ')';
+  document.getElementById('modal-preencher-info').textContent = atividades.length + ' atividade(s) pendente(s) do rastreio';
   document.getElementById('modal-preencher-status').textContent = '';
 
   var html = '<div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;">'
@@ -646,12 +634,18 @@ function abrirModalPreencher(ra, pendentes) {
     + '<label for="check-all-modal" style="font-size:0.85rem;font-weight:600;cursor:pointer;">Selecionar todas</label>'
     + '</div>';
 
-  pendentes.forEach(function (p, i) {
+  atividades.forEach(function (a, i) {
+    var prazo = a.data_final ? formatDate(a.data_final) : '';
+    var tipo = a.tipo_atividade || 'AV';
     html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:6px;">'
       + '<input type="checkbox" class="check-modal-item" data-idx="' + i + '" checked>'
       + '<div style="flex:1;min-width:0;">'
-      + '<div style="font-size:0.9rem;font-weight:600;color:var(--gray-800);">' + escapeHtml(p.descricao || 'Atividade ' + (i + 1)) + '</div>'
-      + '<div style="font-size:0.78rem;color:var(--gray-500);">ID: ' + escapeHtml(p.idQuestionario || '') + ' \u2022 ' + escapeHtml(p.shortname || '') + '</div>'
+      + '<div style="font-size:0.9rem;font-weight:600;color:var(--gray-800);">' + escapeHtml(a.atividade) + '</div>'
+      + '<div style="font-size:0.78rem;color:var(--gray-500);">'
+      + '<span class="badge badge-' + (tipo === 'MAPA' ? 'mapa' : 'av') + '" style="font-size:0.7rem;margin-right:4px;">' + tipo + '</span>'
+      + escapeHtml(a.disciplina) + ' \u2022 ' + escapeHtml(a.cd_shortname)
+      + (prazo ? ' \u2022 Prazo: ' + prazo : '')
+      + '</div>'
       + '</div>'
       + '</div>';
   });
@@ -680,38 +674,91 @@ async function executarPreenchimento() {
   var status = document.getElementById('modal-preencher-status');
   btn.disabled = true;
 
-  var total = checks.length;
-  var ok = 0, erros = 0;
+  // Primeiro busca pendentes do Modelitos para obter os idQuestionario
+  status.textContent = '\u23f3 Consultando Modelitos...';
+  btn.textContent = '\u23f3 Consultando...';
 
-  for (var i = 0; i < checks.length; i++) {
-    var idx = parseInt(checks[i].getAttribute('data-idx'));
-    var p = _preencherPendentes[idx];
-    if (!p) continue;
-
-    status.textContent = '\u23f3 ' + (i + 1) + '/' + total + ': ' + (p.descricao || p.idQuestionario) + '...';
-    btn.textContent = '\u23f3 ' + (i + 1) + '/' + total;
-
-    try {
-      var r = await fetch(PREENCHER_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'preencher', idQuestionario: p.idQuestionario, finalizar: finalizar }),
-      });
-      var d = await r.json();
-      if (!d.ok) throw new Error(d.error);
-      ok++;
-
-      // Visual feedback: mark as done
-      checks[i].parentElement.style.opacity = '0.5';
-      checks[i].parentElement.style.borderColor = '#22c55e';
-    } catch (e) {
-      erros++;
-      checks[i].parentElement.style.borderColor = '#ef4444';
-      console.error('Erro preenchendo ' + p.idQuestionario + ':', e.message);
-    }
+  var pendentesModelitos = [];
+  try {
+    var resp = await fetch(PREENCHER_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verificar', ra: _preencherRA }),
+    });
+    var data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Erro');
+    pendentesModelitos = data.pendentes || [];
+  } catch (err) {
+    status.textContent = 'Erro ao consultar Modelitos: ' + err.message;
+    btn.disabled = false;
+    btn.textContent = 'Preencher Selecionadas';
+    return;
   }
 
-  var msg = ok + ' preenchida(s)' + (erros ? ', ' + erros + ' erro(s)' : '') + (finalizar ? ' (finalizadas)' : ' (sem finalizar)');
+  if (!pendentesModelitos.length) {
+    status.textContent = 'Nenhuma atividade encontrada no Modelitos para este RA';
+    btn.disabled = false;
+    btn.textContent = 'Preencher Selecionadas';
+    return;
+  }
+
+  var total = checks.length;
+  var ok = 0, erros = 0, ignorados = 0;
+
+  // Para cada atividade selecionada, tentar encontrar no Modelitos e preencher
+  for (var i = 0; i < checks.length; i++) {
+    var idx = parseInt(checks[i].getAttribute('data-idx'));
+    var a = _preencherAtividades[idx];
+    if (!a) continue;
+
+    status.textContent = '\u23f3 ' + (i + 1) + '/' + total + ': ' + a.atividade + '...';
+    btn.textContent = '\u23f3 ' + (i + 1) + '/' + total;
+
+    // Match: buscar no Modelitos por shortname
+    var match = pendentesModelitos.filter(function (p) {
+      return p.shortname && a.cd_shortname && p.shortname.includes(a.cd_shortname);
+    });
+
+    if (!match.length) {
+      // Tenta match mais amplo
+      match = pendentesModelitos.filter(function (p) {
+        return p.raw && a.cd_shortname && p.raw.includes(a.cd_shortname);
+      });
+    }
+
+    if (!match.length) {
+      ignorados++;
+      checks[i].parentElement.style.borderColor = '#f59e0b';
+      checks[i].parentElement.style.opacity = '0.6';
+      continue;
+    }
+
+    // Preencher todas as matches desta disciplina
+    for (var j = 0; j < match.length; j++) {
+      try {
+        var r = await fetch(PREENCHER_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'preencher', idQuestionario: match[j].idQuestionario, finalizar: finalizar }),
+        });
+        var d = await r.json();
+        if (!d.ok) throw new Error(d.error);
+        ok++;
+      } catch (e) {
+        erros++;
+        console.error('Erro preenchendo ' + match[j].idQuestionario + ':', e.message);
+      }
+    }
+
+    checks[i].parentElement.style.opacity = '0.5';
+    checks[i].parentElement.style.borderColor = '#22c55e';
+  }
+
+  var msg = ok + ' preenchida(s)';
+  if (erros) msg += ', ' + erros + ' erro(s)';
+  if (ignorados) msg += ', ' + ignorados + ' sem match no Modelitos';
+  msg += finalizar ? ' (finalizadas)' : ' (sem finalizar)';
+
   status.textContent = msg;
   btn.textContent = 'Conclu\u00eddo';
   showSyncStatus('RA ' + _preencherRA + ': ' + msg, ok ? 'success' : 'error');
