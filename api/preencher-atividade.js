@@ -156,20 +156,21 @@ async function verificarPendentes(session, ra) {
 async function preencherAtividade(session, idQuestionario, finalizar) {
   const url = `${MODELITOS_URL}/alunos/api/preencher-atividade/`;
 
+  // Modelitos pode esperar form-urlencoded (como formulários HTML)
+  const formBody = `idQuestionario=${encodeURIComponent(String(idQuestionario))}&finalizar=${finalizar}`;
+  console.log(`[modelitos] Enviando: ${formBody}`);
+
   const r = await fetch(url, {
     method: 'POST',
     headers: {
       'Cookie': session.cookie,
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
       'X-CSRFToken': session.csrftoken,
-      'Accept': 'application/json',
+      'Accept': 'application/json, text/html',
       'Referer': MODELITOS_URL + '/alunos/verificar-atividades/',
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     },
-    body: JSON.stringify({
-      idQuestionario: String(idQuestionario),
-      finalizar: finalizar,
-    }),
+    body: formBody,
     redirect: 'manual',
   });
 
