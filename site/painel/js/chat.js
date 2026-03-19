@@ -253,36 +253,64 @@ async function loadMessages(channel) {
 }
 
 // ─── Render Messages ───
+var _lastRenderedSenderId = null;
+
 function renderMessages(messages) {
   var messagesEl = document.getElementById('chat-messages');
   var html = '';
   var lastDate = '';
+  _lastRenderedSenderId = null;
 
   for (var i = 0; i < messages.length; i++) {
     var msg = messages[i];
-    html += buildMessageHTML(msg, lastDate);
+    var prevSenderId = i > 0 ? messages[i - 1].sender_id : null;
+    html += buildMessageHTML(msg, lastDate, prevSenderId);
     var createdAt = new Date(msg.created_at);
     lastDate = createdAt.toLocaleDateString('pt-BR');
+    _lastRenderedSenderId = msg.sender_id;
   }
 
+  // Scroll-to-bottom button
+  html += '<div id="scroll-anchor"></div>';
   messagesEl.innerHTML = html;
   scrollToBottom();
+
+  // Show scroll-to-bottom button on scroll
+  messagesEl.addEventListener('scroll', handleChatScroll);
 }
 
-function buildMessageHTML(msg, lastDate) {
+function handleChatScroll() {
+  var el = document.getElementById('chat-messages');
+  var btn = document.getElementById('btn-scroll-bottom');
+  if (!btn || !el) return;
+  var isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+  btn.style.display = isNearBottom ? 'none' : 'flex';
+}
+
+function formatDateLabel(dateStr) {
+  var today = new Date().toLocaleDateString('pt-BR');
+  var yesterday = new Date(Date.now() - 86400000).toLocaleDateString('pt-BR');
+  if (dateStr === today) return 'Hoje';
+  if (dateStr === yesterday) return 'Ontem';
+  return dateStr;
+}
+
+function buildMessageHTML(msg, lastDate, prevSenderId) {
   var isOwn = msg.sender_id === currentUserId;
   var senderName = getSenderName(msg.sender_id);
   var createdAt = new Date(msg.created_at);
   var dateStr = createdAt.toLocaleDateString('pt-BR');
   var timeStr = createdAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  var isGrouped = prevSenderId === msg.sender_id && dateStr === lastDate;
 
   var html = '';
 
   if (dateStr !== lastDate) {
-    html += '<div class="chat-date-separator">' + dateStr + '</div>';
+    html += '<div class="chat-date-separator"><span>' + formatDateLabel(dateStr) + '</span></div>';
   }
 
   var bubbleClass = isOwn ? 'chat-bubble own' : 'chat-bubble other';
+  if (isGrouped) bubbleClass += ' grouped';
 
   html += '<div class="' + bubbleClass + '" data-msg-id="' + msg.id + '">';
 
@@ -290,12 +318,20 @@ function buildMessageHTML(msg, lastDate) {
     html += '<button class="btn-delete-msg" onclick="deleteMessage(\'' + msg.id + '\')" title="Apagar">✕</button>';
   }
 
-  if (!isOwn) {
-    html += '<div class="chat-sender">' + escapeHtml(senderName) + '</div>';
+  // Show sender name only if not grouped and not own
+  if (!isOwn && !isGrouped) {
+    var avatarUrl = _assessorAvatarsCache[msg.sender_id];
+    var avatarHtml = avatarUrl
+      ? '<img src="' + avatarUrl + '" class="sender-mini-avatar">'
+      : '';
+    html += '<div class="chat-sender">' + avatarHtml + escapeHtml(senderName) + '</div>';
   }
 
   if (msg.content) {
-    html += '<div class="chat-text">' + escapeHtml(msg.content) + '</div>';
+    // Linkify URLs
+    var escapedContent = escapeHtml(msg.content);
+    escapedContent = escapedContent.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">$1</a>');
+    html += '<div class="chat-text">' + escapedContent + '</div>';
   }
 
   if (msg.file_url) {
@@ -548,16 +584,25 @@ function handleNewMessage(msg) {
   if (emptyEl) emptyEl.remove();
 
   var lastSeparator = messagesEl.querySelector('.chat-date-separator:last-of-type');
-  var lastDateText = lastSeparator ? lastSeparator.textContent : '';
+  var lastDateText = lastSeparator ? lastSeparator.querySelector('span') ? lastSeparator.querySelector('span').textContent : lastSeparator.textContent : '';
+  // Convert "Hoje"/"Ontem" back to date string for comparison
+  var today = new Date().toLocaleDateString('pt-BR');
+  if (lastDateText === 'Hoje') lastDateText = today;
 
   var tempDiv = document.createElement('div');
-  tempDiv.innerHTML = buildMessageHTML(msg, lastDateText);
+  tempDiv.innerHTML = buildMessageHTML(msg, lastDateText, _lastRenderedSenderId);
+  _lastRenderedSenderId = msg.sender_id;
 
   while (tempDiv.firstChild) {
     messagesEl.appendChild(tempDiv.firstChild);
   }
 
   scrollToBottom();
+
+  // Play notification sound for messages from others
+  if (msg.sender_id !== currentUserId) {
+    playNotifSound();
+  }
 
   // Update contact preview
   updateContactPreview(msg.channel, msg.content || '📎 Arquivo');
@@ -576,5 +621,68 @@ function handleDeletedMessage(msg) {
 
 function scrollToBottom() {
   var messagesEl = document.getElementById('chat-messages');
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  setTimeout(function() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }, 50);
 }
+
+window.scrollChatToBottom = function() {
+  scrollToBottom();
+  var btn = document.getElementById('btn-scroll-bottom');
+  if (btn) btn.style.display = 'none';
+};
+
+// ─── Notification Sound ───
+var _notifAudio = null;
+function playNotifSound() {
+  try {
+    if (!_notifAudio) {
+      // Generate a short beep using Web Audio API
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      gain.gain.value = 0.1;
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    }
+  } catch(e) {}
+}
+
+// ─── Search Messages ───
+window.toggleChatSearch = function() {
+  var searchEl = document.getElementById('chat-search-bar');
+  if (!searchEl) return;
+  var isVisible = searchEl.style.display !== 'none';
+  searchEl.style.display = isVisible ? 'none' : 'flex';
+  if (!isVisible) {
+    searchEl.querySelector('input').focus();
+  }
+};
+
+window.searchMessages = function(query) {
+  if (!query || query.length < 2) {
+    // Remove highlights
+    document.querySelectorAll('.chat-bubble.search-highlight').forEach(function(el) {
+      el.classList.remove('search-highlight');
+    });
+    return;
+  }
+  query = query.toLowerCase();
+  var bubbles = document.querySelectorAll('.chat-bubble');
+  var found = false;
+  bubbles.forEach(function(b) {
+    var text = (b.querySelector('.chat-text') || {}).textContent || '';
+    if (text.toLowerCase().indexOf(query) !== -1) {
+      b.classList.add('search-highlight');
+      if (!found) {
+        b.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        found = true;
+      }
+    } else {
+      b.classList.remove('search-highlight');
+    }
+  });
+};
