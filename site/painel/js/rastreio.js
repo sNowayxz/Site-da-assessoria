@@ -772,6 +772,109 @@ async function executarPreenchimento() {
   msg += finalizar ? ' (finalizadas)' : ' (sem finalizar)';
 
   status.textContent = msg;
-  btn.textContent = 'Conclu\u00eddo';
+  btn.textContent = 'Fechar';
+  btn.disabled = false;
+  btn.onclick = function () { closeModal('modal-preencher'); };
   showSyncStatus('RA ' + _preencherRA + ': ' + msg, ok ? 'success' : 'error');
+}
+
+/* ═══════════════════════════════════════════
+   Preencher em Massa — Todos os alunos visíveis
+   ═══════════════════════════════════════════ */
+
+async function preencherEmMassa() {
+  var syncData = window._syncData || [];
+  if (!syncData.length) { showSyncStatus('Nenhum dado de rastreio carregado', 'warning'); return; }
+
+  // Agrupar por aluno (RA)
+  var byRA = {};
+  syncData.forEach(function (item) {
+    if (!item.alunos || !item.alunos.ra || item.respondida) return;
+    var ra = item.alunos.ra;
+    if (!byRA[ra]) byRA[ra] = [];
+    byRA[ra].push(item);
+  });
+
+  var ras = Object.keys(byRA);
+  if (!ras.length) { showSyncStatus('Nenhuma atividade pendente para preencher', 'warning'); return; }
+
+  if (!confirm('Preencher atividades de ' + ras.length + ' aluno(s) em massa?\n\nIsso pode levar alguns minutos.')) return;
+
+  var btnMassa = document.getElementById('btn-preencher-massa');
+  if (btnMassa) { btnMassa.disabled = true; btnMassa.textContent = '\u23f3 Preenchendo...'; }
+
+  var totalOk = 0, totalErros = 0, totalIgnorados = 0, alunosOk = 0;
+
+  for (var r = 0; r < ras.length; r++) {
+    var ra = ras[r];
+    var atividades = byRA[ra];
+
+    // Buscar senha
+    var alunoCache = window._alunosCache || {};
+    var alunoData = null;
+    for (var key in alunoCache) {
+      if (alunoCache[key].ra === ra) { alunoData = alunoCache[key]; break; }
+    }
+    if (!alunoData || !alunoData.studeo_senha) {
+      totalIgnorados += atividades.length;
+      continue;
+    }
+
+    showSyncStatus('\u23f3 ' + (r + 1) + '/' + ras.length + ': ' + (alunoData.nome || ra) + '...', 'loading');
+    if (btnMassa) btnMassa.textContent = '\u23f3 ' + (r + 1) + '/' + ras.length;
+
+    // Buscar pendentes do Modelitos
+    var pendentesModelitos = [];
+    try {
+      var resp = await fetch(PREENCHER_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'verificar', ra: ra }),
+      });
+      var data = await resp.json();
+      if (data.ok) pendentesModelitos = data.pendentes || [];
+    } catch (e) { /* ignora */ }
+
+    if (!pendentesModelitos.length) { totalIgnorados += atividades.length; continue; }
+
+    // Match e preencher
+    for (var i = 0; i < atividades.length; i++) {
+      var a = atividades[i];
+      var match = pendentesModelitos.filter(function (p) {
+        return p.shortname && a.cd_shortname && p.shortname.includes(a.cd_shortname);
+      });
+
+      if (!match.length) { totalIgnorados++; continue; }
+
+      for (var j = 0; j < match.length; j++) {
+        try {
+          var rr = await fetch(PREENCHER_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'preencher',
+              idQuestionario: match[j].idQuestionario,
+              shortname: match[j].shortname,
+              ra: ra,
+              senha: alunoData.studeo_senha,
+              finalizar: true,
+            }),
+          });
+          var dd = await rr.json();
+          if (!dd.ok) throw new Error(dd.error);
+          totalOk++;
+        } catch (e) {
+          totalErros++;
+        }
+      }
+    }
+    alunosOk++;
+  }
+
+  var msg = alunosOk + '/' + ras.length + ' alunos, ' + totalOk + ' preenchida(s)';
+  if (totalErros) msg += ', ' + totalErros + ' erro(s)';
+  if (totalIgnorados) msg += ', ' + totalIgnorados + ' ignorada(s)';
+
+  showSyncStatus('Massa: ' + msg, totalOk ? 'success' : 'warning');
+  if (btnMassa) { btnMassa.disabled = false; btnMassa.textContent = '\u26a1 Preencher em Massa'; }
 }
