@@ -59,8 +59,14 @@ module.exports = async function handler(req, res) {
       const shortnames = matriculadas.map(d => d.cdShortname);
       const afazer = await buscarAtividadesAFazer(token, shortnames);
       const afazerMap = {};
+      const afazerDatas = {};
       for (const item of afazer) {
         afazerMap[item.shortname] = item.somaAtividades;
+        // Capturar data de encerramento do afazer (prazo real)
+        const prazoReal = item.dataEncerramento || item.dtEncerramento || item.dataFinal || item.dataFim || item.dtFim || item.proximoEncerramento || item.dataProximoEncerramento || null;
+        if (prazoReal) afazerDatas[item.shortname] = prazoReal;
+        // Log all fields to discover the correct one
+        console.log(`[afazer] ${item.shortname}: keys=${Object.keys(item).join(',')}, prazo=${prazoReal}`);
       }
       console.log(`[sync] ${afazer.length} disciplinas com atividades a fazer`);
 
@@ -103,6 +109,14 @@ module.exports = async function handler(req, res) {
           // Pegar apenas as N pendentes (conforme endpoint afazer)
           const pendentesReais = unique.slice(0, pendentes);
 
+          // Se tiver data do afazer, substituir a dataFinal das atividades
+          const prazoAfazer = afazerDatas[disc.cdShortname];
+          if (prazoAfazer) {
+            for (const atv of pendentesReais) {
+              atv.dataFinal = normalizarData(prazoAfazer);
+            }
+          }
+
           resultado.push({
             disciplina: disc.nmDisciplina,
             cd_shortname: disc.cdShortname,
@@ -110,13 +124,14 @@ module.exports = async function handler(req, res) {
             modulo: disc.semestre ? String(disc.semestre) : null,
             atividades: pendentesReais,
             mapa: [],
+            _afazerPrazo: prazoAfazer || null, // debug
           });
         } catch (err) {
           console.error(`[sync] Erro em ${disc.nmDisciplina}:`, err.message);
         }
       }
 
-      return res.status(200).json({ ok: true, resultado });
+      return res.status(200).json({ ok: true, resultado, _afazerRaw: afazer.map(a => ({ shortname: a.shortname, keys: Object.keys(a), data: a })).slice(0, 5) });
     }
 
     return res.status(400).json({ error: 'Ação inválida. Use "login" ou "sync".' });
