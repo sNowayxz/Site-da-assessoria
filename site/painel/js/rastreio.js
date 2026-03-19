@@ -3,6 +3,7 @@
    ═══════════════════════════════════════════ */
 
 var SYNC_API_URL = 'https://site-da-assessoria.vercel.app/api/sync-studeo';
+var PREENCHER_API_URL = 'https://site-da-assessoria.vercel.app/api/preencher-atividade';
 var syncInProgress = false;
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -260,7 +261,10 @@ function renderSyncData(data) {
       + (aluno.senha ? '<span class="aluno-senha">🔑 <span class="copy-value" data-copy="' + escapeHtml(aluno.senha) + '" title="Clique para copiar senha">' + escapeHtml(aluno.senha) + '</span></span>' : '')
       + '</div>'
       + '</div>'
+      + '<div style="display:flex;align-items:center;gap:8px;">'
       + '<span class="badge badge-pendente">' + totalPendentes + ' pendência' + (totalPendentes !== 1 ? 's' : '') + '</span>'
+      + '<button class="btn btn-sync" style="font-size:0.78rem;padding:6px 12px;" onclick="buscarEPreencherAluno('' + escapeHtml(aluno.ra) + '', this)" title="Preencher via Modelitos">&#9654; Preencher</button>'
+      + '</div>'
       + '</div>';
 
     discs.forEach(function (disc) {
@@ -590,4 +594,61 @@ function escapeHtml(text) {
   var div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+/* ═══════════════════════════════════════════
+   Preencher Atividades — Modelitos
+   ═══════════════════════════════════════════ */
+
+async function buscarEPreencherAluno(ra, btn) {
+  if (!ra) return;
+  var origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Buscando...';
+
+  try {
+    var resp = await fetch(PREENCHER_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verificar', ra: ra }),
+    });
+    var data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Erro');
+
+    var pendentes = data.pendentes || [];
+    if (!pendentes.length) {
+      showSyncStatus('Nenhuma atividade pendente no Modelitos para RA ' + ra, 'warning');
+      return;
+    }
+
+    if (!confirm('Encontradas ' + pendentes.length + ' atividade(s) pendente(s) no Modelitos para RA ' + ra + '.\n\nPreencher todas?')) return;
+
+    btn.textContent = '⏳ Preenchendo...';
+    var ok = 0, erros = 0;
+
+    for (var i = 0; i < pendentes.length; i++) {
+      btn.textContent = '⏳ ' + (i + 1) + '/' + pendentes.length;
+      try {
+        var r = await fetch(PREENCHER_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'preencher', idQuestionario: pendentes[i].idQuestionario, finalizar: true }),
+        });
+        var d = await r.json();
+        if (!d.ok) throw new Error(d.error);
+        ok++;
+      } catch (e) {
+        erros++;
+        console.error('Erro preenchendo ' + pendentes[i].idQuestionario + ':', e.message);
+      }
+    }
+
+    showSyncStatus('RA ' + ra + ': ' + ok + ' preenchida(s)' + (erros ? ', ' + erros + ' erro(s)' : ''), ok ? 'success' : 'error');
+
+  } catch (err) {
+    showSyncStatus('Erro Modelitos: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
 }
