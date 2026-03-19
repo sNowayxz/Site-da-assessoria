@@ -15,95 +15,167 @@
       flex-direction: column;
       height: calc(100vh - 60px);
       overflow: hidden;
-      padding: 16px 20px;
-      gap: 12px;
-      max-width: 960px;
-      margin: 0 auto;
+      padding: 14px 24px;
+      gap: 10px;
     }
 
-    /* INPUT AREA */
-    .calc-header-card {
+    /* ── TOP ROW: inputs ── */
+    .calc-top {
       background: var(--white, #fff);
       border: 1px solid var(--gray-200, #e5e7eb);
       border-radius: 12px;
-      padding: 16px 20px;
+      padding: 14px 18px;
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 16px;
       flex-wrap: wrap;
+      flex-shrink: 0;
     }
     .calc-field {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     .calc-field label {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      color: var(--gray-600, #4b5563);
+      color: var(--gray-500, #6b7280);
       white-space: nowrap;
     }
-    .calc-input {
-      width: 100px;
-      padding: 8px 10px;
+
+    /* Stepper group: [-] input [+] */
+    .calc-stepper {
+      display: flex;
+      align-items: center;
       border: 1.5px solid var(--gray-200, #e5e7eb);
       border-radius: 8px;
-      font-size: 0.95rem;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .calc-stepper:focus-within {
+      border-color: var(--gold, #f0c030);
+      box-shadow: 0 0 0 3px rgba(240,192,48,0.12);
+    }
+    .calc-stepper button {
+      width: 30px;
+      height: 34px;
+      border: none;
+      background: var(--gray-50, #f9fafb);
+      color: var(--gray-500, #6b7280);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      padding: 0;
+      font-family: inherit;
+    }
+    .calc-stepper button:hover {
+      background: var(--gold, #f0c030);
+      color: var(--dark, #1a1a2e);
+    }
+    .calc-stepper button:active {
+      transform: scale(0.92);
+    }
+    .calc-stepper input {
+      width: 70px;
+      height: 34px;
+      border: none;
+      border-left: 1px solid var(--gray-200, #e5e7eb);
+      border-right: 1px solid var(--gray-200, #e5e7eb);
+      font-size: 0.9rem;
       font-weight: 700;
       font-family: inherit;
       text-align: center;
       outline: none;
-      transition: border-color 0.2s;
       background: var(--white, #fff);
       color: var(--dark, #1a1a2e);
+      -moz-appearance: textfield;
+      -webkit-appearance: none;
     }
-    .calc-input:focus {
-      border-color: var(--gold, #f0c030);
-      box-shadow: 0 0 0 3px rgba(240,192,48,0.15);
+    .calc-stepper input::-webkit-inner-spin-button,
+    .calc-stepper input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
     .calc-suffix {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--gray-400, #8892a4);
       font-weight: 500;
     }
     .calc-rs {
       font-weight: 700;
       color: var(--gray-500);
-      font-size: 0.85rem;
+      font-size: 0.82rem;
     }
+
+    /* Quick-pick buttons for horas */
+    .calc-presets {
+      display: flex;
+      gap: 4px;
+      margin-left: 2px;
+    }
+    .calc-preset {
+      padding: 4px 8px;
+      border: 1px solid var(--gray-200, #e5e7eb);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--gray-500, #6b7280);
+      font-size: 0.68rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .calc-preset:hover {
+      border-color: var(--gold, #f0c030);
+      color: var(--gold, #f0c030);
+    }
+    .calc-preset.active {
+      background: var(--gold, #f0c030);
+      border-color: var(--gold, #f0c030);
+      color: var(--dark, #1a1a2e);
+    }
+
+    /* Total box */
     .calc-total-box {
       margin-left: auto;
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 8px 16px;
-      background: linear-gradient(135deg, rgba(240,192,48,0.12), rgba(240,192,48,0.05));
+      background: linear-gradient(135deg, rgba(240,192,48,0.14), rgba(240,192,48,0.05));
       border-radius: 8px;
+      min-width: 140px;
+      justify-content: space-between;
     }
     .calc-total-label {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      color: var(--gray-600, #4b5563);
+      color: var(--gray-500, #6b7280);
     }
     .calc-total-value {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--gold, #f0c030);
     }
 
-    /* PAYMENT OPTIONS */
+    /* ── PAYMENT OPTIONS ── */
     .calc-options {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
       flex: 1;
       min-height: 0;
     }
     .calc-opt {
       background: var(--white, #fff);
       border: 1px solid var(--gray-200, #e5e7eb);
-      border-radius: 12px;
-      padding: 14px 16px;
+      border-radius: 14px;
+      padding: 16px 20px;
       display: flex;
       flex-direction: column;
       transition: all 0.2s;
@@ -119,24 +191,21 @@
     .calc-opt-head {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-      padding-bottom: 8px;
+      gap: 6px;
+      margin-bottom: 8px;
+      padding-bottom: 7px;
       border-bottom: 2px solid var(--gold, #f0c030);
     }
-    .calc-opt-icon {
-      font-size: 1.1rem;
-    }
+    .calc-opt-icon { font-size: 1rem; }
     .calc-opt-name {
-      font-size: 0.82rem;
+      font-size: 0.88rem;
       font-weight: 700;
       color: var(--dark, #1a1a2e);
     }
     .calc-opt-badge {
-      display: inline-block;
       padding: 1px 6px;
       border-radius: 4px;
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       font-weight: 700;
       background: rgba(34,197,94,0.12);
       color: #16a34a;
@@ -146,36 +215,84 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 0;
+      padding: 8px 0;
       border-bottom: 1px solid var(--gray-100, #f3f4f6);
     }
     .calc-line:last-child { border-bottom: none; }
     .calc-line-label {
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       color: var(--gray-500, #6b7280);
       font-weight: 500;
     }
     .calc-line-val {
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       font-weight: 700;
       color: var(--dark, #1a1a2e);
     }
     .calc-line-val.green { color: #16a34a; }
-    .calc-line-val.gold {
-      font-size: 1.05rem;
-      color: var(--gold, #f0c030);
-    }
+
+    /* Parcelas stepper mini */
     .calc-line-input {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
     }
-    .calc-mini-input {
-      width: 50px;
+    .calc-parc-stepper {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--gray-200, #e5e7eb);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .calc-parc-stepper button {
+      width: 22px;
+      height: 24px;
+      border: none;
+      background: var(--gray-50, #f9fafb);
+      color: var(--gray-500, #6b7280);
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .calc-parc-stepper button:hover {
+      background: var(--gold, #f0c030);
+      color: var(--dark);
+    }
+    .calc-parc-stepper input {
+      width: 28px;
+      height: 24px;
+      border: none;
+      border-left: 1px solid var(--gray-200, #e5e7eb);
+      border-right: 1px solid var(--gray-200, #e5e7eb);
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: inherit;
+      text-align: center;
+      outline: none;
+      background: var(--white, #fff);
+      color: var(--dark, #1a1a2e);
+      -moz-appearance: textfield;
+      -webkit-appearance: none;
+    }
+    .calc-parc-stepper input::-webkit-inner-spin-button,
+    .calc-parc-stepper input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* Sinal input */
+    .calc-sinal-input {
+      width: 60px;
       padding: 4px 6px;
       border: 1.5px solid var(--gray-200, #e5e7eb);
       border-radius: 6px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
       font-family: inherit;
       text-align: center;
@@ -183,12 +300,14 @@
       background: var(--white, #fff);
       color: var(--dark, #1a1a2e);
     }
-    .calc-mini-input:focus {
+    .calc-sinal-input:focus {
       border-color: var(--gold, #f0c030);
     }
+
+    /* Result highlight */
     .calc-opt-result {
       margin-top: auto;
-      padding: 8px 10px;
+      padding: 10px 14px;
       background: linear-gradient(135deg, rgba(240,192,48,0.1), rgba(240,192,48,0.04));
       border-radius: 8px;
       display: flex;
@@ -196,17 +315,27 @@
       justify-content: space-between;
     }
     .calc-opt-result-label {
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       font-weight: 600;
       color: var(--gray-600, #4b5563);
     }
     .calc-opt-result-val {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 700;
       color: var(--gold, #f0c030);
     }
+    /* Economia badge */
+    .calc-economia {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #16a34a;
+      background: rgba(34,197,94,0.1);
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
 
-    /* COPY BUTTON */
+    /* ── COPY BUTTON ── */
     .calc-copy-btn {
       display: flex;
       align-items: center;
@@ -235,17 +364,24 @@
       color: #fff;
     }
 
-    /* RESPONSIVE */
+    /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
-      .calc-page { padding: 12px; height: auto; overflow: auto; }
-      .calc-header-card { flex-direction: column; align-items: stretch; gap: 10px; }
-      .calc-total-box { margin-left: 0; justify-content: space-between; }
+      .calc-page { padding: 10px; height: auto; overflow: auto; }
+      .calc-top { flex-direction: column; align-items: stretch; gap: 10px; }
+      .calc-total-box { margin-left: 0; }
       .calc-options { grid-template-columns: 1fr; }
+      .calc-presets { flex-wrap: wrap; }
     }
 
-    /* Dark mode */
-    [data-theme="dark"] .calc-header-card { background: #1c2128; border-color: #30363d; }
-    [data-theme="dark"] .calc-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    /* ── DARK MODE ── */
+    [data-theme="dark"] .calc-top { background: #1c2128; border-color: #30363d; }
+    [data-theme="dark"] .calc-stepper { border-color: #30363d; }
+    [data-theme="dark"] .calc-stepper button { background: #21262d; color: #8b949e; }
+    [data-theme="dark"] .calc-stepper button:hover { background: var(--gold); color: var(--dark); }
+    [data-theme="dark"] .calc-stepper input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .calc-preset { border-color: #30363d; color: #8b949e; }
+    [data-theme="dark"] .calc-preset:hover { border-color: var(--gold); color: var(--gold); }
+    [data-theme="dark"] .calc-preset.active { background: var(--gold); color: var(--dark); border-color: var(--gold); }
     [data-theme="dark"] .calc-total-box { background: linear-gradient(135deg, rgba(240,192,48,0.12), rgba(240,192,48,0.05)); }
     [data-theme="dark"] .calc-total-label { color: #8b949e; }
     [data-theme="dark"] .calc-opt { background: #1c2128; border-color: #30363d; }
@@ -254,7 +390,11 @@
     [data-theme="dark"] .calc-line { border-bottom-color: #21262d; }
     [data-theme="dark"] .calc-line-label { color: #8b949e; }
     [data-theme="dark"] .calc-line-val { color: #e6edf3; }
-    [data-theme="dark"] .calc-mini-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .calc-parc-stepper { border-color: #30363d; }
+    [data-theme="dark"] .calc-parc-stepper button { background: #21262d; color: #8b949e; }
+    [data-theme="dark"] .calc-parc-stepper button:hover { background: var(--gold); color: var(--dark); }
+    [data-theme="dark"] .calc-parc-stepper input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .calc-sinal-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
     [data-theme="dark"] .calc-opt-result { background: linear-gradient(135deg, rgba(240,192,48,0.12), rgba(240,192,48,0.04)); }
     [data-theme="dark"] .calc-opt-result-label { color: #8b949e; }
   </style>
@@ -343,17 +483,30 @@
       </div>
 
       <div class="calc-page">
-        <!-- INPUTS + TOTAL -->
-        <div class="calc-header-card">
+        <!-- TOP: Inputs -->
+        <div class="calc-top">
           <div class="calc-field">
-            <label>Carga Hor&aacute;ria</label>
-            <input type="number" class="calc-input" id="calc-horas" placeholder="178" min="1" max="9999" oninput="calcExtensao()">
-            <span class="calc-suffix">horas</span>
+            <label>Horas</label>
+            <div class="calc-stepper">
+              <button type="button" onclick="stepHoras(-10)">-</button>
+              <input type="number" id="calc-horas" placeholder="178" min="1" max="9999" oninput="calcExtensao()">
+              <button type="button" onclick="stepHoras(10)">+</button>
+            </div>
+          </div>
+          <div class="calc-presets">
+            <button class="calc-preset" onclick="setHoras(80, this)">80h</button>
+            <button class="calc-preset" onclick="setHoras(120, this)">120h</button>
+            <button class="calc-preset" onclick="setHoras(178, this)">178h</button>
+            <button class="calc-preset" onclick="setHoras(200, this)">200h</button>
+            <button class="calc-preset" onclick="setHoras(360, this)">360h</button>
           </div>
           <div class="calc-field">
-            <label>Valor/Hora</label>
-            <span class="calc-rs">R$</span>
-            <input type="number" class="calc-input" id="calc-valor-hora" placeholder="2.50" min="0.01" step="0.01" oninput="calcExtensao()" style="width:85px;">
+            <label>R$/hora</label>
+            <div class="calc-stepper">
+              <button type="button" onclick="stepValorHora(-0.50)">-</button>
+              <input type="number" id="calc-valor-hora" placeholder="2.50" min="0.50" step="0.50" oninput="calcExtensao()">
+              <button type="button" onclick="stepValorHora(0.50)">+</button>
+            </div>
           </div>
           <div class="calc-total-box">
             <span class="calc-total-label">Total</span>
@@ -361,9 +514,9 @@
           </div>
         </div>
 
-        <!-- 3 PAYMENT OPTIONS SIDE BY SIDE -->
+        <!-- 3 PAYMENT OPTIONS -->
         <div class="calc-options">
-          <!-- Opção 1: Cartão -->
+          <!-- Cart&#227;o -->
           <div class="calc-opt best">
             <div class="calc-opt-head">
               <span class="calc-opt-icon">&#128179;</span>
@@ -381,7 +534,11 @@
             <div class="calc-line">
               <span class="calc-line-label">Parcelas</span>
               <div class="calc-line-input">
-                <input type="number" class="calc-mini-input" id="calc-op1-parcelas" value="6" min="1" max="12" oninput="calcExtensao()">
+                <div class="calc-parc-stepper">
+                  <button type="button" onclick="stepParcela('calc-op1-parcelas', -1)">-</button>
+                  <input type="number" id="calc-op1-parcelas" value="6" min="1" max="12" oninput="calcExtensao()">
+                  <button type="button" onclick="stepParcela('calc-op1-parcelas', 1)">+</button>
+                </div>
                 <span class="calc-suffix">x</span>
               </div>
             </div>
@@ -391,7 +548,7 @@
             </div>
           </div>
 
-          <!-- Opção 2: Sinal + Parcelamento -->
+          <!-- Sinal + Parcelas -->
           <div class="calc-opt">
             <div class="calc-opt-head">
               <span class="calc-opt-icon">&#128176;</span>
@@ -400,8 +557,8 @@
             <div class="calc-line">
               <span class="calc-line-label">Sinal (entrada)</span>
               <div class="calc-line-input">
-                <span class="calc-rs" style="font-size:0.75rem;">R$</span>
-                <input type="number" class="calc-mini-input" id="calc-op2-sinal" placeholder="200" min="0" step="10" oninput="calcExtensao()" style="width:65px;">
+                <span class="calc-rs" style="font-size:0.72rem;">R$</span>
+                <input type="number" class="calc-sinal-input" id="calc-op2-sinal" placeholder="200" min="0" step="50" oninput="calcExtensao()">
               </div>
             </div>
             <div class="calc-line">
@@ -411,7 +568,11 @@
             <div class="calc-line">
               <span class="calc-line-label">Parcelas</span>
               <div class="calc-line-input">
-                <input type="number" class="calc-mini-input" id="calc-op2-parcelas" value="6" min="1" max="12" oninput="calcExtensao()">
+                <div class="calc-parc-stepper">
+                  <button type="button" onclick="stepParcela('calc-op2-parcelas', -1)">-</button>
+                  <input type="number" id="calc-op2-parcelas" value="6" min="1" max="12" oninput="calcExtensao()">
+                  <button type="button" onclick="stepParcela('calc-op2-parcelas', 1)">+</button>
+                </div>
                 <span class="calc-suffix">x</span>
               </div>
             </div>
@@ -421,7 +582,7 @@
             </div>
           </div>
 
-          <!-- Opção 3: Pix -->
+          <!-- Pix -->
           <div class="calc-opt">
             <div class="calc-opt-head">
               <span class="calc-opt-icon">&#129001;</span>
@@ -430,6 +591,10 @@
             <div class="calc-line">
               <span class="calc-line-label">Desconto</span>
               <span class="calc-line-val green">20%</span>
+            </div>
+            <div class="calc-line">
+              <span class="calc-line-label">Economia</span>
+              <span class="calc-line-val green" id="calc-op3-economia">R$ 0,00</span>
             </div>
             <div class="calc-opt-result" style="margin-top:auto;">
               <span class="calc-opt-result-label">&Agrave; vista</span>
@@ -460,6 +625,47 @@
       return 'R$ ' + val.toFixed(2).replace('.', ',');
     }
 
+    // ── Steppers ──
+    function stepHoras(delta) {
+      var el = document.getElementById('calc-horas');
+      var val = (parseFloat(el.value) || 0) + delta;
+      if (val < 1) val = 1;
+      el.value = val;
+      clearPresets();
+      calcExtensao();
+    }
+
+    function stepValorHora(delta) {
+      var el = document.getElementById('calc-valor-hora');
+      var val = (parseFloat(el.value) || 0) + delta;
+      if (val < 0.50) val = 0.50;
+      el.value = val.toFixed(2);
+      calcExtensao();
+    }
+
+    function stepParcela(id, delta) {
+      var el = document.getElementById(id);
+      var val = (parseInt(el.value) || 1) + delta;
+      if (val < 1) val = 1;
+      if (val > 12) val = 12;
+      el.value = val;
+      calcExtensao();
+    }
+
+    function setHoras(val, btn) {
+      document.getElementById('calc-horas').value = val;
+      clearPresets();
+      btn.classList.add('active');
+      calcExtensao();
+    }
+
+    function clearPresets() {
+      var btns = document.querySelectorAll('.calc-preset');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+      }
+    }
+
     function calcExtensao() {
       var horas = parseFloat(document.getElementById('calc-horas').value) || 0;
       var valorHora = parseFloat(document.getElementById('calc-valor-hora').value) || 0;
@@ -467,14 +673,14 @@
 
       document.getElementById('calc-total').textContent = formatBRL(total);
 
-      // Opção 1: Cartão com 15% desconto
+      // Op 1: Cartao 15%
       var desconto1 = total * 0.85;
       var parcelas1 = parseInt(document.getElementById('calc-op1-parcelas').value) || 1;
       var vlrParcela1 = parcelas1 > 0 ? desconto1 / parcelas1 : desconto1;
       document.getElementById('calc-op1-total').textContent = formatBRL(desconto1);
       document.getElementById('calc-op1-parcela').textContent = formatBRL(vlrParcela1);
 
-      // Opção 2: Sinal + parcelamento
+      // Op 2: Sinal + parcelamento
       var sinal = parseFloat(document.getElementById('calc-op2-sinal').value) || 0;
       var restante = Math.max(0, total - sinal);
       var parcelas2 = parseInt(document.getElementById('calc-op2-parcelas').value) || 1;
@@ -482,9 +688,11 @@
       document.getElementById('calc-op2-restante').textContent = formatBRL(restante);
       document.getElementById('calc-op2-parcela').textContent = formatBRL(vlrParcela2);
 
-      // Opção 3: Pix à vista 20% desconto
+      // Op 3: Pix 20%
       var desconto3 = total * 0.80;
+      var economia3 = total * 0.20;
       document.getElementById('calc-op3-total').textContent = formatBRL(desconto3);
+      document.getElementById('calc-op3-economia').textContent = formatBRL(economia3);
     }
 
     function copyCalcResumo() {
