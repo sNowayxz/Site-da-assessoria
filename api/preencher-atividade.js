@@ -168,16 +168,27 @@ async function preencherAtividade(session, idQuestionario, finalizar) {
       idQuestionario: String(idQuestionario),
       finalizar: finalizar,
     }),
+    redirect: 'manual',
   });
 
-  const text = await r.text();
-  let data;
-  try { data = JSON.parse(text); } catch { data = { raw: text }; }
+  const status = r.status;
+  console.log(`[modelitos] Preencheu atividade ${idQuestionario}: HTTP ${status}`);
 
-  if (!r.ok) {
-    throw new Error(`Erro ao preencher: HTTP ${r.status} — ${text.substring(0, 200)}`);
+  // Modelitos pode retornar 200, 302 (redirect após sucesso), ou HTML
+  // Considerar 200 e 302 como sucesso
+  if (status === 200 || status === 301 || status === 302) {
+    let data;
+    try {
+      const text = await r.text();
+      try { data = JSON.parse(text); } catch { data = { status: status, preenchido: true }; }
+    } catch {
+      data = { status: status, preenchido: true };
+    }
+    return data;
   }
 
-  console.log(`[modelitos] Preencheu atividade ${idQuestionario}: ${r.status}`);
-  return data;
+  // Erro real
+  let errText = '';
+  try { errText = await r.text(); } catch {}
+  throw new Error(`HTTP ${status} — ${errText.substring(0, 200)}`);
 }
