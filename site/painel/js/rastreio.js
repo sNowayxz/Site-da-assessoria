@@ -715,50 +715,109 @@ async function executarPreenchimento() {
 }
 
 /* ═══════════════════════════════════════════
-   Preencher em Massa — Todos os alunos visíveis
+   Preencher em Massa — Checkboxes por Atividade
+   Agrupa por atividade e preenche todos os alunos
    ═══════════════════════════════════════════ */
+
+var _massaAtividades = [];
 
 async function preencherEmMassa() {
   var syncData = window._syncData || [];
   if (!syncData.length) { showSyncStatus('Nenhum dado de rastreio carregado', 'warning'); return; }
 
-  // Agrupar por aluno (RA)
-  var byRA = {};
+  // Agrupar por atividade (cd_shortname + atividade)
+  var byAtividade = {};
   syncData.forEach(function (item) {
     if (!item.alunos || !item.alunos.ra || item.respondida) return;
-    var ra = item.alunos.ra;
-    if (!byRA[ra]) { byRA[ra] = { nome: item.alunos.nome, items: [] }; }
-    byRA[ra].items.push(item);
+    var key = (item.cd_shortname || '') + '|' + (item.atividade || '');
+    if (!byAtividade[key]) {
+      byAtividade[key] = {
+        atividade: item.atividade,
+        disciplina: item.disciplina,
+        cd_shortname: item.cd_shortname,
+        tipo: item.tipo_atividade || 'AV',
+        data_final: item.data_final,
+        alunos: []
+      };
+    }
+    // Prazo mais próximo
+    if (item.data_final && (!byAtividade[key].data_final || item.data_final < byAtividade[key].data_final)) {
+      byAtividade[key].data_final = item.data_final;
+    }
+    byAtividade[key].alunos.push({
+      nome: item.alunos.nome,
+      ra: item.alunos.ra,
+      aluno_id: item.aluno_id
+    });
   });
 
-  var ras = Object.keys(byRA);
-  if (!ras.length) { showSyncStatus('Nenhuma atividade pendente para preencher', 'warning'); return; }
+  var atividades = Object.values(byAtividade);
+  if (!atividades.length) { showSyncStatus('Nenhuma atividade pendente para preencher', 'warning'); return; }
 
-  // Montar preview no modal
-  var totalAtiv = 0;
-  var html = '<div style="margin-bottom:8px;font-size:0.85rem;font-weight:600;">' + ras.length + ' aluno(s) com atividades pendentes:</div>';
-  ras.forEach(function (ra) {
-    var info = byRA[ra];
-    totalAtiv += info.items.length;
-    html += '<div style="padding:6px 10px;border-left:3px solid var(--gold);margin-bottom:4px;font-size:0.85rem;">'
-      + '<strong>' + escapeHtml(info.nome || ra) + '</strong> (' + ra + ') \u2014 ' + info.items.length + ' atividade(s)'
-      + '</div>';
+  // Ordenar por prazo
+  atividades.sort(function (a, b) {
+    if (!a.data_final) return 1;
+    if (!b.data_final) return -1;
+    return a.data_final.localeCompare(b.data_final);
+  });
+
+  _massaAtividades = atividades;
+
+  // Contar alunos únicos
+  var uniqueRAs = {};
+  atividades.forEach(function (a) {
+    a.alunos.forEach(function (al) { uniqueRAs[al.ra] = true; });
   });
 
   document.getElementById('modal-preencher-title').textContent = 'Preencher em Massa';
-  document.getElementById('modal-preencher-info').textContent = totalAtiv + ' atividade(s) de ' + ras.length + ' aluno(s)';
-  document.getElementById('modal-preencher-list').innerHTML = html;
+  document.getElementById('modal-preencher-info').textContent = atividades.length + ' atividade(s) de ' + Object.keys(uniqueRAs).length + ' aluno(s)';
   document.getElementById('modal-preencher-status').textContent = '';
+
+  var html = '<div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;">'
+    + '<input type="checkbox" id="check-all-modal" onchange="toggleAllModal(this.checked)" checked>'
+    + '<label for="check-all-modal" style="font-size:0.85rem;font-weight:600;cursor:pointer;">Selecionar todas</label>'
+    + '</div>';
+
+  atividades.forEach(function (a, i) {
+    var prazo = a.data_final ? formatDate(a.data_final) : '';
+    var tipo = a.tipo || 'AV';
+    var urgente = false;
+    if (a.data_final) {
+      var hoje = new Date(); hoje.setHours(0,0,0,0);
+      var diff = Math.ceil((new Date(a.data_final) - hoje) / 86400000);
+      urgente = diff <= 3;
+    }
+    var alunoNames = a.alunos.map(function (al) { return al.nome; });
+    var alunoPreview = alunoNames.length <= 3 ? alunoNames.join(', ') : alunoNames.slice(0, 3).join(', ') + ' +' + (alunoNames.length - 3);
+
+    html += '<div class="massa-item' + (urgente ? ' massa-urgente' : '') + '" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid ' + (urgente ? '#fca5a5' : 'var(--gray-200)') + ';border-radius:8px;margin-bottom:6px;transition:all 0.2s;">'
+      + '<input type="checkbox" class="check-modal-item" data-idx="' + i + '" checked style="margin-top:3px;">'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:0.9rem;font-weight:600;color:var(--gray-800);">' + escapeHtml(a.atividade) + '</div>'
+      + '<div style="font-size:0.78rem;color:var(--gray-500);">'
+      + '<span class="badge badge-' + (tipo === 'MAPA' ? 'mapa' : 'av') + '" style="font-size:0.7rem;margin-right:4px;">' + tipo + '</span>'
+      + escapeHtml(a.disciplina) + ' \u2022 ' + escapeHtml(a.cd_shortname)
+      + (prazo ? ' \u2022 Prazo: ' + prazo : '')
+      + '</div>'
+      + '<div style="font-size:0.75rem;color:var(--gray-400);margin-top:2px;">\uD83D\uDC65 ' + a.alunos.length + ' aluno(s): ' + escapeHtml(alunoPreview) + '</div>'
+      + '</div>'
+      + '</div>';
+  });
+
+  document.getElementById('modal-preencher-list').innerHTML = html;
 
   var btnConfirmar = document.getElementById('btn-confirmar-preencher');
   btnConfirmar.disabled = false;
-  btnConfirmar.textContent = 'Preencher Todos (' + totalAtiv + ')';
-  btnConfirmar.onclick = function () { executarMassa(byRA, ras); };
+  btnConfirmar.textContent = 'Preencher Selecionadas';
+  btnConfirmar.onclick = executarMassaPorAtividade;
 
   openModal('modal-preencher');
 }
 
-async function executarMassa(byRA, ras) {
+async function executarMassaPorAtividade() {
+  var checks = document.querySelectorAll('.check-modal-item:checked');
+  if (!checks.length) { showSyncStatus('Selecione ao menos uma atividade', 'warning'); return; }
+
   var finalizar = document.getElementById('check-finalizar').checked;
   var btn = document.getElementById('btn-confirmar-preencher');
   var status = document.getElementById('modal-preencher-status');
@@ -766,30 +825,45 @@ async function executarMassa(byRA, ras) {
 
   var btnMassa = document.getElementById('btn-preencher-massa');
 
+  // Coletar atividades selecionadas e RAs únicos
+  var selectedAtiv = [];
+  var allRAs = {};
+  for (var c = 0; c < checks.length; c++) {
+    var idx = parseInt(checks[c].getAttribute('data-idx'));
+    var ativ = _massaAtividades[idx];
+    if (!ativ) continue;
+    selectedAtiv.push(ativ);
+    ativ.alunos.forEach(function (al) {
+      if (!allRAs[al.ra]) allRAs[al.ra] = { nome: al.nome, ra: al.ra };
+    });
+  }
+
+  var ras = Object.values(allRAs);
+  var alunoCache = window._alunosCache || {};
   var totalOk = 0, totalErros = 0, totalIgnorados = 0, alunosOk = 0;
 
   for (var r = 0; r < ras.length; r++) {
-    var ra = ras[r];
-    var info = byRA[ra];
-    var atividades = info.items;
+    var ra = ras[r].ra;
+    var nome = ras[r].nome;
 
     // Buscar senha
-    var alunoCache = window._alunosCache || {};
     var alunoData = null;
     for (var key in alunoCache) {
       if (alunoCache[key].ra === ra) { alunoData = alunoCache[key]; break; }
     }
     if (!alunoData || !alunoData.studeo_senha) {
-      totalIgnorados += atividades.length;
+      var countForRA = selectedAtiv.filter(function (a) {
+        return a.alunos.some(function (al) { return al.ra === ra; });
+      }).length;
+      totalIgnorados += countForRA;
       continue;
     }
 
-    var prog = (r + 1) + '/' + ras.length + ': ' + (info.nome || ra);
-    status.textContent = '\u23f3 ' + prog + '...';
+    status.textContent = '\u23f3 ' + (r + 1) + '/' + ras.length + ': ' + nome + '...';
     btn.textContent = '\u23f3 ' + (r + 1) + '/' + ras.length;
     if (btnMassa) btnMassa.textContent = '\u23f3 ' + (r + 1) + '/' + ras.length;
 
-    // Buscar pendentes do Modelitos
+    // Verificar pendentes no Modelitos (1x por aluno)
     var pendentesModelitos = [];
     try {
       var resp = await fetch(PREENCHER_API_URL, {
@@ -801,15 +875,22 @@ async function executarMassa(byRA, ras) {
       if (data.ok) pendentesModelitos = data.pendentes || [];
     } catch (e) { /* ignora */ }
 
-    if (!pendentesModelitos.length) { totalIgnorados += atividades.length; continue; }
+    if (!pendentesModelitos.length) {
+      var countForRA2 = selectedAtiv.filter(function (a) {
+        return a.alunos.some(function (al) { return al.ra === ra; });
+      }).length;
+      totalIgnorados += countForRA2;
+      continue;
+    }
 
-    // Match e preencher
-    for (var i = 0; i < atividades.length; i++) {
-      var a = atividades[i];
+    // Para cada atividade selecionada que este aluno tem
+    for (var a = 0; a < selectedAtiv.length; a++) {
+      var ativ = selectedAtiv[a];
+      if (!ativ.alunos.some(function (al) { return al.ra === ra; })) continue;
+
       var match = pendentesModelitos.filter(function (p) {
-        return p.shortname && a.cd_shortname && p.shortname.includes(a.cd_shortname);
+        return p.shortname && ativ.cd_shortname && p.shortname.includes(ativ.cd_shortname);
       });
-
       if (!match.length) { totalIgnorados++; continue; }
 
       for (var j = 0; j < match.length; j++) {
@@ -837,9 +918,16 @@ async function executarMassa(byRA, ras) {
     alunosOk++;
   }
 
+  // Marcar itens preenchidos no modal
+  for (var c2 = 0; c2 < checks.length; c2++) {
+    checks[c2].parentElement.style.opacity = '0.5';
+    checks[c2].parentElement.style.borderColor = '#22c55e';
+  }
+
   var msg = alunosOk + '/' + ras.length + ' alunos, ' + totalOk + ' preenchida(s)';
   if (totalErros) msg += ', ' + totalErros + ' erro(s)';
   if (totalIgnorados) msg += ', ' + totalIgnorados + ' ignorada(s)';
+  msg += finalizar ? ' (finalizadas)' : ' (sem finalizar)';
 
   status.textContent = msg;
   btn.textContent = 'Fechar';
