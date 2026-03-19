@@ -263,7 +263,7 @@ function renderSyncData(data) {
       + '</div>'
       + '<div style="display:flex;align-items:center;gap:8px;">'
       + '<span class="badge badge-pendente">' + totalPendentes + ' pendência' + (totalPendentes !== 1 ? 's' : '') + '</span>'
-      + '<button class="btn btn-sync" style="font-size:0.78rem;padding:6px 12px;" onclick="buscarEPreencherAluno('' + escapeHtml(aluno.ra) + '', this)" title="Preencher via Modelitos">&#9654; Preencher</button>'
+      + '<button class="btn btn-sync" style="font-size:0.78rem;padding:6px 12px;" onclick="buscarEPreencherAluno(\x27' + escapeHtml(aluno.ra) + '\x27, this)" title="Preencher via Modelitos">&#9654; Preencher</button>'
       + '</div>'
       + '</div>';
 
