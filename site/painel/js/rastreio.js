@@ -23,17 +23,15 @@ document.addEventListener('DOMContentLoaded', async function () {
   await loadSyncData();
 
   // Eventos
-  document.getElementById('btn-sync').addEventListener('click', handleSync);
   document.getElementById('btn-sync-all').addEventListener('click', handleSyncAll);
   document.getElementById('btn-sync-new').addEventListener('click', handleSyncNew);
 
-  // Grupo chips (único controle para grupo — filtra sync e visualização)
+  // Grupo chips
   document.querySelectorAll('.grupo-chip').forEach(function (chip) {
     chip.addEventListener('click', function () {
       document.querySelectorAll('.grupo-chip').forEach(function (c) { c.classList.remove('active'); });
       chip.classList.add('active');
       updateSyncGroupButton();
-      loadAlunos();
       loadSyncData();
     });
   });
@@ -89,25 +87,6 @@ async function loadMensalistas() {
   el = document.getElementById('count-rec'); if (el) el.textContent = counts.recorrente || 0;
   el = document.getElementById('count-ext'); if (el) el.textContent = counts.extensao || 0;
 
-  loadAlunos();
-}
-
-function loadAlunos() {
-  var grupo = getActiveGrupo();
-  var all = window._todosAlunos || [];
-  var filtered = grupo ? all.filter(function (a) { return a.tipo === grupo; }) : all;
-
-  // Sync select
-  var syncSelect = document.getElementById('sync-aluno-select');
-  if (syncSelect) {
-    syncSelect.innerHTML = '<option value="">Selecione um aluno para sincronizar...</option>';
-    filtered.forEach(function (a) {
-      var hasSenha = a.studeo_senha ? '' : ' [sem senha]';
-      var tag = a.tipo === 'extensao' ? 'EXT' : a.tipo === 'recorrente' ? 'REC' : 'MEN';
-      syncSelect.innerHTML += '<option value="' + a.id + '"' + (!a.studeo_senha ? ' disabled' : '') + '>'
-        + escapeHtml(a.nome) + ' (' + escapeHtml(a.ra) + ') [' + tag + ']' + hasSenha + '</option>';
-    });
-  }
 
 }
 
@@ -339,51 +318,8 @@ function renderSyncData(data) {
   });
 }
 
-async function handleSync() {
-  var selectEl = document.getElementById('sync-aluno-select');
-  var alunoId = selectEl.value;
-  if (!alunoId) { alert('Selecione um aluno para sincronizar.'); return; }
-  if (syncInProgress) { alert('Sincronização em andamento, aguarde...'); return; }
-
-  var aluno = (window._todosAlunos || []).find(function (a) { return a.id === alunoId; });
-  if (!aluno) { alert('Aluno não encontrado.'); return; }
-  if (!aluno.studeo_senha) { alert('Este aluno não tem senha do Studeo cadastrada. Edite o aluno na página de Alunos e adicione a senha.'); return; }
-
-  syncInProgress = true;
-  setSyncButtonsLoading(true);
-  showSyncStatus('Sincronizando ' + aluno.nome + '...', 'loading');
-
-  try {
-    var resp = await fetch(SYNC_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'sync', ra: aluno.ra, senha: aluno.studeo_senha }),
-    });
-
-    var result = await resp.json();
-    if (!resp.ok || !result.ok) {
-      var errMsg = result.error || 'Erro na sincronização';
-      if (errMsg.includes('Credenciais') || errMsg.includes('401') || errMsg.includes('password') || errMsg.includes('Login falhou') || errMsg.includes('inválidas')) {
-        errMsg = '⚠️ Senha incorreta para ' + aluno.nome + ' (RA: ' + aluno.ra + '). Atualize a senha na página de Alunos.';
-      }
-      throw new Error(errMsg);
-    }
-
-    // Salvar resultados no Supabase
-    var count = await saveResults(alunoId, result.resultado);
-    showSyncStatus('Sincronizado! ' + count + ' atividades encontradas para ' + aluno.nome, 'success');
-    await loadSyncData();
-
-  } catch (err) {
-    showSyncStatus('Erro: ' + err.message, 'error');
-  } finally {
-    syncInProgress = false;
-    setSyncButtonsLoading(false);
-  }
-}
-
 function setSyncButtonsLoading(loading) {
-  ['btn-sync', 'btn-sync-all', 'btn-sync-new'].forEach(function (id) {
+  ['btn-sync-all', 'btn-sync-new'].forEach(function (id) {
     var btn = document.getElementById(id);
     if (btn) {
       if (loading) btn.classList.add('btn-loading');
@@ -791,23 +727,51 @@ async function preencherEmMassa() {
   syncData.forEach(function (item) {
     if (!item.alunos || !item.alunos.ra || item.respondida) return;
     var ra = item.alunos.ra;
-    if (!byRA[ra]) byRA[ra] = [];
-    byRA[ra].push(item);
+    if (!byRA[ra]) { byRA[ra] = { nome: item.alunos.nome, items: [] }; }
+    byRA[ra].items.push(item);
   });
 
   var ras = Object.keys(byRA);
   if (!ras.length) { showSyncStatus('Nenhuma atividade pendente para preencher', 'warning'); return; }
 
-  if (!confirm('Preencher atividades de ' + ras.length + ' aluno(s) em massa?\n\nIsso pode levar alguns minutos.')) return;
+  // Montar preview no modal
+  var totalAtiv = 0;
+  var html = '<div style="margin-bottom:8px;font-size:0.85rem;font-weight:600;">' + ras.length + ' aluno(s) com atividades pendentes:</div>';
+  ras.forEach(function (ra) {
+    var info = byRA[ra];
+    totalAtiv += info.items.length;
+    html += '<div style="padding:6px 10px;border-left:3px solid var(--gold);margin-bottom:4px;font-size:0.85rem;">'
+      + '<strong>' + escapeHtml(info.nome || ra) + '</strong> (' + ra + ') \u2014 ' + info.items.length + ' atividade(s)'
+      + '</div>';
+  });
+
+  document.getElementById('modal-preencher-title').textContent = 'Preencher em Massa';
+  document.getElementById('modal-preencher-info').textContent = totalAtiv + ' atividade(s) de ' + ras.length + ' aluno(s)';
+  document.getElementById('modal-preencher-list').innerHTML = html;
+  document.getElementById('modal-preencher-status').textContent = '';
+
+  var btnConfirmar = document.getElementById('btn-confirmar-preencher');
+  btnConfirmar.disabled = false;
+  btnConfirmar.textContent = 'Preencher Todos (' + totalAtiv + ')';
+  btnConfirmar.onclick = function () { executarMassa(byRA, ras); };
+
+  openModal('modal-preencher');
+}
+
+async function executarMassa(byRA, ras) {
+  var finalizar = document.getElementById('check-finalizar').checked;
+  var btn = document.getElementById('btn-confirmar-preencher');
+  var status = document.getElementById('modal-preencher-status');
+  btn.disabled = true;
 
   var btnMassa = document.getElementById('btn-preencher-massa');
-  if (btnMassa) { btnMassa.disabled = true; btnMassa.textContent = '\u23f3 Preenchendo...'; }
 
   var totalOk = 0, totalErros = 0, totalIgnorados = 0, alunosOk = 0;
 
   for (var r = 0; r < ras.length; r++) {
     var ra = ras[r];
-    var atividades = byRA[ra];
+    var info = byRA[ra];
+    var atividades = info.items;
 
     // Buscar senha
     var alunoCache = window._alunosCache || {};
@@ -820,7 +784,9 @@ async function preencherEmMassa() {
       continue;
     }
 
-    showSyncStatus('\u23f3 ' + (r + 1) + '/' + ras.length + ': ' + (alunoData.nome || ra) + '...', 'loading');
+    var prog = (r + 1) + '/' + ras.length + ': ' + (info.nome || ra);
+    status.textContent = '\u23f3 ' + prog + '...';
+    btn.textContent = '\u23f3 ' + (r + 1) + '/' + ras.length;
     if (btnMassa) btnMassa.textContent = '\u23f3 ' + (r + 1) + '/' + ras.length;
 
     // Buscar pendentes do Modelitos
@@ -857,7 +823,7 @@ async function preencherEmMassa() {
               shortname: match[j].shortname,
               ra: ra,
               senha: alunoData.studeo_senha,
-              finalizar: true,
+              finalizar: finalizar,
             }),
           });
           var dd = await rr.json();
@@ -875,6 +841,10 @@ async function preencherEmMassa() {
   if (totalErros) msg += ', ' + totalErros + ' erro(s)';
   if (totalIgnorados) msg += ', ' + totalIgnorados + ' ignorada(s)';
 
+  status.textContent = msg;
+  btn.textContent = 'Fechar';
+  btn.disabled = false;
+  btn.onclick = function () { closeModal('modal-preencher'); };
   showSyncStatus('Massa: ' + msg, totalOk ? 'success' : 'warning');
   if (btnMassa) { btnMassa.disabled = false; btnMassa.textContent = '\u26a1 Preencher em Massa'; }
 }
