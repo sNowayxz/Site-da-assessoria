@@ -597,14 +597,17 @@ function escapeHtml(text) {
 }
 
 /* ═══════════════════════════════════════════
-   Preencher Atividades — Modelitos
+   Preencher Atividades — Modelitos (Modal)
    ═══════════════════════════════════════════ */
+
+var _preencherPendentes = [];
+var _preencherRA = '';
 
 async function buscarEPreencherAluno(ra, btn) {
   if (!ra) return;
   var origText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = '⏳ Buscando...';
+  btn.textContent = '\u23f3 Buscando...';
 
   try {
     var resp = await fetch(PREENCHER_API_URL, {
@@ -621,29 +624,9 @@ async function buscarEPreencherAluno(ra, btn) {
       return;
     }
 
-    if (!confirm('Encontradas ' + pendentes.length + ' atividade(s) pendente(s) no Modelitos para RA ' + ra + '.\n\nPreencher todas?')) return;
-
-    btn.textContent = '⏳ Preenchendo...';
-    var ok = 0, erros = 0;
-
-    for (var i = 0; i < pendentes.length; i++) {
-      btn.textContent = '⏳ ' + (i + 1) + '/' + pendentes.length;
-      try {
-        var r = await fetch(PREENCHER_API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'preencher', idQuestionario: pendentes[i].idQuestionario, finalizar: true }),
-        });
-        var d = await r.json();
-        if (!d.ok) throw new Error(d.error);
-        ok++;
-      } catch (e) {
-        erros++;
-        console.error('Erro preenchendo ' + pendentes[i].idQuestionario + ':', e.message);
-      }
-    }
-
-    showSyncStatus('RA ' + ra + ': ' + ok + ' preenchida(s)' + (erros ? ', ' + erros + ' erro(s)' : ''), ok ? 'success' : 'error');
+    _preencherPendentes = pendentes;
+    _preencherRA = ra;
+    abrirModalPreencher(ra, pendentes);
 
   } catch (err) {
     showSyncStatus('Erro Modelitos: ' + err.message, 'error');
@@ -651,4 +634,85 @@ async function buscarEPreencherAluno(ra, btn) {
     btn.disabled = false;
     btn.textContent = origText;
   }
+}
+
+function abrirModalPreencher(ra, pendentes) {
+  document.getElementById('modal-preencher-title').textContent = 'Preencher Atividades \u2014 RA ' + ra;
+  document.getElementById('modal-preencher-info').textContent = pendentes.length + ' atividade(s) pendente(s) encontrada(s)';
+  document.getElementById('modal-preencher-status').textContent = '';
+
+  var html = '<div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;">'
+    + '<input type="checkbox" id="check-all-modal" onchange="toggleAllModal(this.checked)" checked>'
+    + '<label for="check-all-modal" style="font-size:0.85rem;font-weight:600;cursor:pointer;">Selecionar todas</label>'
+    + '</div>';
+
+  pendentes.forEach(function (p, i) {
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:6px;">'
+      + '<input type="checkbox" class="check-modal-item" data-idx="' + i + '" checked>'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:0.9rem;font-weight:600;color:var(--gray-800);">' + escapeHtml(p.descricao || 'Atividade ' + (i + 1)) + '</div>'
+      + '<div style="font-size:0.78rem;color:var(--gray-500);">ID: ' + escapeHtml(p.idQuestionario || '') + ' \u2022 ' + escapeHtml(p.shortname || '') + '</div>'
+      + '</div>'
+      + '</div>';
+  });
+
+  document.getElementById('modal-preencher-list').innerHTML = html;
+
+  var btnConfirmar = document.getElementById('btn-confirmar-preencher');
+  btnConfirmar.disabled = false;
+  btnConfirmar.textContent = 'Preencher Selecionadas';
+  btnConfirmar.onclick = executarPreenchimento;
+
+  openModal('modal-preencher');
+}
+
+function toggleAllModal(checked) {
+  var items = document.querySelectorAll('.check-modal-item');
+  for (var i = 0; i < items.length; i++) items[i].checked = checked;
+}
+
+async function executarPreenchimento() {
+  var checks = document.querySelectorAll('.check-modal-item:checked');
+  if (!checks.length) { showSyncStatus('Selecione ao menos uma atividade', 'warning'); return; }
+
+  var finalizar = document.getElementById('check-finalizar').checked;
+  var btn = document.getElementById('btn-confirmar-preencher');
+  var status = document.getElementById('modal-preencher-status');
+  btn.disabled = true;
+
+  var total = checks.length;
+  var ok = 0, erros = 0;
+
+  for (var i = 0; i < checks.length; i++) {
+    var idx = parseInt(checks[i].getAttribute('data-idx'));
+    var p = _preencherPendentes[idx];
+    if (!p) continue;
+
+    status.textContent = '\u23f3 ' + (i + 1) + '/' + total + ': ' + (p.descricao || p.idQuestionario) + '...';
+    btn.textContent = '\u23f3 ' + (i + 1) + '/' + total;
+
+    try {
+      var r = await fetch(PREENCHER_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'preencher', idQuestionario: p.idQuestionario, finalizar: finalizar }),
+      });
+      var d = await r.json();
+      if (!d.ok) throw new Error(d.error);
+      ok++;
+
+      // Visual feedback: mark as done
+      checks[i].parentElement.style.opacity = '0.5';
+      checks[i].parentElement.style.borderColor = '#22c55e';
+    } catch (e) {
+      erros++;
+      checks[i].parentElement.style.borderColor = '#ef4444';
+      console.error('Erro preenchendo ' + p.idQuestionario + ':', e.message);
+    }
+  }
+
+  var msg = ok + ' preenchida(s)' + (erros ? ', ' + erros + ' erro(s)' : '') + (finalizar ? ' (finalizadas)' : ' (sem finalizar)');
+  status.textContent = msg;
+  btn.textContent = 'Conclu\u00eddo';
+  showSyncStatus('RA ' + _preencherRA + ': ' + msg, ok ? 'success' : 'error');
 }

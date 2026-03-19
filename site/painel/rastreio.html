@@ -83,9 +83,10 @@
       background: var(--gold-glow);
     }
     .grupo-chip.active {
-      background: var(--primary);
-      color: var(--white);
-      border-color: var(--primary);
+      background: var(--gold, #f0c030);
+      color: var(--dark, #1a1a2e);
+      border-color: var(--gold, #f0c030);
+      box-shadow: 0 2px 8px rgba(240,192,48,0.35);
     }
     .grupo-chip .chip-count {
       font-size: 0.7rem;
@@ -389,7 +390,7 @@
     [data-theme="dark"] .styled-select:focus { border-color: var(--gold); }
     [data-theme="dark"] .grupo-chip { background: #161b22; border-color: #30363d; color: #8b949e; }
     [data-theme="dark"] .grupo-chip:hover { border-color: var(--gold); color: #f0c030; background: rgba(240,192,48,0.08); }
-    [data-theme="dark"] .grupo-chip.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
+    [data-theme="dark"] .grupo-chip.active { background: var(--gold, #f0c030); color: var(--dark, #1a1a2e); border-color: var(--gold, #f0c030); box-shadow: 0 2px 8px rgba(240,192,48,0.3); }
     [data-theme="dark"] .aluno-header { background: #161b22; border-bottom-color: #30363d; }
     [data-theme="dark"] .aluno-info h3 { color: var(--primary-light, #f0c030); }
     [data-theme="dark"] .disc-row { border-bottom-color: #21262d; }
@@ -551,11 +552,36 @@
     </main>
   </div>
 
+  <!-- MODAL: Preencher Atividades -->
+  <div class="modal-overlay" id="modal-preencher">
+    <div class="modal" style="max-width:640px;">
+      <div class="modal-header">
+        <h3 id="modal-preencher-title">Preencher Atividades</h3>
+        <button class="modal-close" onclick="closeModal('modal-preencher')">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height:60vh;overflow-y:auto;">
+        <div id="modal-preencher-info" style="margin-bottom:12px;font-size:0.9rem;color:var(--gray-500);"></div>
+        <div id="modal-preencher-list"></div>
+        <div style="margin-top:16px;padding:12px;background:var(--gray-50);border-radius:8px;display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="check-finalizar" checked>
+          <label for="check-finalizar" style="font-size:0.9rem;cursor:pointer;">Finalizar atividades ap&oacute;s preenchimento</label>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center;">
+        <span id="modal-preencher-status" style="font-size:0.85rem;color:var(--gray-500);"></span>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn-cancel" onclick="closeModal('modal-preencher')">Cancelar</button>
+          <button type="button" class="btn-save" id="btn-confirmar-preencher">Preencher Selecionadas</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/auth.js?v=6"></script>
   <script src="js/utils.js?v=6"></script>
-  <script src="js/rastreio.js?v=4"></script>
+  <script src="js/rastreio.js?v=5"></script>
   <script>
     // Mobile sidebar toggle
     document.getElementById('mobile-toggle').addEventListener('click', function () {
