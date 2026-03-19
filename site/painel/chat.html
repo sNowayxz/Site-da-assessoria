@@ -120,15 +120,18 @@
     .chat-input-area {
       display: flex;
       flex-direction: row;
-      padding: 12px 20px;
-      gap: 8px;
+      padding: 14px 20px;
+      gap: 10px;
       border-top: 1px solid var(--gray-200);
       background: var(--white);
       align-items: center;
       flex-shrink: 0;
+      width: 100%;
+      box-sizing: border-box;
     }
     .chat-input-area input[type="text"] {
       flex: 1;
+      min-width: 0;
       padding: 11px 16px;
       border: 1.5px solid var(--gray-200);
       border-radius: 24px;
