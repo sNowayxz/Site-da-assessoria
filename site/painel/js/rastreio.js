@@ -330,7 +330,7 @@ function setSyncButtonsLoading(loading) {
 }
 
 async function handleSyncAll() {
-  if (syncInProgress) { alert('Sincronização em andamento, aguarde...'); return; }
+  if (syncInProgress) { showToast('Sincronização em andamento, aguarde...', 'warning'); return; }
 
   var grupo = getActiveGrupo();
   var all = (window._todosAlunos || []).filter(function (a) { return a.studeo_senha; });
@@ -338,7 +338,7 @@ async function handleSyncAll() {
   var grupoLabel = grupo ? (' ' + grupo) : '';
 
   if (!alunosList.length) {
-    alert('Nenhum aluno com senha do Studeo' + grupoLabel + '.');
+    showToast('Nenhum aluno com senha do Studeo' + grupoLabel, 'warning');
     return;
   }
 
@@ -346,7 +346,7 @@ async function handleSyncAll() {
 }
 
 async function handleSyncNew() {
-  if (syncInProgress) { alert('Sincronização em andamento, aguarde...'); return; }
+  if (syncInProgress) { showToast('Sincronização em andamento, aguarde...', 'warning'); return; }
 
   var grupo = getActiveGrupo();
   var all = (window._todosAlunos || []).filter(function (a) { return a.studeo_senha; });

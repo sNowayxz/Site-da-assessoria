@@ -187,13 +187,22 @@ function editGabarito(id) {
 }
 
 async function deleteGabarito(id) {
-  if (!confirm('Tem certeza que deseja excluir este gabarito?')) return;
-  var { error } = await sb.from('gabaritos').delete().eq('id', id);
-  if (error) { alert('Erro: ' + error.message); return; }
-  logAudit('delete_gabarito', 'gabaritos', id, {});
-  showToast('Gabarito exclu\u00eddo!', 'success');
-  await loadGabaritos();
+  showConfirm('Tem certeza que deseja excluir este gabarito?', async function() {
+    var gab = _gabaritos.find(function(g) { return g.id === id; });
+    var { error } = await sb.from('gabaritos').delete().eq('id', id);
+    if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    logAudit('delete_gabarito', 'gabaritos', id, {});
+    await loadGabaritos();
+    if (gab) {
+      showUndoToast('Gabarito excluído', async function() {
+        await sb.from('gabaritos').insert(gab);
+        showToast('Gabarito restaurado!', 'success');
+        await loadGabaritos();
+      });
+    }
+  }, { title: 'Excluir Gabarito', confirmText: 'Excluir', type: 'danger' });
 }
+
 
 /* ═══════════════════════════════════════════
    Responder Atividades — Modelitos
@@ -272,7 +281,10 @@ function toggleBtnPreencher() {
 async function preencherUma(idx) {
   var p = _pendentes[idx];
   if (!p) return;
-  if (!confirm('Preencher atividade ' + p.idQuestionario + '?')) return;
+  showConfirm('Preencher atividade ' + p.idQuestionario + '?', async function() { await _doPreencherUma(p); }, { title: 'Preencher Atividade', confirmText: 'Preencher', type: 'info' });
+  return;
+}
+async function _doPreencherUma(p) {
 
   var status = document.getElementById('preencher-status');
   status.textContent = 'Preenchendo ' + p.idQuestionario + '...';
@@ -298,8 +310,10 @@ async function preencherUma(idx) {
 async function preencherSelecionadas() {
   var checks = document.querySelectorAll('.check-pendente:checked');
   if (!checks.length) return;
-  if (!confirm('Preencher ' + checks.length + ' atividade(s) selecionada(s)?')) return;
-
+  var _checks = checks;
+  showConfirm('Preencher ' + checks.length + ' atividade(s) selecionada(s)?', async function() { await _doPreencherSelecionadas(_checks); }, { title: 'Preencher em Lote', confirmText: 'Preencher', type: 'info' });
+}
+async function _doPreencherSelecionadas(checks) {
   var btn = document.getElementById('btn-preencher-selecionadas');
   var status = document.getElementById('preencher-status');
   btn.disabled = true;

@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 // ─── Parse da lista colada ────────────────────────────
 function parseLista() {
   var texto = document.getElementById('paste-area').value.trim();
-  if (!texto) { alert('Cole a lista de logins primeiro.'); return; }
+  if (!texto) { showToast('Cole a lista de logins primeiro', 'warning'); return; }
 
   var linhas = texto.split('\n');
   loginsParsed = [];
@@ -51,7 +51,7 @@ function parseLista() {
   });
 
   if (!loginsParsed.length) {
-    alert('Nenhum login válido encontrado. Verifique o formato: RA TAB/VÍRGULA Senha');
+    showToast('Nenhum login válido encontrado. Verifique o formato: RA TAB/VÍRGULA Senha', 'warning');
     return;
   }
 
@@ -82,7 +82,10 @@ function mostrarPreview() {
 // ─── Importação em lotes ──────────────────────────────
 async function iniciarImportacao() {
   if (!loginsParsed.length) return;
-  if (!confirm('Importar ' + loginsParsed.length + ' alunos como mensalistas? Credenciais serão verificadas no Studeo.')) return;
+  showConfirm('Importar ' + loginsParsed.length + ' alunos como mensalistas?<br>Credenciais serão verificadas no Studeo.', async function() { await _doImportar(); }, { title: 'Importar Alunos', confirmText: 'Importar', type: 'warning' });
+  return;
+}
+async function _doImportar() {
 
   document.getElementById('btn-import').disabled = true;
   document.getElementById('btn-parse').disabled  = true;

@@ -28,7 +28,7 @@ function showConfig() {
 
 function saveApiUrl() {
   var url = document.getElementById('apps-script-url').value.trim();
-  if (!url) return alert('Cole a URL do Google Apps Script.');
+  if (!url) { showToast('Cole a URL do Google Apps Script', 'warning'); return; }
   localStorage.setItem('extensoes_api_url', url);
   API_URL = url;
   document.getElementById('config-bar').classList.add('hidden');
@@ -211,7 +211,7 @@ function openAddModal() {
 // ── Save ──
 async function handleSave(e) {
   e.preventDefault();
-  if (!API_URL) return alert('Configure a URL do Apps Script primeiro.');
+  if (!API_URL) { showToast('Configure a URL do Apps Script primeiro', 'warning'); return; }
 
   var btn = document.querySelector('.btn-save');
   btn.textContent = 'Salvando...';
@@ -251,11 +251,11 @@ async function handleSave(e) {
       closeModal('modal-ext');
       loadExtensoes();
     } else {
-      alert('Erro: ' + (json.error || 'Falha ao salvar'));
+      showToast('Erro: ' + (json.error || 'Falha ao salvar'), 'error');
     }
   } catch (err) {
     console.error('Erro ao salvar:', err);
-    alert('Erro de conexão ao salvar.');
+    showToast('Erro de conexão ao salvar', 'error');
   } finally {
     btn.textContent = '💾 Salvar';
     btn.disabled = false;
@@ -266,25 +266,25 @@ async function handleSave(e) {
 async function handleDelete() {
   var rowIndex = document.getElementById('ext-row-index').value;
   if (!rowIndex) return;
-  if (!confirm('Remover este aluno da planilha?')) return;
-
-  try {
-    var res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'delete', rowIndex: parseInt(rowIndex) })
-    });
-    var json = await res.json();
-    if (json.success) {
-      closeModal('modal-ext');
-      loadExtensoes();
-    } else {
-      alert('Erro: ' + (json.error || 'Falha ao remover'));
+  showConfirm('Remover este aluno da planilha?', async function() {
+    try {
+      var res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'delete', rowIndex: parseInt(rowIndex) })
+      });
+      var json = await res.json();
+      if (json.success) {
+        closeModal('modal-ext');
+        loadExtensoes();
+      } else {
+        showToast('Erro: ' + (json.error || 'Falha ao remover'), 'error');
+      }
+    } catch (err) {
+      console.error('Erro ao remover:', err);
+      showToast('Erro de conexão', 'error');
     }
-  } catch (err) {
-    console.error('Erro ao remover:', err);
-    alert('Erro de conexão.');
-  }
+  }, { title: 'Remover Aluno', confirmText: 'Remover', type: 'danger' });
 }
 
 // ── Modal helpers ──

@@ -63,14 +63,21 @@ async function loadAlunos() {
   renderAlunos(window._alunos);
 }
 
+var _alunosCurrentPage = 1;
+function goToPageAlunos(p) { _alunosCurrentPage = p; filterAlunos(); }
+
 function renderAlunos(alunos) {
   var tbody = document.getElementById('alunos-table');
   if (!alunos.length) {
     tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Nenhum aluno cadastrado</td></tr>';
+    renderPagination('pagination-container', 0, 1, 'goToPageAlunos');
     return;
   }
 
-  tbody.innerHTML = alunos.map(function (a) {
+  var paginated = paginateArray(alunos, _alunosCurrentPage);
+  renderPagination('pagination-container', alunos.length, _alunosCurrentPage, 'goToPageAlunos');
+
+  tbody.innerHTML = paginated.map(function (a) {
     var hasStudeo = a.studeo_senha ? ' 🔗' : '';
     return '<tr>' +
       '<td>' + escapeHtml(a.ra) + '</td>' +
@@ -160,9 +167,17 @@ async function editAluno(id) {
 }
 
 async function deleteAluno(id) {
-  if (!confirm('Tem certeza que deseja excluir este aluno? As atividades vinculadas também serão excluídas.')) return;
-  await sb.from('alunos').delete().eq('id', id);
-  logAudit('delete_aluno', 'alunos', id, {});
-  showToast('Aluno excluído!', 'success');
-  await loadAlunos();
+  showConfirm('Tem certeza que deseja excluir este aluno? As atividades vinculadas também serão excluídas.', async function() {
+    var aluno = _alunos.find(function(a) { return a.id === id; });
+    await sb.from('alunos').delete().eq('id', id);
+    logAudit('delete_aluno', 'alunos', id, {});
+    await loadAlunos();
+    if (aluno) {
+      showUndoToast('Aluno excluído', async function() {
+        await sb.from('alunos').insert(aluno);
+        showToast('Aluno restaurado!', 'success');
+        await loadAlunos();
+      });
+    }
+  }, { title: 'Excluir Aluno', confirmText: 'Excluir', type: 'danger' });
 }

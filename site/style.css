@@ -1248,6 +1248,87 @@ a { text-decoration: none; color: inherit; }
 .servico-card:nth-child(5).visible { animation-delay: 0.4s; }
 .servico-card:nth-child(6).visible { animation-delay: 0.5s; }
 
+/* ═══════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════ */
+[data-theme="dark"] {
+  --white: #0f1116;
+  --gray-50: #161b22;
+  --gray-100: #21262d;
+  --gray-200: #30363d;
+  --gray-400: #8b949e;
+  --gray-600: #c9d1d9;
+  --gray-800: #e1e4e8;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.35);
+}
+[data-theme="dark"] body {
+  background: #0d1117;
+}
+[data-theme="dark"] .section-alt {
+  background: #0d1117;
+}
+[data-theme="dark"] .navbar.scrolled {
+  background: rgba(13, 17, 23, 0.97);
+}
+[data-theme="dark"] .servico-card:hover {
+  background: linear-gradient(to bottom, rgba(240, 192, 48, 0.06), var(--white));
+}
+[data-theme="dark"] .step-number {
+  box-shadow: 0 0 0 5px var(--gray-50), 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .timeline-step:hover .step-number {
+  box-shadow: 0 0 0 5px var(--gray-50), 0 4px 20px var(--gold-shadow);
+}
+[data-theme="dark"] .contact-badge {
+  color: var(--gray-200);
+}
+[data-theme="dark"] .qr-container {
+  background: #ffffff;
+}
+[data-theme="dark"] .footer {
+  background: #010409;
+}
+[data-theme="dark"] .whatsapp-float::after {
+  background: var(--gray-100);
+}
+[data-theme="dark"] .scroll-top {
+  background: var(--gray-100);
+  border-color: rgba(240, 192, 48, 0.2);
+}
+[data-theme="dark"] .scroll-top:hover {
+  background: var(--gold);
+  color: #0d1117;
+  border-color: var(--gold);
+}
+[data-theme="dark"] .depoimento-form input,
+[data-theme="dark"] .depoimento-form textarea {
+  background: var(--gray-100);
+  color: var(--gray-800);
+  border-color: var(--gray-200);
+}
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%);
+  background-size: 200% 100%;
+}
+
+/* Dark mode toggle */
+.theme-toggle {
+  background: none;
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  line-height: 1;
+  margin-left: 8px;
+}
+.theme-toggle:hover {
+  border-color: var(--gold);
+  background: rgba(240, 192, 48, 0.08);
+}
+
 .depoimento-card:nth-child(1).visible { animation-delay: 0s; }
 .depoimento-card:nth-child(2).visible { animation-delay: 0.1s; }
 .depoimento-card:nth-child(3).visible { animation-delay: 0.15s; }

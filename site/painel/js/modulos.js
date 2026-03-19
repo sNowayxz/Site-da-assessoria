@@ -94,7 +94,7 @@ async function handleSaveModulo(e) {
     closeModal('modal-modulo');
     await loadModulos();
   } catch (err) {
-    alert('Erro: ' + err.message);
+    showToast('Erro: ' + err.message, 'error');
   }
 }
 
@@ -116,15 +116,16 @@ async function editModulo(id) {
 async function toggleModulo(id, current) {
   var next = current === 'aberto' ? 'fechado' : 'aberto';
   var { error } = await sb.from('modulos').update({ situacao: next }).eq('id', id);
-  if (error) { alert('Erro: ' + error.message); return; }
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
   await loadModulos();
 }
 
 async function deleteModulo(id) {
-  if (!confirm('Excluir este módulo?')) return;
-  var { error } = await sb.from('modulos').delete().eq('id', id);
-  if (error) { alert('Erro: ' + error.message); return; }
-  await loadModulos();
+  showConfirm('Excluir este módulo?', async function() {
+    var { error } = await sb.from('modulos').delete().eq('id', id);
+    if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    await loadModulos();
+  }, { title: 'Excluir Módulo', confirmText: 'Excluir', type: 'danger' });
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }

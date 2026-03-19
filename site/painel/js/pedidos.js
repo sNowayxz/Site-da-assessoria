@@ -136,20 +136,20 @@ function viewPedido(id) {
 }
 
 async function updatePedidoStatus(id, newStatus) {
-  if (!confirm('Alterar status para "' + (STATUS_LABELS[newStatus] || newStatus) + '"?')) return;
+  showConfirm('Alterar status para "' + (STATUS_LABELS[newStatus] || newStatus) + '"?', async function() {
+    var { error } = await sb
+      .from('pedidos_extensao')
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq('id', id);
 
-  var { error } = await sb
-    .from('pedidos_extensao')
-    .update({ status: newStatus, updated_at: new Date().toISOString() })
-    .eq('id', id);
+    if (error) {
+      showToast('Erro ao atualizar: ' + error.message, 'error');
+      return;
+    }
 
-  if (error) {
-    alert('Erro ao atualizar: ' + error.message);
-    return;
-  }
-
-  closeModal('modal-pedido');
-  await loadPedidos();
+    closeModal('modal-pedido');
+    await loadPedidos();
+  }, { title: 'Alterar Status', confirmText: 'Alterar', type: 'warning' });
 }
 
 function formatDate(dateStr) {

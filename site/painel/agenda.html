@@ -90,10 +90,62 @@
     .cal-event.dragging { opacity: 0.4; }
     .calendar-day.drag-over { outline: 2px dashed var(--gold); background: var(--gold-glow) !important; }
 
+    /* Agenda summary cards */
+    .agenda-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .agenda-summary-card {
+      padding: 14px 16px; border-radius: 10px; display: flex; align-items: center; gap: 12px;
+      background: var(--white); border: 1px solid var(--gray-100); transition: all 0.2s;
+    }
+    .agenda-summary-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+    .agenda-summary-icon { font-size: 1.3rem; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .agenda-summary-icon.red { background: rgba(239,68,68,0.1); }
+    .agenda-summary-icon.blue { background: rgba(59,130,246,0.1); }
+    .agenda-summary-icon.green { background: rgba(34,197,94,0.1); }
+    .agenda-summary-icon.purple { background: rgba(139,92,246,0.1); }
+    .agenda-summary-num { font-size: 1.2rem; font-weight: 800; color: var(--gray-800); }
+    .agenda-summary-label { font-size: 0.7rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600; }
+    .agenda-month-count { font-size: 0.82rem; color: var(--gray-400); font-weight: 500; }
+
+    /* View toggle */
+    .view-toggle { display: flex; gap: 0; border: 2px solid var(--gray-200); border-radius: 8px; overflow: hidden; }
+    .view-toggle button {
+      padding: 6px 16px; border: none; background: var(--white); font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; color: var(--gray-400); transition: all 0.2s;
+    }
+    .view-toggle button.active { background: var(--gold); color: var(--dark); }
+    .view-toggle button:not(:last-child) { border-right: 1px solid var(--gray-200); }
+
+    /* List view */
+    .agenda-list { display: none; flex-direction: column; gap: 8px; }
+    .agenda-list.active { display: flex; }
+    .calendar-grid.hidden { display: none; }
+    .agenda-list-item {
+      display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+      background: var(--white); border-radius: 10px; border: 1px solid var(--gray-100);
+      transition: all 0.2s;
+    }
+    .agenda-list-item:hover { box-shadow: var(--shadow); border-color: var(--gray-200); }
+    .agenda-list-date { min-width: 50px; text-align: center; }
+    .agenda-list-day { font-size: 1.3rem; font-weight: 800; color: var(--gray-800); line-height: 1; }
+    .agenda-list-weekday { font-size: 0.68rem; color: var(--gray-400); text-transform: uppercase; font-weight: 600; }
+    .agenda-list-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .agenda-list-info { flex: 1; min-width: 0; }
+    .agenda-list-title { font-weight: 600; font-size: 0.88rem; color: var(--gray-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .agenda-list-desc { font-size: 0.78rem; color: var(--gray-400); }
+    .agenda-list-badge { padding: 3px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+    .agenda-list-empty { text-align: center; padding: 40px; color: var(--gray-400); font-size: 0.9rem; }
+
+    [data-theme="dark"] .agenda-summary-card { background: #1c2128; border-color: #30363d; }
+    [data-theme="dark"] .agenda-list-item { background: #1c2128; border-color: #30363d; }
+    [data-theme="dark"] .view-toggle { border-color: #30363d; }
+    [data-theme="dark"] .view-toggle button { background: #1c2128; color: #8b949e; }
+    [data-theme="dark"] .view-toggle button.active { background: var(--gold); color: var(--dark); }
+
     @media (max-width: 768px) {
       .calendar-day { min-height: 60px; padding: 4px; }
       .cal-event { font-size: 0.6rem; }
       .form-row { grid-template-columns: 1fr; }
+      .agenda-summary { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -169,13 +221,28 @@
           </div>
       </div>
 
+      <!-- Summary cards -->
+      <div class="agenda-summary" id="agenda-summary">
+        <div class="agenda-summary-card"><div class="agenda-summary-icon red">💰</div><div><div class="agenda-summary-num" id="sum-vencimentos">0</div><div class="agenda-summary-label">Vencimentos</div></div></div>
+        <div class="agenda-summary-card"><div class="agenda-summary-icon blue">📘</div><div><div class="agenda-summary-num" id="sum-atividades">0</div><div class="agenda-summary-label">Atividades</div></div></div>
+        <div class="agenda-summary-card"><div class="agenda-summary-icon green">📬</div><div><div class="agenda-summary-num" id="sum-entregas">0</div><div class="agenda-summary-label">Entregas</div></div></div>
+        <div class="agenda-summary-card"><div class="agenda-summary-icon purple">📌</div><div><div class="agenda-summary-num" id="sum-manuais">0</div><div class="agenda-summary-label">Eventos</div></div></div>
+      </div>
+
       <div class="calendar-header">
         <div class="calendar-nav">
           <button id="btn-prev-month">&larr; Anterior</button>
           <button id="btn-today" style="background:var(--gold);color:var(--dark);border-color:var(--gold);">Hoje</button>
           <button id="btn-next-month">Pr&oacute;ximo &rarr;</button>
         </div>
-        <h2 id="calendar-title"></h2>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="agenda-month-count" id="agenda-month-count"></span>
+          <h2 id="calendar-title"></h2>
+        </div>
+        <div class="view-toggle" id="view-toggle">
+          <button class="active" data-view="calendar">Calend&aacute;rio</button>
+          <button data-view="list">Lista</button>
+        </div>
       </div>
 
       <!-- Filters -->
@@ -188,6 +255,7 @@
       </div>
 
       <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="agenda-list" id="agenda-list"></div>
     </main>
   </div>
 
@@ -342,6 +410,25 @@
         openModal('modal-novo-evento');
       });
 
+      // View toggle
+      document.querySelectorAll('#view-toggle button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('#view-toggle button').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          var view = btn.getAttribute('data-view');
+          var calGrid = document.getElementById('calendar-grid');
+          var listEl = document.getElementById('agenda-list');
+          if (view === 'list') {
+            calGrid.classList.add('hidden');
+            listEl.classList.add('active');
+            renderListView();
+          } else {
+            calGrid.classList.remove('hidden');
+            listEl.classList.remove('active');
+          }
+        });
+      });
+
       await renderCalendar();
       initCalendarDragDrop();
     });
@@ -401,6 +488,7 @@
       } catch (e) { console.warn('Calendar error:', e); }
 
       allEvents = events;
+      updateAgendaSummary(events);
 
       // Build grid
       var grid = document.getElementById('calendar-grid');
@@ -444,6 +532,10 @@
       }
 
       grid.innerHTML = html;
+
+      // Update list view if active
+      var listEl = document.getElementById('agenda-list');
+      if (listEl.classList.contains('active')) renderListView();
 
       // Day click handlers (re-attach because innerHTML replaces elements)
       grid.querySelectorAll('.calendar-day:not(.other-month)').forEach(function (cell) {
@@ -579,9 +671,64 @@
       }
     }
 
+    // ── Summary & List View ──
+    function updateAgendaSummary(events) {
+      var counts = { vencimento: 0, atividade: 0, entrega: 0, manual: 0 };
+      var total = 0;
+      Object.keys(events).forEach(function (dt) {
+        events[dt].forEach(function (ev) {
+          if (counts[ev.type] !== undefined) counts[ev.type]++;
+          total++;
+        });
+      });
+      document.getElementById('sum-vencimentos').textContent = counts.vencimento;
+      document.getElementById('sum-atividades').textContent = counts.atividade;
+      document.getElementById('sum-entregas').textContent = counts.entrega;
+      document.getElementById('sum-manuais').textContent = counts.manual;
+      document.getElementById('agenda-month-count').textContent = total + ' evento' + (total !== 1 ? 's' : '');
+    }
+
+    function renderListView() {
+      var listEl = document.getElementById('agenda-list');
+      var typeColors = { vencimento: '#dc2626', atividade: '#2563eb', entrega: '#16a34a', manual: '#8b5cf6' };
+      var typeLabels = { vencimento: 'Vencimento', atividade: 'Atividade', entrega: 'Entrega', manual: 'Evento' };
+      var DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','S\u00e1b'];
+
+      // Collect and sort all events for the month
+      var items = [];
+      Object.keys(allEvents).forEach(function (dt) {
+        allEvents[dt].forEach(function (ev) {
+          if (activeFilters.indexOf(ev.type) === -1) return;
+          items.push({ date: dt, ev: ev });
+        });
+      });
+      items.sort(function (a, b) { return a.date.localeCompare(b.date); });
+
+      if (!items.length) {
+        listEl.innerHTML = '<div class="agenda-list-empty">Nenhum evento neste m\u00eas.</div>';
+        return;
+      }
+
+      listEl.innerHTML = items.map(function (item) {
+        var d = new Date(item.date + 'T12:00:00');
+        var color = item.ev.cor || typeColors[item.ev.type] || '#8b5cf6';
+        var label = item.ev.tipo_evento || typeLabels[item.ev.type] || item.ev.type;
+        return '<div class="agenda-list-item">' +
+          '<div class="agenda-list-date"><div class="agenda-list-day">' + d.getDate() + '</div><div class="agenda-list-weekday">' + DIAS_SEMANA[d.getDay()] + '</div></div>' +
+          '<div class="agenda-list-dot" style="background:' + color + ';"></div>' +
+          '<div class="agenda-list-info"><div class="agenda-list-title">' + item.ev.text + '</div>' +
+          (item.ev.descricao ? '<div class="agenda-list-desc">' + item.ev.descricao + '</div>' : '') +
+          '</div>' +
+          '<span class="agenda-list-badge" style="background:' + color + '20;color:' + color + ';">' + label + '</span>' +
+        '</div>';
+      }).join('');
+    }
+
     // ── Delete Event ──
     async function deleteEvento(id) {
-      if (!confirm('Excluir este evento?')) return;
+      showConfirm('Excluir este evento?', async function() { await _doDeleteEvento(id); }, { title: 'Excluir Evento', confirmText: 'Excluir', type: 'danger' });
+    }
+    async function _doDeleteEvento(id) {
       try {
         var { error } = await sb.from('eventos_agenda').delete().eq('id', id);
         if (error) throw error;

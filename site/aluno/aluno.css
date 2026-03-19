@@ -511,3 +511,107 @@ button { font-family: inherit; cursor: pointer; }
   .studeo-card-header { flex-direction: column; gap: 8px; }
   .studeo-prazo { align-self: flex-start; }
 }
+
+/* ═══ SYNC PROGRESS BAR ═══ */
+.sync-progress {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+  transition: opacity 0.5s ease;
+}
+.sync-progress.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+.sync-bar {
+  height: 6px;
+  background: var(--gray-100);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.sync-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sync-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.sync-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--gray-400);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+.sync-step.active {
+  color: var(--gold);
+  font-weight: 700;
+}
+.sync-step.done {
+  color: var(--success);
+}
+.sync-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+.sync-step.active .sync-dot {
+  background: var(--gold);
+  box-shadow: 0 0 0 4px var(--gold-glow);
+  animation: syncPulse 1.2s infinite;
+}
+.sync-step.done .sync-dot {
+  background: var(--success);
+  box-shadow: none;
+  animation: none;
+}
+@keyframes syncPulse {
+  0%, 100% { box-shadow: 0 0 0 4px var(--gold-glow); }
+  50% { box-shadow: 0 0 0 8px rgba(240, 192, 48, 0.06); }
+}
+
+/* Stream-in animation for discipline cards */
+.studeo-stream-in {
+  animation: streamIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
+}
+@keyframes streamIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Discipline group header */
+.studeo-disc-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 0 6px;
+  border-bottom: 1px solid var(--gray-100);
+  margin-bottom: 8px;
+}
+
+@media (max-width: 600px) {
+  .sync-steps { flex-direction: column; gap: 10px; }
+  .sync-step { font-size: 0.75rem; }
+}

@@ -81,14 +81,21 @@ function updateFinancialCounters(pagamentos) {
   el = document.getElementById('fin-atrasado'); if (el) el.textContent = 'R$ ' + totalAtrasado.toFixed(2);
 }
 
+var _finCurrentPage = 1;
+function goToPageFin(p) { _finCurrentPage = p; filterPagamentos(); }
+
 function renderPagamentos(pagamentos) {
   var tbody = document.getElementById('pagamentos-table');
   if (!pagamentos.length) {
     tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum pagamento registrado</td></tr>';
+    renderPagination('pagination-container', 0, 1, 'goToPageFin');
     return;
   }
 
-  tbody.innerHTML = pagamentos.map(function (p) {
+  var paginated = paginateArray(pagamentos, _finCurrentPage);
+  renderPagination('pagination-container', pagamentos.length, _finCurrentPage, 'goToPageFin');
+
+  tbody.innerHTML = paginated.map(function (p) {
     var aluno = p.alunos || {};
     var vencimento = p.dt_vencimento ? new Date(p.dt_vencimento + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
     var pgto = p.dt_pagamento ? new Date(p.dt_pagamento + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
@@ -149,7 +156,7 @@ async function handleSavePagamento(e) {
     observacoes: form.observacoes.value.trim()
   };
 
-  if (!data.aluno_id) { alert('Selecione um aluno'); return; }
+  if (!data.aluno_id) { showToast('Selecione um aluno', 'warning'); return; }
 
   try {
     if (editId) {
@@ -191,22 +198,32 @@ async function editPagamento(id) {
 async function marcarPago(id) {
   var today = new Date().toISOString().split('T')[0];
   var { error } = await sb.from('pagamentos').update({ status: 'pago', dt_pagamento: today }).eq('id', id);
-  if (error) { alert('Erro: ' + error.message); return; }
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
   logAudit('mark_pago', 'pagamentos', id, {});
   await loadPagamentos();
 }
 
 async function deletePagamento(id) {
-  if (!confirm('Excluir este pagamento?')) return;
-  var { error } = await sb.from('pagamentos').delete().eq('id', id);
-  if (error) { alert('Erro: ' + error.message); return; }
-  logAudit('delete_pagamento', 'pagamentos', id, {});
-  showToast('Pagamento excluído!', 'success');
-  await loadPagamentos();
+  showConfirm('Excluir este pagamento?', async function() {
+    var pag = _pagamentos.find(function(p) { return p.id === id; });
+    var { error } = await sb.from('pagamentos').delete().eq('id', id);
+    if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    logAudit('delete_pagamento', 'pagamentos', id, {});
+    await loadPagamentos();
+    if (pag) {
+      showUndoToast('Pagamento excluído', async function() {
+        await sb.from('pagamentos').insert(pag);
+        showToast('Pagamento restaurado!', 'success');
+        await loadPagamentos();
+      });
+    }
+  }, { title: 'Excluir Pagamento', confirmText: 'Excluir', type: 'danger' });
 }
 
 async function gerarMensalidades() {
-  if (!confirm('Gerar pagamentos mensais para todos os mensalistas com valor configurado?\n\nIsso criará uma cobrança para o mês atual.')) return;
+  showConfirm('Gerar pagamentos mensais para todos os mensalistas com valor configurado?<br><br>Isso criará uma cobrança para o mês atual.', async function() { await _doGerarMensalidades(); }, { title: 'Gerar Mensalidades', confirmText: 'Gerar', type: 'warning' });
+}
+async function _doGerarMensalidades() {
 
   try {
     var { data: mensalistas } = await sb.from('alunos')
@@ -216,7 +233,7 @@ async function gerarMensalidades() {
 
     if (!mensalistas || !mensalistas.length) {
       if (typeof showToast === 'function') showToast('Nenhum mensalista com valor configurado', 'warning');
-      else alert('Nenhum mensalista com valor configurado. Configure o valor na página de Alunos.');
+      else showToast('Nenhum mensalista com valor configurado', 'warning');
       return;
     }
 
@@ -235,8 +252,7 @@ async function gerarMensalidades() {
     var novos = mensalistas.filter(function(m) { return jaGerados.indexOf(m.id) === -1; });
 
     if (!novos.length) {
-      if (typeof showToast === 'function') showToast('Mensalidades já foram geradas para ' + mesRef, 'info');
-      else alert('Mensalidades já foram geradas para ' + mesRef);
+      showToast('Mensalidades já foram geradas para ' + mesRef, 'info');
       return;
     }
 
@@ -257,12 +273,9 @@ async function gerarMensalidades() {
     var { error } = await sb.from('pagamentos').insert(pagamentos);
     if (error) throw error;
 
-    if (typeof showToast === 'function') showToast(novos.length + ' mensalidades geradas para ' + mesRef, 'success');
-    else alert(novos.length + ' mensalidades geradas para ' + mesRef + '!');
-
+    showToast(novos.length + ' mensalidades geradas para ' + mesRef, 'success');
     await loadPagamentos();
   } catch (err) {
-    if (typeof showToast === 'function') showToast('Erro: ' + err.message, 'error');
-    else alert('Erro: ' + err.message);
+    showToast('Erro: ' + err.message, 'error');
   }
 }

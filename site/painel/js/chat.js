@@ -489,7 +489,9 @@ async function uploadFile(file) {
 
 // ─── Delete Message ───
 async function deleteMessage(msgId) {
-  if (!confirm('Apagar esta mensagem?')) return;
+  showConfirm('Apagar esta mensagem?', async function() { await _doDeleteMessage(msgId); }, { title: 'Apagar Mensagem', confirmText: 'Apagar', type: 'danger' });
+}
+async function _doDeleteMessage(msgId) {
 
   try {
     var { error } = await sb.from('mensagens').delete().eq('id', msgId).eq('sender_id', currentUserId);

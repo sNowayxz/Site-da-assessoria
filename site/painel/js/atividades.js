@@ -83,14 +83,21 @@ function updateCounters(atividades) {
   el = document.getElementById('counter-entregues'); if (el) el.textContent = entregues;
 }
 
+var _ativCurrentPage = 1;
+function goToPageAtiv(p) { _ativCurrentPage = p; filterAtividades(); }
+
 function renderAtividades(atividades) {
   var tbody = document.getElementById('atividades-table');
   if (!atividades.length) {
     tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhuma atividade registrada</td></tr>';
+    renderPagination('pagination-container', 0, 1, 'goToPageAtiv');
     return;
   }
 
-  tbody.innerHTML = atividades.map(function (a) {
+  var paginated = paginateArray(atividades, _ativCurrentPage);
+  renderPagination('pagination-container', atividades.length, _ativCurrentPage, 'goToPageAtiv');
+
+  tbody.innerHTML = paginated.map(function (a) {
     var aluno = a.alunos || {};
     return '<tr>' +
       '<td><span class="aluno-name">' + escapeHtml(aluno.nome || '—') + '</span><br><small class="text-muted">' + escapeHtml(aluno.ra || '') + '</small></td>' +
@@ -150,7 +157,7 @@ async function handleSaveAtividade(e) {
     observacoes: form.observacoes.value.trim()
   };
 
-  if (!data.aluno_id) { alert('Selecione um aluno'); return; }
+  if (!data.aluno_id) { showToast('Selecione um aluno', 'warning'); return; }
 
   try {
     if (currentEditAtivId) {
@@ -188,12 +195,20 @@ async function editAtividade(id) {
 }
 
 async function deleteAtividade(id) {
-  if (!confirm('Tem certeza que deseja excluir esta atividade?')) return;
-  var { error } = await sb.from('atividades').delete().eq('id', id);
-  if (error) { alert('Erro: ' + error.message); return; }
-  logAudit('delete_atividade', 'atividades', id, {});
-  showToast('Atividade excluída!', 'success');
-  await loadAtividades();
+  showConfirm('Tem certeza que deseja excluir esta atividade?', async function() {
+    var ativ = _atividades.find(function(a) { return a.id === id; });
+    var { error } = await sb.from('atividades').delete().eq('id', id);
+    if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    logAudit('delete_atividade', 'atividades', id, {});
+    await loadAtividades();
+    if (ativ) {
+      showUndoToast('Atividade excluída', async function() {
+        await sb.from('atividades').insert(ativ);
+        showToast('Atividade restaurada!', 'success');
+        await loadAtividades();
+      });
+    }
+  }, { title: 'Excluir Atividade', confirmText: 'Excluir', type: 'danger' });
 }
 
 // Avança o status no fluxo: pendente → em_andamento → entregue
@@ -206,7 +221,7 @@ async function cycleStatus(id, currentStatus) {
   };
   var next = nextMap[currentStatus] || 'pendente';
   var { error } = await sb.from('atividades').update({ status: next }).eq('id', id);
-  if (error) { alert('Erro: ' + error.message); return; }
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
   logAudit('status_change', 'atividades', id, { from: currentStatus, to: next });
   await loadAtividades();
 }

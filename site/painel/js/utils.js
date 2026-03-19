@@ -68,6 +68,88 @@ function showToast(message, type) {
 }
 
 
+// ─── Confirm Modal (substitui confirm() nativo) ───
+function showConfirm(message, onConfirm, options) {
+  options = options || {};
+  var title = options.title || 'Confirmação';
+  var confirmText = options.confirmText || 'Confirmar';
+  var cancelText = options.cancelText || 'Cancelar';
+  var type = options.type || 'warning'; // danger, warning, info
+
+  var existing = document.getElementById('confirm-modal-overlay');
+  if (existing) existing.remove();
+
+  var typeColors = { danger: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
+  var typeIcons = { danger: '⚠️', warning: '❓', info: 'ℹ️' };
+  var btnBg = type === 'danger' ? '#ef4444' : 'var(--gold)';
+  var btnColor = type === 'danger' ? '#fff' : 'var(--dark)';
+
+  var overlay = document.createElement('div');
+  overlay.id = 'confirm-modal-overlay';
+  overlay.className = 'modal-overlay open';
+  overlay.style.zIndex = '10000';
+  overlay.innerHTML =
+    '<div class="modal confirm-modal" style="max-width:420px;animation:fadeInScale 0.25s cubic-bezier(0.34,1.56,0.64,1);">' +
+      '<div class="modal-header" style="border-bottom:1px solid var(--gray-100);">' +
+        '<h3 style="display:flex;align-items:center;gap:8px;font-size:1.05rem;">' +
+          '<span style="font-size:1.3rem;">' + (typeIcons[type] || '❓') + '</span>' + title +
+        '</h3>' +
+        '<button class="modal-close confirm-cancel" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--gray-400);">&times;</button>' +
+      '</div>' +
+      '<div class="modal-body" style="padding:20px 24px;">' +
+        '<p style="margin:0;color:var(--gray-600);font-size:0.92rem;line-height:1.6;">' + message + '</p>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:flex-end;gap:10px;padding:14px 24px;border-top:1px solid var(--gray-100);">' +
+        '<button class="confirm-cancel" style="padding:10px 20px;border:2px solid var(--gray-200);border-radius:8px;background:var(--white);color:var(--gray-600);font-weight:600;cursor:pointer;font-family:inherit;">' + cancelText + '</button>' +
+        '<button class="confirm-ok" style="padding:10px 20px;border:none;border-radius:8px;background:' + btnBg + ';color:' + btnColor + ';font-weight:700;cursor:pointer;font-family:inherit;">' + confirmText + '</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+
+  function cleanup() { if (overlay.parentNode) overlay.remove(); }
+
+  overlay.querySelector('.confirm-ok').addEventListener('click', function() {
+    cleanup();
+    if (onConfirm) onConfirm();
+  });
+
+  overlay.querySelectorAll('.confirm-cancel').forEach(function(btn) {
+    btn.addEventListener('click', cleanup);
+  });
+
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) cleanup();
+  });
+
+  // Focus confirm button
+  overlay.querySelector('.confirm-ok').focus();
+}
+
+// ─── Undo Toast ───
+function showUndoToast(message, undoCallback, timeout) {
+  timeout = timeout || 6000;
+  var container = ensureToastContainer();
+  var toast = document.createElement('div');
+  toast.className = 'toast toast-undo';
+  toast.innerHTML =
+    '<span class="toast-icon">🗑️</span>' +
+    '<span style="flex:1;">' + message + '</span>' +
+    '<button class="undo-btn">Desfazer</button>';
+  container.appendChild(toast);
+
+  var timer = setTimeout(function() {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  }, timeout);
+
+  toast.querySelector('.undo-btn').addEventListener('click', function() {
+    clearTimeout(timer);
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+    if (undoCallback) undoCallback();
+  });
+}
+
+
 // ─── PDF Export (usando jsPDF) ───
 function loadJsPDF(callback) {
   if (window.jspdf) { callback(); return; }
