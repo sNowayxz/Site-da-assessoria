@@ -62,11 +62,10 @@ module.exports = async function handler(req, res) {
       const afazerDatas = {};
       for (const item of afazer) {
         afazerMap[item.shortname] = item.somaAtividades;
-        // Capturar data de encerramento do afazer (prazo real)
-        const prazoReal = item.dataEncerramento || item.dtEncerramento || item.dataFinal || item.dataFim || item.dtFim || item.proximoEncerramento || item.dataProximoEncerramento || null;
-        if (prazoReal) afazerDatas[item.shortname] = prazoReal;
-        // Log all fields to discover the correct one
-        console.log(`[afazer] ${item.shortname}: keys=${Object.keys(item).join(',')}, prazo=${prazoReal}`);
+        // proximaAtividade é um timestamp em milissegundos (prazo real da próxima atividade)
+        if (item.proximaAtividade) {
+          afazerDatas[item.shortname] = new Date(item.proximaAtividade).toISOString();
+        }
       }
       console.log(`[sync] ${afazer.length} disciplinas com atividades a fazer`);
 
@@ -131,7 +130,7 @@ module.exports = async function handler(req, res) {
         }
       }
 
-      return res.status(200).json({ ok: true, resultado, _afazerRaw: afazer.map(a => ({ shortname: a.shortname, keys: Object.keys(a), data: a })).slice(0, 5) });
+      return res.status(200).json({ ok: true, resultado });
     }
 
     return res.status(400).json({ error: 'Ação inválida. Use "login" ou "sync".' });
