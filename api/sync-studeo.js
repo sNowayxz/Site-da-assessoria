@@ -158,16 +158,22 @@ function normalizarAtividades(arr, tipo) {
 function normalizarData(val) {
   if (!val) return null;
   try {
-    if (/^\d{4}-\d{2}-\d{2}/.test(String(val))) return String(val);
-    if (/^\d{2}\/\d{2}\/\d{4}/.test(String(val))) {
-      const [date, time] = String(val).split(' ');
-      const [d, m, y] = date.split('/');
-      return time ? `${y}-${m}-${d}T${time}:00` : `${y}-${m}-${d}`;
+    const s = String(val).trim();
+    // ISO: 2026-03-19 or 2026-03-19T...
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s;
+    // DD/MM/YYYY or DD/MM/YY (with optional time HH:MM)
+    const m = s.match(/^(\d{2})\/(\d{2})\/(\d{2,4})\s*(\d{2}:\d{2})?/);
+    if (m) {
+      const d = m[1], mo = m[2];
+      let y = m[3];
+      if (y.length === 2) y = '20' + y; // 26 → 2026
+      const time = m[4] || '00:00';
+      return `${y}-${mo}-${d}T${time}:00`;
     }
     const parsed = new Date(val);
     if (!isNaN(parsed.getTime())) return parsed.toISOString();
     return null;
-  } catch {
+  } catch(e) {
     return null;
   }
 }

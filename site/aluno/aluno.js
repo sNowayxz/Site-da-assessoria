@@ -272,17 +272,30 @@ function formatDate(d) {
 
 function parseDate(d) {
   if (!d) return null;
-  // Se já é Date
   if (d instanceof Date) return d;
-  // ISO format (2026-03-19T...)
-  if (typeof d === 'string' && d.indexOf('T') !== -1) return new Date(d);
-  // DD/MM/YYYY
-  if (typeof d === 'string' && d.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-    var parts = d.split('/');
-    return new Date(parts[2], parseInt(parts[1]) - 1, parseInt(parts[0]));
+  var s = String(d).trim();
+
+  // ISO format: 2026-03-19T... or 2026-03-19
+  if (s.match(/^\d{4}-\d{2}-\d{2}/)) return new Date(s);
+
+  // DD/MM/YYYY HH:MM or DD/MM/YYYY
+  var m = s.match(/^(\d{2})\/(\d{2})\/(\d{2,4})/);
+  if (m) {
+    var day = parseInt(m[1]);
+    var month = parseInt(m[2]) - 1;
+    var year = parseInt(m[3]);
+    // 2-digit year: 26 → 2026
+    if (year < 100) year += 2000;
+    // Extract time if present
+    var tm = s.match(/(\d{2}):(\d{2})/);
+    if (tm) {
+      return new Date(year, month, day, parseInt(tm[1]), parseInt(tm[2]));
+    }
+    return new Date(year, month, day);
   }
-  // MM/DD/YYYY (fallback)
-  return new Date(d);
+
+  // Fallback
+  return new Date(s);
 }
 
 function escapeHtml(t) {
