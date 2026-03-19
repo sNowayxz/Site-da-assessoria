@@ -127,8 +127,13 @@ function loadAluno(ra) {
       }).join('');
     });
 
-    // Load Studeo activities (qualquer aluno cadastrado)
-    loadStudeoActivities(aluno.id);
+    // Mensalistas: sync automático do Studeo + mostrar atividades
+    if (aluno.tipo === 'mensalista' && aluno.studeo_senha) {
+      autoSyncAndShowStudeo(aluno);
+    } else {
+      // Outros alunos: só mostra se já tiver dados no studeo_sync
+      loadStudeoActivities(aluno.id);
+    }
 
     // Load extensão (projeto de extensão pelo RA)
     supaGet('solicitacoes?ra=eq.' + encodeURIComponent(ra) + '&select=*&order=created_at.desc').then(function(exts) {
@@ -267,6 +272,72 @@ function escapeHtml(t) {
   var d = document.createElement('div');
   d.textContent = t || '';
   return d.innerHTML;
+}
+
+// ─── Auto Sync Studeo (mensalistas) ───
+function autoSyncAndShowStudeo(aluno) {
+  var panel = document.getElementById('panel-studeo');
+  var container = document.getElementById('studeo-content');
+  var statsEl = document.getElementById('studeo-stats');
+
+  panel.style.display = 'block';
+  container.innerHTML = '<div class="aluno-empty" style="padding:20px;">🔄 Sincronizando atividades do Studeo...</div>';
+  statsEl.innerHTML = '';
+
+  // Chamar API de sync
+  fetch('https://site-da-assessoria.vercel.app/api/sync-studeo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'sync', ra: aluno.ra, senha: aluno.studeo_senha })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (!data.ok || !data.resultado) {
+      container.innerHTML = '<div class="aluno-empty" style="padding:20px;">Não foi possível sincronizar. Tente novamente mais tarde.</div>';
+      return;
+    }
+
+    // Salvar no Supabase (studeo_sync) — limpar antigos e inserir novos
+    var SUPA = 'https://lztfoprapoyicldunhzw.supabase.co';
+    var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6dGZvcHJhcG95aWNsZHVuaHp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzY0MzIsImV4cCI6MjA4ODkxMjQzMn0.8Qyq2bVA0oK8gji9hG2AWG-gQ3oH4nWm3QOqQ59S9IA';
+
+    // Deletar antigos
+    fetch(SUPA + '/rest/v1/studeo_sync?aluno_id=eq.' + aluno.id, {
+      method: 'DELETE',
+      headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+    }).then(function() {
+      // Inserir novos
+      var rows = [];
+      data.resultado.forEach(function(disc) {
+        (disc.atividades || []).forEach(function(atv) {
+          rows.push({
+            aluno_id: aluno.id,
+            disciplina: disc.disciplina,
+            cd_shortname: disc.cd_shortname,
+            atividade: atv.descricao || atv.tipo || 'Atividade',
+            data_final: atv.dataFinal || null,
+            respondida: false
+          });
+        });
+      });
+
+      if (rows.length > 0) {
+        fetch(SUPA + '/rest/v1/studeo_sync', {
+          method: 'POST',
+          headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify(rows)
+        }).catch(function() {});
+      }
+
+      // Mostrar atividades
+      loadStudeoActivities(aluno.id);
+    });
+  })
+  .catch(function(err) {
+    console.error('[aluno] Sync error:', err);
+    // Fallback: mostrar dados existentes do banco
+    loadStudeoActivities(aluno.id);
+  });
 }
 
 // ─── Studeo Activities (mensalistas) ───
