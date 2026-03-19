@@ -1891,16 +1891,16 @@ tbody tr:last-child td {
 .resp-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 20px 24px;
+  gap: 16px;
+  padding: 24px 32px;
   background: linear-gradient(135deg, var(--dark) 0%, var(--dark-mid) 100%);
   color: #fff;
 }
 .resp-header-icon {
-  width: 44px;
-  height: 44px;
+  width: 50px;
+  height: 50px;
   background: var(--gold);
-  border-radius: 12px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1908,28 +1908,28 @@ tbody tr:last-child td {
   flex-shrink: 0;
 }
 .resp-title {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
 }
 .resp-subtitle {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--gray-400);
-  margin: 2px 0 0;
+  margin: 4px 0 0;
 }
 .resp-body {
-  padding: 24px;
+  padding: 32px;
 }
 .resp-aluno-card {
   background: var(--gray-50);
   border: 1px solid var(--gray-200);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 20px;
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-bottom: 28px;
 }
 .resp-aluno-row {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   align-items: flex-end;
   flex-wrap: wrap;
 }
@@ -1940,21 +1940,21 @@ tbody tr:last-child td {
 .resp-label {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
+  gap: 8px;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--gray-600);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .resp-label svg {
   stroke: var(--gray-400);
 }
 .resp-select {
   width: 100%;
-  padding: 12px 16px;
-  font-size: 0.95rem;
+  padding: 14px 20px;
+  font-size: 1rem;
   border: 2px solid var(--gray-200);
   border-radius: var(--radius);
   background: var(--white);
@@ -1962,10 +1962,10 @@ tbody tr:last-child td {
   cursor: pointer;
   transition: border-color var(--transition), box-shadow var(--transition);
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238892a4' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238892a4' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 40px;
+  background-position: right 16px center;
+  padding-right: 44px;
 }
 .resp-select:focus {
   outline: none;
@@ -1975,13 +1975,13 @@ tbody tr:last-child td {
 .btn-buscar-pend {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 22px;
+  gap: 10px;
+  padding: 14px 28px;
   background: var(--gold);
   color: var(--dark);
   border: none;
   border-radius: var(--radius);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
@@ -2023,24 +2023,24 @@ tbody tr:last-child td {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 16px 20px;
   background: var(--gray-50);
   border-bottom: 1px solid var(--gray-200);
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 }
 .resp-check-all-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  gap: 10px;
+  font-size: 0.9rem;
   color: var(--gray-600);
   cursor: pointer;
   font-weight: 500;
 }
 .resp-check-all-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
   accent-color: var(--gold);
 }
@@ -2056,13 +2056,13 @@ tbody tr:last-child td {
 .btn-preencher-main {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
+  gap: 8px;
+  padding: 10px 22px;
   background: var(--gold);
   color: var(--dark);
   border: none;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
@@ -2078,7 +2078,8 @@ tbody tr:last-child td {
 
 /* Lista de pendentes (cards) */
 .resp-pendentes-list {
-  max-height: 420px;
+  min-height: 200px;
+  max-height: 520px;
   overflow-y: auto;
 }
 .resp-empty-state {
@@ -2086,17 +2087,17 @@ tbody tr:last-child td {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 48px 20px;
+  gap: 14px;
+  padding: 64px 24px;
   text-align: center;
   color: var(--gray-400);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 .resp-pendente-item {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
+  gap: 16px;
+  padding: 18px 20px;
   border-bottom: 1px solid var(--gray-100);
   transition: background var(--transition);
 }
@@ -2107,8 +2108,8 @@ tbody tr:last-child td {
   background: var(--gold-glow);
 }
 .resp-pendente-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
   accent-color: var(--gold);
   flex-shrink: 0;
@@ -2119,30 +2120,28 @@ tbody tr:last-child td {
 }
 .resp-pendente-id {
   font-family: 'Courier New', monospace;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--gold);
   background: var(--gold-glow);
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
   display: inline-block;
   font-weight: 600;
 }
 .resp-pendente-desc {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--gray-800);
-  margin-top: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 .resp-pendente-short {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--gray-400);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 .resp-pendente-play {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: none;
   background: var(--gold-glow);
