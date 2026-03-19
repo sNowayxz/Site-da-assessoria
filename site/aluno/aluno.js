@@ -127,10 +127,8 @@ function loadAluno(ra) {
       }).join('');
     });
 
-    // Load Studeo activities (mensalistas)
-    if (aluno.tipo === 'mensalista') {
-      loadStudeoActivities(aluno.id);
-    }
+    // Load Studeo activities (qualquer aluno cadastrado)
+    loadStudeoActivities(aluno.id);
 
     // Load extensão (projeto de extensão pelo RA)
     supaGet('solicitacoes?ra=eq.' + encodeURIComponent(ra) + '&select=*&order=created_at.desc').then(function(exts) {
