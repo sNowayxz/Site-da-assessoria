@@ -5,31 +5,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
   // ════════════════════════════════════
-  // DARK MODE
-  // ════════════════════════════════════
-  var themeToggle = document.getElementById('theme-toggle');
-  var savedTheme = localStorage.getItem('site-theme');
-
-  function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    if (themeToggle) themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-    localStorage.setItem('site-theme', theme);
-  }
-
-  if (savedTheme) {
-    applyTheme(savedTheme);
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    applyTheme('dark');
-  }
-
-  if (themeToggle) {
-    themeToggle.addEventListener('click', function () {
-      var current = document.documentElement.getAttribute('data-theme');
-      applyTheme(current === 'dark' ? 'light' : 'dark');
-    });
-  }
-
-  // ════════════════════════════════════
   // SMOOTH SCROLL NAVIGATION
   // ════════════════════════════════════
   var navLinks = document.querySelectorAll('.navbar-links a, .footer-col a[href^="#"]');
