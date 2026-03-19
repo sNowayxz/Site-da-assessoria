@@ -100,6 +100,52 @@
     }
     .origem-assessoria { background: #fef3c7; color: #92400e; }
     .origem-aluno { background: #dbeafe; color: #1d4ed8; }
+    .origem-whatsapp { background: #dcfce7; color: #166534; }
+    .origem-site { background: #ede9fe; color: #5b21b6; }
+
+    /* Modal de adicionar aluno */
+    .add-modal {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;
+    }
+    .add-modal.open { display: flex; }
+    .add-content {
+      background: var(--white); border-radius: 16px; padding: 28px; width: 90%; max-width: 520px;
+      max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: modalIn 0.2s ease;
+    }
+    .add-content h3 { margin: 0 0 20px; font-size: 1.1rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: 0.75rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.03em; }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 10px 14px; border: 1.5px solid var(--gray-200); border-radius: 10px;
+      font-size: 0.88rem; font-family: inherit; color: var(--gray-800); background: var(--white);
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--gold); outline: none; box-shadow: 0 0 0 3px var(--gold-glow);
+    }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .form-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .form-actions .btn-submit {
+      flex: 1; padding: 12px; border: none; border-radius: 10px; background: var(--gold);
+      color: var(--dark); font-weight: 700; cursor: pointer; font-family: inherit; font-size: 0.9rem;
+    }
+    .form-actions .btn-submit:hover { filter: brightness(1.08); }
+    .form-actions .btn-cancel {
+      padding: 12px 20px; border: none; border-radius: 10px; background: var(--gray-100);
+      color: var(--gray-700); font-weight: 600; cursor: pointer; font-family: inherit; font-size: 0.9rem;
+    }
+
+    /* Section com borda lateral colorida */
+    .section-group.assessorias .solic-table-wrap { border-left: 3px solid #f59e0b; }
+    .section-group.diretos .solic-table-wrap { border-left: 3px solid #3b82f6; }
+    .section-group.finalizados .solic-table-wrap { border-left: 3px solid #22c55e; }
+
+    [data-theme="dark"] .add-content { background: #1c2128; }
+    [data-theme="dark"] .form-group input, [data-theme="dark"] .form-group select, [data-theme="dark"] .form-group textarea { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .form-actions .btn-cancel { background: #30363d; color: #e6edf3; }
 
     /* Seção finalizada */
     .section-group { margin-bottom: 24px; }
@@ -278,6 +324,47 @@
     <div class="detail-content" id="detail-content"></div>
   </div>
 
+  <!-- Modal Adicionar Aluno -->
+  <div class="add-modal" id="add-modal">
+    <div class="add-content">
+      <h3>➕ Cadastrar Aluno Direto</h3>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nome do Aluno *</label>
+          <input type="text" id="add-nome" placeholder="Nome completo">
+        </div>
+        <div class="form-group">
+          <label>RA</label>
+          <input type="text" id="add-ra" placeholder="Ex: 24532770-5">
+        </div>
+        <div class="form-group">
+          <label>Senha Studeo</label>
+          <input type="text" id="add-senha" placeholder="Senha do aluno">
+        </div>
+        <div class="form-group">
+          <label>Horas Contratadas *</label>
+          <input type="number" id="add-horas" placeholder="Ex: 40" min="1">
+        </div>
+        <div class="form-group">
+          <label>Origem</label>
+          <select id="add-origem">
+            <option value="whatsapp">WhatsApp</option>
+            <option value="site">Site</option>
+            <option value="aluno">Outro</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Tema / Observações</label>
+          <textarea id="add-obs" placeholder="Tema da extensão, observações do aluno..."></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="document.getElementById('add-modal').classList.remove('open')">Cancelar</button>
+        <button class="btn-submit" id="btn-submit-add">Cadastrar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/auth.js?v=5"></script>
@@ -287,7 +374,7 @@
     var currentRole = null;
     var _solicitacoes = [];
     var _assessorNames = {};
-    var _finalizadosCollapsed = false;
+    var _collapsed = { finalizados: true, assessorias: false, diretos: false };
 
     document.addEventListener('DOMContentLoaded', async function () {
       var result = await requireRole(['admin', 'dono', 'extensao', 'assessoria']);
@@ -305,34 +392,55 @@
         document.getElementById('btn-add-manual').style.display = '';
         document.getElementById('filter-origem').addEventListener('change', renderAll);
 
+        // Abrir modal de cadastro
         document.getElementById('btn-add-manual').addEventListener('click', function () {
-          var nome = prompt('Nome do Aluno:');
-          if (!nome) return;
-          var ra = prompt('RA do Aluno:');
-          var horas = parseInt(prompt('Horas Contratadas:')) || 0;
-          var valorHora = parseFloat(prompt('Valor da Hora (R$):')) || 0;
-          var valorPago = parseFloat(prompt('Valor Pago (R$):')) || 0;
+          document.getElementById('add-nome').value = '';
+          document.getElementById('add-ra').value = '';
+          document.getElementById('add-senha').value = '';
+          document.getElementById('add-horas').value = '';
+          document.getElementById('add-obs').value = '';
+          document.getElementById('add-origem').value = 'whatsapp';
+          document.getElementById('add-modal').classList.add('open');
+        });
 
-          sb.from('solicitacoes').insert({
-            aluno_nome: nome.trim(), ra: (ra || '').trim(), horas: horas,
-            valor_hora: valorHora, valor_pago: valorPago,
-            status: 'aguardando', origem: 'aluno',
-            assessor_id: currentRole === 'assessoria' ? currentUserId : null
-          }).then(function (res) {
-            if (res.error) { showToast('Erro: ' + res.error.message, 'error'); return; }
-            showToast('Aluno adicionado!', 'success');
-            loadSolicitacoes();
-          });
+        // Submit do cadastro
+        document.getElementById('btn-submit-add').addEventListener('click', async function () {
+          var nome = document.getElementById('add-nome').value.trim();
+          var ra = document.getElementById('add-ra').value.trim();
+          var senha = document.getElementById('add-senha').value.trim();
+          var horas = parseInt(document.getElementById('add-horas').value) || 0;
+          var obs = document.getElementById('add-obs').value.trim();
+          var origem = document.getElementById('add-origem').value;
+
+          if (!nome) { showToast('Informe o nome do aluno', 'error'); return; }
+          if (!horas) { showToast('Informe as horas contratadas', 'error'); return; }
+
+          this.disabled = true; this.textContent = 'Salvando...';
+          try {
+            var { error } = await sb.from('solicitacoes').insert({
+              aluno_nome: nome, ra: ra, senha: senha, horas: horas,
+              observacoes: obs, status: 'aguardando', origem: origem,
+              assessor_id: null
+            });
+            if (error) throw error;
+            showToast('Aluno cadastrado!', 'success');
+            document.getElementById('add-modal').classList.remove('open');
+            await loadSolicitacoes();
+          } catch (err) {
+            showToast('Erro: ' + (err.message || err), 'error');
+          } finally {
+            this.disabled = false; this.textContent = 'Cadastrar';
+          }
         });
       }
 
       // Load assessor names for admin/extensao
       if (currentRole !== 'assessoria') {
-        var { data: assessores } = await sb.from('assessores').select('id, nome, label');
-        (assessores || []).forEach(function (a) { _assessorNames[a.id] = a.label || a.nome; });
+        var { data: assessores } = await sb.from('assessores').select('id, nome, label, role');
+        (assessores || []).forEach(function (a) { _assessorNames[a.id] = { name: a.label || a.nome, role: a.role }; });
         var sel = document.getElementById('filter-assessor');
         sel.style.display = '';
-        (assessores || []).filter(function (a) { return a.label && a.label.startsWith('Assessoria'); }).forEach(function (a) {
+        (assessores || []).filter(function (a) { return a.role === 'assessoria'; }).forEach(function (a) {
           sel.innerHTML += '<option value="' + a.id + '">' + escapeHtml(a.label || a.nome) + '</option>';
         });
       }
@@ -341,8 +449,11 @@
       document.getElementById('filter-assessor').addEventListener('change', renderAll);
       document.getElementById('filter-busca').addEventListener('input', renderAll);
 
-      // Fechar modal
+      // Fechar modais
       document.getElementById('detail-modal').addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('open');
+      });
+      document.getElementById('add-modal').addEventListener('click', function(e) {
         if (e.target === this) this.classList.remove('open');
       });
 
@@ -379,48 +490,103 @@
       });
     }
 
+    function isFromAssessoria(s) {
+      if (s.origem === 'assessoria') return true;
+      if (s.assessor_id && _assessorNames[s.assessor_id] && _assessorNames[s.assessor_id].role === 'assessoria') return true;
+      return false;
+    }
+
+    function isDireto(s) {
+      return !isFromAssessoria(s);
+    }
+
+    function isFinalizado(s) {
+      return s.status === 'finalizado' || s.status === 'finalizado_cobrar';
+    }
+
+    function getOrigemLabel(s) {
+      if (s.origem === 'whatsapp') return '<span class="origem-tag origem-whatsapp">WhatsApp</span>';
+      if (s.origem === 'site') return '<span class="origem-tag origem-site">Site</span>';
+      if (s.origem === 'aluno') return '<span class="origem-tag origem-aluno">Direto</span>';
+      if (isFromAssessoria(s)) return '<span class="origem-tag origem-assessoria">Assessoria</span>';
+      return '<span class="origem-tag origem-aluno">Direto</span>';
+    }
+
     function renderAll() {
       var filtered = getFiltered();
-      var ativas = filtered.filter(function(s) { return s.status !== 'finalizado' && s.status !== 'finalizado_cobrar'; });
-      var finalizadas = filtered.filter(function(s) { return s.status === 'finalizado' || s.status === 'finalizado_cobrar'; });
+
+      // Separar em 3 grupos
+      var assessorias = filtered.filter(function(s) { return isFromAssessoria(s) && !isFinalizado(s); });
+      var diretos = filtered.filter(function(s) { return isDireto(s) && !isFinalizado(s); });
+      var finalizadas = filtered.filter(function(s) { return isFinalizado(s); });
 
       var container = document.getElementById('tables-container');
       var html = '';
+      var hasContent = false;
 
-      // Tabela ativas
-      if (ativas.length > 0) {
-        html += '<div class="section-group">';
-        html += '<div class="solic-table-wrap">' + buildTable(ativas) + '</div>';
-        html += '</div>';
+      // Para extensao/admin: separar em seções
+      if (currentRole !== 'assessoria') {
+        // Seção Assessorias
+        if (assessorias.length > 0) {
+          hasContent = true;
+          html += buildSection('assessorias', '📋 Solicitações de Assessorias', assessorias, 'rgba(245,158,11,0.12)', '#92700c');
+        }
+
+        // Seção Diretos (WhatsApp / Site / Cadastro)
+        if (diretos.length > 0) {
+          hasContent = true;
+          html += buildSection('diretos', '👤 Alunos Diretos (WhatsApp / Site)', diretos, 'rgba(59,130,246,0.12)', '#2563eb');
+        }
+      } else {
+        // Assessoria: tudo junto (não separa)
+        var ativas = filtered.filter(function(s) { return !isFinalizado(s); });
+        if (ativas.length > 0) {
+          hasContent = true;
+          html += '<div class="section-group"><div class="solic-table-wrap">' + buildTable(ativas) + '</div></div>';
+        }
       }
 
-      if (!ativas.length && !finalizadas.length) {
-        html = '<div class="solic-table-wrap"><table class="solic-table"><tbody><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">Nenhuma solicitação encontrada.</td></tr></tbody></table></div>';
-      }
-
-      // Seção finalizadas (colapsável)
+      // Seção Finalizadas (sempre colapsável)
       if (finalizadas.length > 0) {
-        html += '<div class="section-group">';
-        html += '<div class="section-header' + (_finalizadosCollapsed ? ' collapsed' : '') + '" onclick="toggleFinalizados()">';
+        hasContent = true;
+        html += '<div class="section-group finalizados">';
+        html += '<div class="section-header' + (_collapsed.finalizados ? ' collapsed' : '') + '" onclick="toggleSection(\'finalizados\')">';
         html += '<h3>✅ Finalizadas</h3>';
         html += '<span class="section-count" style="background:rgba(34,197,94,0.12);color:#16a34a;">' + finalizadas.length + '</span>';
         html += '<svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
         html += '</div>';
-        html += '<div id="finalizados-body" style="' + (_finalizadosCollapsed ? 'display:none;' : '') + '">';
+        html += '<div class="section-body" data-section="finalizados" style="' + (_collapsed.finalizados ? 'display:none;' : '') + '">';
         html += '<div class="solic-table-wrap">' + buildTable(finalizadas) + '</div>';
         html += '</div></div>';
+      }
+
+      if (!hasContent) {
+        html = '<div class="solic-table-wrap"><table class="solic-table"><tbody><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">Nenhuma solicitação encontrada.</td></tr></tbody></table></div>';
       }
 
       container.innerHTML = html;
       renderStats();
     }
 
-    function toggleFinalizados() {
-      _finalizadosCollapsed = !_finalizadosCollapsed;
-      var header = document.querySelector('.section-header');
-      var body = document.getElementById('finalizados-body');
-      if (!header || !body) return;
-      if (_finalizadosCollapsed) {
+    function buildSection(key, title, items, bgColor, textColor) {
+      var html = '<div class="section-group ' + key + '">';
+      html += '<div class="section-header' + (_collapsed[key] ? ' collapsed' : '') + '" onclick="toggleSection(\'' + key + '\')">';
+      html += '<h3>' + title + '</h3>';
+      html += '<span class="section-count" style="background:' + bgColor + ';color:' + textColor + ';">' + items.length + '</span>';
+      html += '<svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
+      html += '</div>';
+      html += '<div class="section-body" data-section="' + key + '" style="' + (_collapsed[key] ? 'display:none;' : '') + '">';
+      html += '<div class="solic-table-wrap">' + buildTable(items) + '</div>';
+      html += '</div></div>';
+      return html;
+    }
+
+    function toggleSection(key) {
+      _collapsed[key] = !_collapsed[key];
+      var body = document.querySelector('.section-body[data-section="' + key + '"]');
+      var header = body ? body.previousElementSibling : null;
+      if (!body || !header) return;
+      if (_collapsed[key]) {
         header.classList.add('collapsed');
         body.style.display = 'none';
       } else {
@@ -446,7 +612,8 @@
       html += '</tr></thead><tbody>';
 
       items.forEach(function (s) {
-        var assessorName = _assessorNames[s.assessor_id] || (s.origem === 'aluno' ? 'Aluno Direto' : 'Assessoria');
+        var assessorInfo = _assessorNames[s.assessor_id];
+        var assessorName = assessorInfo ? assessorInfo.name : (isDireto(s) ? 'Direto' : 'Assessoria');
         var horas = s.horas || 0;
         var horasValidadas = s.horas_validadas || 0;
         var horasAValidar = Math.max(0, horas - horasValidadas);
@@ -454,12 +621,6 @@
         if (evolucao > 100) evolucao = 100;
         var badgeClass = 'badge-' + (s.status || 'aguardando');
         var statusText = STATUS_LABELS[s.status] || s.status;
-        var origem = s.origem || 'assessoria';
-
-        // Tag de origem
-        var origemTag = origem === 'aluno'
-          ? '<span class="origem-tag origem-aluno">Aluno</span>'
-          : '<span class="origem-tag origem-assessoria">Assessoria</span>';
 
         html += '<tr data-id="' + s.id + '">';
 
@@ -476,7 +637,7 @@
         }
 
         // Nome + origem tag
-        html += '<td class="td-aluno">' + escapeHtml(s.aluno_nome) + origemTag + '</td>';
+        html += '<td class="td-aluno">' + escapeHtml(s.aluno_nome) + getOrigemLabel(s) + '</td>';
 
         // Responsável
         html += '<td class="td-assessor">' + escapeHtml(assessorName) + '</td>';
@@ -523,17 +684,16 @@
     }
 
     function renderStats() {
-      var stats = { aguardando: 0, desenvolvendo: 0, finalizado: 0, finalizado_cobrar: 0, total: _solicitacoes.length, assessoria: 0, aluno: 0 };
+      var stats = { aguardando: 0, desenvolvendo: 0, finalizado: 0, finalizado_cobrar: 0, total: _solicitacoes.length, assessoria: 0, direto: 0 };
       _solicitacoes.forEach(function (s) {
         stats[s.status] = (stats[s.status] || 0) + 1;
-        if (s.origem === 'aluno') stats.aluno++;
-        else stats.assessoria++;
+        if (isFromAssessoria(s)) stats.assessoria++;
+        else stats.direto++;
       });
       var origemInfo = currentRole !== 'assessoria'
-        ? '<div class="stat-pill" style="background:rgba(59,130,246,0.08);color:#2563eb;">📋 ' + stats.assessoria + ' assessorias</div>' +
-          '<div class="stat-pill" style="background:rgba(139,92,246,0.08);color:#7c3aed;">👤 ' + stats.aluno + ' alunos direto</div>'
+        ? '<div class="stat-pill" style="background:rgba(245,158,11,0.08);color:#92700c;">📋 ' + stats.assessoria + ' assessorias</div>' +
+          '<div class="stat-pill" style="background:rgba(59,130,246,0.08);color:#2563eb;">👤 ' + stats.direto + ' diretos</div>'
         : '';
-      var ativas = stats.aguardando + stats.desenvolvendo;
       document.getElementById('stats-inline').innerHTML =
         '<div class="stat-pill total">📊 ' + stats.total + ' total</div>' +
         origemInfo +
@@ -597,13 +757,15 @@
       var s = _solicitacoes.find(function(item) { return item.id === id; });
       if (!s) return;
 
-      var assessorName = _assessorNames[s.assessor_id] || (s.origem === 'aluno' ? 'Aluno Direto' : 'Assessoria');
+      var assessorInfo = _assessorNames[s.assessor_id];
+      var assessorName = assessorInfo ? assessorInfo.name : (isDireto(s) ? 'Direto' : 'Assessoria');
       var horas = s.horas || 0;
       var horasValidadas = s.horas_validadas || 0;
       var horasAValidar = Math.max(0, horas - horasValidadas);
       var evolucao = horas > 0 ? Math.round((horasValidadas / horas) * 100) : 0;
       var statusText = STATUS_LABELS[s.status] || s.status;
-      var origem = s.origem === 'aluno' ? 'Compra pelo site' : 'Assessoria';
+      var origemLabels = { assessoria: 'Assessoria', aluno: 'Direto', whatsapp: 'WhatsApp', site: 'Compra pelo Site' };
+      var origem = origemLabels[s.origem] || 'Direto';
       var data = s.created_at ? new Date(s.created_at).toLocaleDateString('pt-BR') : '—';
 
       var html = '<h3>📋 Detalhes da Solicitação</h3>';
