@@ -474,21 +474,6 @@ async function checkNotifications() {
       });
     } catch(e) {}
 
-    // 4. Alunos sem sync (nunca sincronizados)
-    try {
-      var { data: allAlunos } = await sb.from('alunos').select('id').not('studeo_senha', 'is', null).neq('studeo_senha', '');
-      var { data: synced } = await sb.from('studeo_sync').select('aluno_id');
-      var syncedIds = {};
-      (synced || []).forEach(function(s) { syncedIds[s.aluno_id] = true; });
-      var naoSync = (allAlunos || []).filter(function(a) { return !syncedIds[a.id]; }).length;
-      if (naoSync > 0) {
-        notifications.push({
-          icon: '🔄', text: naoSync + ' aluno' + (naoSync > 1 ? 's' : '') + ' nunca sincronizado' + (naoSync > 1 ? 's' : ''),
-          sub: 'Clique para sincronizar', link: 'rastreio.html', priority: 4
-        });
-      }
-    } catch(e) {}
-
     // Ordenar por prioridade
     notifications.sort(function(a, b) { return a.priority - b.priority; });
     _notifData = notifications;
