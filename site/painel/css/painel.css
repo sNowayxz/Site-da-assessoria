@@ -600,47 +600,61 @@ img { max-width: 100%; display: block; }
   color: var(--gold);
 }
 
-/* Sidebar Compact */
-.sidebar.compact {
-  width: 68px;
+/* Sidebar Compact — only icons, no text */
+aside.sidebar.compact {
+  --sidebar-w: 68px;
+  width: 68px !important;
   overflow: hidden;
+  transition: width 0.25s ease;
 }
-.sidebar.compact .sidebar-brand-text,
-.sidebar.compact .sidebar-nav-label,
-.sidebar.compact .sidebar-link > :not(svg),
-.sidebar.compact .sidebar-user-info {
-  display: none;
+aside.sidebar.compact .sidebar-brand-text,
+aside.sidebar.compact .sidebar-nav-label,
+aside.sidebar.compact .sidebar-user-info {
+  display: none !important;
 }
-.sidebar.compact .sidebar-brand {
+aside.sidebar.compact .sidebar-brand {
   justify-content: center;
   padding: 16px 8px;
 }
-.sidebar.compact .sidebar-link {
-  justify-content: center;
-  padding: 12px;
-}
-.sidebar.compact .sidebar-link svg {
-  margin: 0;
-}
-.sidebar.compact .sidebar-category-links {
+aside.sidebar.compact .sidebar-category-links {
   padding: 0 8px;
 }
-.sidebar.compact .sidebar-user {
+aside.sidebar.compact .sidebar-link {
+  justify-content: center;
+  padding: 12px;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+  gap: 0;
+  white-space: nowrap;
+}
+aside.sidebar.compact .sidebar-link svg {
+  margin: 0;
+  flex-shrink: 0;
+}
+aside.sidebar.compact .sidebar-link:hover,
+aside.sidebar.compact .sidebar-link.active {
+  color: transparent;
+}
+aside.sidebar.compact .sidebar-user {
   flex-direction: column;
   padding: 10px 8px;
   gap: 6px;
+  align-items: center;
 }
-.sidebar.compact .sidebar-user-link {
+aside.sidebar.compact .sidebar-user-link {
   padding: 6px;
   justify-content: center;
 }
-.sidebar.compact .sidebar-logout,
-.sidebar.compact .sidebar-theme-toggle {
+aside.sidebar.compact .sidebar-logout,
+aside.sidebar.compact .sidebar-theme-toggle {
   padding: 6px;
 }
-.sidebar.compact + .sidebar-overlay + .main-content,
-.sidebar.compact ~ .main-content {
-  margin-left: 68px;
+aside.sidebar.compact + .sidebar-overlay + .main-content {
+  margin-left: 68px !important;
+}
+.layout:has(aside.sidebar.compact) .main-content {
+  margin-left: 68px !important;
 }
 
 /* MAIN CONTENT */
