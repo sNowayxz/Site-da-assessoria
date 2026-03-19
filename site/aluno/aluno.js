@@ -48,6 +48,15 @@ btnSair.addEventListener('click', function() {
   dashScreen.style.display = 'none';
   loginScreen.style.display = 'block';
   inputRa.value = '';
+  btnEntrar.disabled = false;
+  btnText.style.display = 'inline';
+  btnLoading.style.display = 'none';
+  loginError.style.display = 'none';
+  // Reset Studeo panel
+  var panelStudeo = document.getElementById('panel-studeo');
+  if (panelStudeo) panelStudeo.style.display = 'none';
+  var panelExtensao = document.getElementById('panel-extensao');
+  if (panelExtensao) panelExtensao.style.display = 'none';
 });
 
 function loadAluno(ra) {
@@ -323,7 +332,12 @@ function autoSyncAndShowStudeo(aluno) {
   .then(function(r) { return r.json(); })
   .then(function(data) {
     if (!data.ok || !data.resultado) {
-      container.innerHTML = '<div class="aluno-empty" style="padding:20px;">Não foi possível sincronizar. Tente novamente mais tarde.</div>';
+      var errorMsg = (data.error || '').toLowerCase();
+      if (errorMsg.indexOf('login') !== -1 || errorMsg.indexOf('inválid') !== -1 || errorMsg.indexOf('senha') !== -1) {
+        container.innerHTML = '<div class="aluno-empty" style="padding:20px;color:#dc2626;">⚠️ Senha do Studeo incorreta ou alterada.<br><small style="color:#8892a4;">Entre em contato com a assessoria para atualizar seus dados.</small></div>';
+      } else {
+        container.innerHTML = '<div class="aluno-empty" style="padding:20px;">Não foi possível sincronizar. Tente novamente mais tarde.</div>';
+      }
       return;
     }
 

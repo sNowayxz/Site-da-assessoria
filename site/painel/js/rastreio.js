@@ -359,8 +359,8 @@ async function handleSync() {
     var result = await resp.json();
     if (!resp.ok || !result.ok) {
       var errMsg = result.error || 'Erro na sincronização';
-      if (errMsg.includes('Credenciais') || errMsg.includes('401') || errMsg.includes('password')) {
-        errMsg = 'Credenciais inválidas para ' + aluno.nome + '. Verifique o RA e a senha do Studeo na página de Alunos.';
+      if (errMsg.includes('Credenciais') || errMsg.includes('401') || errMsg.includes('password') || errMsg.includes('Login falhou') || errMsg.includes('inválidas')) {
+        errMsg = '⚠️ Senha incorreta para ' + aluno.nome + ' (RA: ' + aluno.ra + '). Atualize a senha na página de Alunos.';
       }
       throw new Error(errMsg);
     }
