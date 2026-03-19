@@ -367,8 +367,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
-  <script src="js/auth.js?v=5"></script>
-  <script src="js/utils.js?v=5"></script>
+  <script src="js/auth.js?v=6"></script>
+  <script src="js/utils.js?v=6"></script>
   <script>
     var currentUserId = null;
     var currentRole = null;
@@ -626,44 +626,44 @@
 
         // Status
         if (canEdit) {
-          html += '<td><select class="status-select" data-id="' + s.id + '" onchange="markChanged(this)">'
+          html += '<td data-label="Status"><select class="status-select" data-id="' + s.id + '" onchange="markChanged(this)">'
             + '<option value="aguardando"' + (s.status === 'aguardando' ? ' selected' : '') + '>Aguardando</option>'
             + '<option value="desenvolvendo"' + (s.status === 'desenvolvendo' ? ' selected' : '') + '>Desenvolvendo</option>'
             + '<option value="finalizado"' + (s.status === 'finalizado' ? ' selected' : '') + '>Finalizado</option>'
             + '<option value="finalizado_cobrar"' + (s.status === 'finalizado_cobrar' ? ' selected' : '') + '>Finalizado a Cobrar</option>'
             + '</select></td>';
         } else {
-          html += '<td><span class="badge-status ' + badgeClass + '">' + statusText + '</span></td>';
+          html += '<td data-label="Status"><span class="badge-status ' + badgeClass + '">' + statusText + '</span></td>';
         }
 
         // Nome + origem tag
-        html += '<td class="td-aluno">' + escapeHtml(s.aluno_nome) + getOrigemLabel(s) + '</td>';
+        html += '<td data-label="Aluno" class="td-aluno">' + escapeHtml(s.aluno_nome) + getOrigemLabel(s) + '</td>';
 
         // Responsável
-        html += '<td class="td-assessor">' + escapeHtml(assessorName) + '</td>';
+        html += '<td data-label="Responsável" class="td-assessor">' + escapeHtml(assessorName) + '</td>';
 
         // Horas Contratadas
-        html += '<td style="text-align:center;">' + horas + 'h</td>';
+        html += '<td data-label="Contratadas" style="text-align:center;">' + horas + 'h</td>';
 
         // Horas Validadas
         if (canEdit) {
-          html += '<td><input type="number" class="progresso-input" data-id="' + s.id + '" data-field="horas_validadas" value="' + horasValidadas + '" min="0" oninput="markChanged(this)" style="width:70px;text-align:center;"></td>';
+          html += '<td data-label="Validadas"><input type="number" class="progresso-input" data-id="' + s.id + '" data-field="horas_validadas" value="' + horasValidadas + '" min="0" oninput="markChanged(this)" style="width:70px;text-align:center;"></td>';
         } else {
-          html += '<td style="text-align:center;">' + (horasValidadas ? horasValidadas + 'h' : '—') + '</td>';
+          html += '<td data-label="Validadas" style="text-align:center;">' + (horasValidadas ? horasValidadas + 'h' : '—') + '</td>';
         }
 
         // Evolução
-        html += '<td>'
+        html += '<td data-label="Evolução">'
           + '<div class="evolucao-bar">'
           + '<div class="evolucao-fill" style="width:' + evolucao + '%;' + (evolucao >= 100 ? 'background:linear-gradient(90deg,#22c55e,#16a34a);' : '') + '"></div>'
           + '<div class="evolucao-text">' + (evolucao > 0 ? evolucao + '%' : '') + '</div>'
           + '</div></td>';
 
         // Horas a Validar
-        html += '<td style="text-align:center;font-weight:600;color:' + (horasAValidar > 0 ? '#d97706' : '#16a34a') + ';">' + horasAValidar + 'h</td>';
+        html += '<td data-label="A Validar" style="text-align:center;font-weight:600;color:' + (horasAValidar > 0 ? '#d97706' : '#16a34a') + ';">' + horasAValidar + 'h</td>';
 
         // Ações
-        html += '<td><div class="row-actions">';
+        html += '<td data-label=""><div class="row-actions">';
         // Botão info (ver detalhes)
         html += '<button class="btn-icon btn-info" onclick="showDetail(\'' + s.id + '\')" title="Ver detalhes">🔍</button>';
         // Botão salvar
@@ -722,6 +722,22 @@
       try {
         var { error } = await sb.from('solicitacoes').update(update).eq('id', id);
         if (error) throw error;
+
+        // Notificar por email se status mudou
+        var item = _solicitacoes.find(function(s) { return s.id === id; });
+        if (update.status && item && update.status !== item.status) {
+          fetch('https://site-da-assessoria.vercel.app/api/notify-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              aluno_nome: item.aluno_nome,
+              ra: item.ra,
+              novo_status: update.status,
+              horas: item.horas
+            })
+          }).catch(function() {}); // Não bloqueia se falhar
+        }
+
         showToast('Atualizado!', 'success');
         _solicitacoes.forEach(function (s) {
           if (s.id === id) {

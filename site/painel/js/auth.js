@@ -43,6 +43,7 @@ async function handleLogin(email, password) {
 async function handleLogout() {
   _cachedRole = null;
   _cachedUser = null;
+  sessionStorage.clear(); // Limpa cache de avatar e outros dados da sessão
   await sb.auth.signOut();
   window.location.href = '/painel/';
 }

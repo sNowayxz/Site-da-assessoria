@@ -1674,3 +1674,82 @@ tbody tr:last-child td {
   color: #1a1a2e;
   border-color: var(--gold);
 }
+
+/* ═══ MOBILE CARDS (tabelas viram cards em telas pequenas) ═══ */
+@media (max-width: 768px) {
+  .main-content { padding: 12px; }
+  .topbar h1 { font-size: 1rem; }
+
+  /* Tabelas genéricas viram cards */
+  .solic-table thead { display: none; }
+  .solic-table, .solic-table tbody, .solic-table tr, .solic-table td {
+    display: block; width: 100%;
+  }
+  .solic-table tr {
+    background: var(--white); border-radius: 12px; padding: 14px;
+    margin-bottom: 10px; box-shadow: var(--shadow); position: relative;
+    border-left: 3px solid var(--gold);
+  }
+  .solic-table td {
+    padding: 4px 0; border: none; display: flex; justify-content: space-between; align-items: center;
+  }
+  .solic-table td::before {
+    content: attr(data-label);
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.03em; color: var(--gray-400); min-width: 100px;
+  }
+  .solic-table .td-aluno { font-size: 1rem; }
+
+  /* Stats pills horizontais com scroll */
+  .stats-inline { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; }
+  .stat-pill { white-space: nowrap; flex-shrink: 0; }
+
+  /* Filter bar vertical */
+  .filter-bar { flex-direction: column; }
+  .filter-bar select, .filter-bar input { width: 100%; }
+
+  /* Section headers mais touch-friendly */
+  .section-header { padding: 14px 16px; }
+
+  /* Evolução bar mais grossa */
+  .evolucao-bar { height: 24px; }
+
+  /* Cards de stat (dashboard) */
+  .stat-cards { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+
+  /* Topbar actions */
+  .topbar-actions { gap: 4px !important; }
+
+  /* Modal responsivo */
+  .detail-content, .add-content { width: 95%; padding: 20px; }
+  .detail-grid, .form-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .stat-cards { grid-template-columns: 1fr !important; }
+  .solic-table tr { padding: 12px; }
+  .sidebar-user { padding: 12px; }
+  .topbar { padding: 12px; }
+}
+
+/* Dark mode cards mobile */
+[data-theme="dark"] .solic-table tr {
+  background: #1c2128;
+}
+@media (max-width: 768px) {
+  [data-theme="dark"] .solic-table tr {
+    background: #1c2128; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+}
+
+/* ═══ TEMA POR ASSESSORIA ═══ */
+/* Aplica-se via JS: document.documentElement.setAttribute('data-brand', 'assessoria') */
+[data-brand="assessoria"] {
+  --gold: #f0c030;
+  --gold-light: #f5d45a;
+}
+[data-brand="assessoria"] .sidebar-brand-text { font-size: 0.82rem; }
+[data-brand="assessoria"] .sidebar-logo img { border-radius: 50%; }
+[data-brand="assessoria"] .sidebar-brand {
+  padding: 16px 20px;
+}

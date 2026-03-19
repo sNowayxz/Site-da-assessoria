@@ -799,11 +799,46 @@ function setupSidebarPermissions(role) {
   // Carregar avatar do usuário na sidebar
   loadSidebarAvatar();
 
+  // Personalização para assessorias: mostra logo deles na sidebar
+  if (role === 'assessoria') {
+    document.documentElement.setAttribute('data-brand', 'assessoria');
+    loadBrandLogo();
+  }
+
   // Mostrar layout e esconder loader
   var layout = document.querySelector('.layout');
   if (layout) layout.classList.add('ready');
   var loader = document.getElementById('page-loader');
   if (loader) loader.classList.add('hide');
+}
+
+// ─── Brand Logo para Assessorias ───
+function loadBrandLogo() {
+  if (!window.sb) return;
+  sb.auth.getUser().then(function(res) {
+    if (!res.data || !res.data.user) return;
+    var userId = res.data.user.id;
+    sb.from('assessores').select('avatar_url, label').eq('id', userId).single().then(function(r) {
+      if (!r.data) return;
+      // Trocar logo na sidebar pelo logo da assessoria
+      if (r.data.avatar_url) {
+        var logoEl = document.querySelector('.sidebar-logo img');
+        if (logoEl) {
+          logoEl.src = r.data.avatar_url;
+          logoEl.style.borderRadius = '50%';
+          logoEl.style.objectFit = 'cover';
+        }
+      }
+      // Trocar texto da sidebar pelo nome da assessoria
+      if (r.data.label) {
+        var brandText = document.querySelector('.sidebar-brand-text');
+        if (brandText) {
+          var shortName = r.data.label.replace('Assessoria ', '');
+          brandText.innerHTML = shortName + '<br><small>Painel Assessoria</small>';
+        }
+      }
+    }).catch(function() {});
+  }).catch(function() {});
 }
 
 // ─── Sidebar Avatar (global) ───
@@ -816,32 +851,37 @@ function loadSidebarAvatar() {
     el.innerHTML = '<img src="' + url + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
   }
 
-  // Aplica em múltiplos momentos para garantir que não seja sobrescrito
-  function tryApply() {
-    var cached = sessionStorage.getItem('sidebar-avatar-url');
-    if (cached) {
-      applyAvatar(cached);
-      return true;
-    }
-    return false;
-  }
-
-  // Tenta aplicar do cache imediatamente e em intervalos
-  if (tryApply()) {
-    // Re-aplica após delays para cobrir pages que setam textContent depois
-    setTimeout(tryApply, 300);
-    setTimeout(tryApply, 800);
-    return;
-  }
-
-  // Sem cache: busca do banco
+  // Busca user primeiro para cache por userId
   sb.auth.getUser().then(function(res) {
     if (!res.data || !res.data.user) return;
-    sb.from('assessores').select('avatar_url').eq('id', res.data.user.id).single().then(function(r) {
+    var userId = res.data.user.id;
+    var cacheKey = 'avatar-' + userId;
+
+    // Limpa cache de outros users (troca de conta)
+    for (var i = sessionStorage.length - 1; i >= 0; i--) {
+      var k = sessionStorage.key(i);
+      if (k && k.startsWith('avatar-') && k !== cacheKey) sessionStorage.removeItem(k);
+    }
+    // Remove cache antigo sem userId
+    sessionStorage.removeItem('sidebar-avatar-url');
+
+    function tryApply() {
+      var cached = sessionStorage.getItem(cacheKey);
+      if (cached) { applyAvatar(cached); return true; }
+      return false;
+    }
+
+    if (tryApply()) {
+      setTimeout(tryApply, 300);
+      setTimeout(tryApply, 800);
+      return;
+    }
+
+    // Busca do banco
+    sb.from('assessores').select('avatar_url').eq('id', userId).single().then(function(r) {
       if (r.data && r.data.avatar_url) {
-        sessionStorage.setItem('sidebar-avatar-url', r.data.avatar_url);
+        sessionStorage.setItem(cacheKey, r.data.avatar_url);
         applyAvatar(r.data.avatar_url);
-        // Re-aplica para cobrir sobrescritas
         setTimeout(function() { applyAvatar(r.data.avatar_url); }, 500);
         setTimeout(function() { applyAvatar(r.data.avatar_url); }, 1000);
       }
