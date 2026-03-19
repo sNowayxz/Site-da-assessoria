@@ -93,6 +93,68 @@
       font-size: 0.72rem; font-weight: 700; color: var(--gray-800);
     }
 
+    /* Origem tags */
+    .origem-tag {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 0.68rem; font-weight: 700; margin-left: 6px; vertical-align: middle;
+    }
+    .origem-assessoria { background: #fef3c7; color: #92400e; }
+    .origem-aluno { background: #dbeafe; color: #1d4ed8; }
+
+    /* Seção finalizada */
+    .section-group { margin-bottom: 24px; }
+    .section-header {
+      display: flex; align-items: center; gap: 10px; cursor: pointer;
+      padding: 10px 16px; background: var(--gray-50); border-radius: 10px;
+      margin-bottom: 8px; user-select: none; transition: background 0.2s;
+    }
+    .section-header:hover { background: var(--gray-100); }
+    .section-header h3 { margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--gray-700); }
+    .section-header .section-count {
+      padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;
+    }
+    .section-header .chevron-icon {
+      margin-left: auto; transition: transform 0.2s; width: 16px; height: 16px;
+      stroke: var(--gray-500); fill: none; stroke-width: 2;
+    }
+    .section-header.collapsed .chevron-icon { transform: rotate(-90deg); }
+
+    /* Botões de ação na linha */
+    .row-actions { display: flex; gap: 4px; align-items: center; }
+    .btn-icon {
+      width: 30px; height: 30px; border: none; border-radius: 6px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 0.85rem;
+      background: transparent; transition: all 0.15s;
+    }
+    .btn-icon:hover { background: var(--gray-100); }
+    .btn-icon.btn-delete:hover { background: rgba(239,68,68,0.1); color: #dc2626; }
+    .btn-icon.btn-info:hover { background: rgba(59,130,246,0.1); color: #2563eb; }
+
+    /* Modal de detalhes */
+    .detail-modal {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;
+    }
+    .detail-modal.open { display: flex; }
+    .detail-content {
+      background: var(--white); border-radius: 16px; padding: 28px; width: 90%; max-width: 500px;
+      max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: modalIn 0.2s ease;
+    }
+    @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .detail-content h3 { margin: 0 0 20px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .detail-item { padding: 10px 14px; background: var(--gray-50); border-radius: 10px; }
+    .detail-item.full { grid-column: 1 / -1; }
+    .detail-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--gray-500); font-weight: 600; margin-bottom: 4px; }
+    .detail-value { font-size: 0.9rem; font-weight: 600; color: var(--gray-800); word-break: break-word; }
+    .detail-close {
+      margin-top: 16px; width: 100%; padding: 10px; border: none; border-radius: 10px;
+      background: var(--gray-100); color: var(--gray-700); font-weight: 600; cursor: pointer;
+      font-family: inherit; font-size: 0.88rem;
+    }
+    .detail-close:hover { background: var(--gray-200); }
+
     /* Dark mode */
     [data-theme="dark"] .solic-table-wrap { background: #1c2128; }
     [data-theme="dark"] .solic-table th { background: #161b22; border-bottom-color: #30363d; color: #8b949e; }
@@ -101,11 +163,20 @@
     [data-theme="dark"] .filter-bar select, [data-theme="dark"] .filter-bar input { background: #161b22; border-color: #30363d; color: #e6edf3; }
     [data-theme="dark"] .status-select { background: #161b22; border-color: #30363d; color: #e6edf3; }
     [data-theme="dark"] .progresso-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .section-header { background: #161b22; }
+    [data-theme="dark"] .section-header:hover { background: #1c2128; }
+    [data-theme="dark"] .section-header h3 { color: #e6edf3; }
+    [data-theme="dark"] .detail-content { background: #1c2128; }
+    [data-theme="dark"] .detail-item { background: #161b22; }
+    [data-theme="dark"] .detail-value { color: #e6edf3; }
+    [data-theme="dark"] .detail-close { background: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .btn-icon:hover { background: #30363d; }
 
     @media (max-width: 768px) {
       .filter-bar { flex-direction: column; }
       .solic-table { font-size: 0.82rem; }
       .solic-table th, .solic-table td { padding: 8px 10px; }
+      .detail-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -197,27 +268,14 @@
         <input type="text" id="filter-busca" placeholder="Buscar aluno ou RA...">
       </div>
 
-      <!-- Table -->
-      <div class="solic-table-wrap">
-        <table class="solic-table">
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Nome do Aluno</th>
-              <th>Responsável</th>
-              <th>Horas Contratadas</th>
-              <th>Horas Validadas</th>
-              <th>Evolução</th>
-              <th>Horas a Validar</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="solic-tbody">
-            <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">Carregando...</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- Tabelas -->
+      <div id="tables-container"></div>
     </main>
+  </div>
+
+  <!-- Modal Detalhes -->
+  <div class="detail-modal" id="detail-modal">
+    <div class="detail-content" id="detail-content"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -229,6 +287,7 @@
     var currentRole = null;
     var _solicitacoes = [];
     var _assessorNames = {};
+    var _finalizadosCollapsed = false;
 
     document.addEventListener('DOMContentLoaded', async function () {
       var result = await requireRole(['admin', 'dono', 'extensao', 'assessoria']);
@@ -244,10 +303,8 @@
       if (currentRole !== 'assessoria') {
         document.getElementById('filter-origem').style.display = '';
         document.getElementById('btn-add-manual').style.display = '';
+        document.getElementById('filter-origem').addEventListener('change', renderAll);
 
-        document.getElementById('filter-origem').addEventListener('change', renderTable);
-
-        // Add manual button
         document.getElementById('btn-add-manual').addEventListener('click', function () {
           var nome = prompt('Nome do Aluno:');
           if (!nome) return;
@@ -257,13 +314,9 @@
           var valorPago = parseFloat(prompt('Valor Pago (R$):')) || 0;
 
           sb.from('solicitacoes').insert({
-            aluno_nome: nome.trim(),
-            ra: (ra || '').trim(),
-            horas: horas,
-            valor_hora: valorHora,
-            valor_pago: valorPago,
-            status: 'aguardando',
-            origem: 'aluno',
+            aluno_nome: nome.trim(), ra: (ra || '').trim(), horas: horas,
+            valor_hora: valorHora, valor_pago: valorPago,
+            status: 'aguardando', origem: 'aluno',
             assessor_id: currentRole === 'assessoria' ? currentUserId : null
           }).then(function (res) {
             if (res.error) { showToast('Erro: ' + res.error.message, 'error'); return; }
@@ -277,7 +330,6 @@
       if (currentRole !== 'assessoria') {
         var { data: assessores } = await sb.from('assessores').select('id, nome, label');
         (assessores || []).forEach(function (a) { _assessorNames[a.id] = a.label || a.nome; });
-        // Show assessor filter
         var sel = document.getElementById('filter-assessor');
         sel.style.display = '';
         (assessores || []).filter(function (a) { return a.label && a.label.startsWith('Assessoria'); }).forEach(function (a) {
@@ -285,9 +337,14 @@
         });
       }
 
-      document.getElementById('filter-status').addEventListener('change', renderTable);
-      document.getElementById('filter-assessor').addEventListener('change', renderTable);
-      document.getElementById('filter-busca').addEventListener('input', renderTable);
+      document.getElementById('filter-status').addEventListener('change', renderAll);
+      document.getElementById('filter-assessor').addEventListener('change', renderAll);
+      document.getElementById('filter-busca').addEventListener('input', renderAll);
+
+      // Fechar modal
+      document.getElementById('detail-modal').addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('open');
+      });
 
       await loadSolicitacoes();
     });
@@ -300,43 +357,16 @@
       var { data, error } = await query;
       if (error) { console.error(error); return; }
       _solicitacoes = data || [];
-      renderTable();
-      renderStats();
+      renderAll();
     }
 
-    function renderStats() {
-      var stats = { aguardando: 0, desenvolvendo: 0, finalizado: 0, finalizado_cobrar: 0, total: _solicitacoes.length, assessoria: 0, aluno: 0 };
-      _solicitacoes.forEach(function (s) {
-        stats[s.status] = (stats[s.status] || 0) + 1;
-        if (s.origem === 'aluno') stats.aluno++;
-        else stats.assessoria++;
-      });
-      var origemInfo = currentRole !== 'assessoria'
-        ? '<div class="stat-pill" style="background:rgba(59,130,246,0.08);color:#2563eb;">📋 ' + stats.assessoria + ' assessorias</div>' +
-          '<div class="stat-pill" style="background:rgba(139,92,246,0.08);color:#7c3aed;">👤 ' + stats.aluno + ' alunos direto</div>'
-        : '';
-      document.getElementById('stats-inline').innerHTML =
-        '<div class="stat-pill total">📊 ' + stats.total + ' total</div>' +
-        origemInfo +
-        '<div class="stat-pill aguardando">⏳ ' + stats.aguardando + ' aguardando</div>' +
-        '<div class="stat-pill desenvolvendo">🔄 ' + stats.desenvolvendo + ' desenvolvendo</div>' +
-        '<div class="stat-pill finalizado">✅ ' + (stats.finalizado + stats.finalizado_cobrar) + ' finalizados</div>';
-    }
-
-    var STATUS_LABELS = {
-      aguardando: 'Aguardando',
-      desenvolvendo: 'Desenvolvendo',
-      finalizado: 'Finalizado',
-      finalizado_cobrar: 'Finalizado a Cobrar'
-    };
-
-    function renderTable() {
+    function getFiltered() {
       var statusFilter = document.getElementById('filter-status').value;
       var assessorFilter = document.getElementById('filter-assessor').value;
       var origemFilter = document.getElementById('filter-origem').value;
       var busca = document.getElementById('filter-busca').value.toLowerCase();
 
-      var filtered = _solicitacoes.filter(function (s) {
+      return _solicitacoes.filter(function (s) {
         if (statusFilter && s.status !== statusFilter) return false;
         if (assessorFilter && s.assessor_id !== assessorFilter) return false;
         if (origemFilter && (s.origem || 'assessoria') !== origemFilter) return false;
@@ -347,18 +377,76 @@
         }
         return true;
       });
+    }
 
-      var tbody = document.getElementById('solic-tbody');
-      if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">Nenhuma solicitação encontrada.</td></tr>';
-        return;
+    function renderAll() {
+      var filtered = getFiltered();
+      var ativas = filtered.filter(function(s) { return s.status !== 'finalizado' && s.status !== 'finalizado_cobrar'; });
+      var finalizadas = filtered.filter(function(s) { return s.status === 'finalizado' || s.status === 'finalizado_cobrar'; });
+
+      var container = document.getElementById('tables-container');
+      var html = '';
+
+      // Tabela ativas
+      if (ativas.length > 0) {
+        html += '<div class="section-group">';
+        html += '<div class="solic-table-wrap">' + buildTable(ativas) + '</div>';
+        html += '</div>';
       }
 
-      var canEdit = currentRole !== 'assessoria';
+      if (!ativas.length && !finalizadas.length) {
+        html = '<div class="solic-table-wrap"><table class="solic-table"><tbody><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">Nenhuma solicitação encontrada.</td></tr></tbody></table></div>';
+      }
 
-      var html = '';
-      filtered.forEach(function (s) {
-        var assessorName = _assessorNames[s.assessor_id] || 'Assessoria';
+      // Seção finalizadas (colapsável)
+      if (finalizadas.length > 0) {
+        html += '<div class="section-group">';
+        html += '<div class="section-header' + (_finalizadosCollapsed ? ' collapsed' : '') + '" onclick="toggleFinalizados()">';
+        html += '<h3>✅ Finalizadas</h3>';
+        html += '<span class="section-count" style="background:rgba(34,197,94,0.12);color:#16a34a;">' + finalizadas.length + '</span>';
+        html += '<svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
+        html += '</div>';
+        html += '<div id="finalizados-body" style="' + (_finalizadosCollapsed ? 'display:none;' : '') + '">';
+        html += '<div class="solic-table-wrap">' + buildTable(finalizadas) + '</div>';
+        html += '</div></div>';
+      }
+
+      container.innerHTML = html;
+      renderStats();
+    }
+
+    function toggleFinalizados() {
+      _finalizadosCollapsed = !_finalizadosCollapsed;
+      var header = document.querySelector('.section-header');
+      var body = document.getElementById('finalizados-body');
+      if (!header || !body) return;
+      if (_finalizadosCollapsed) {
+        header.classList.add('collapsed');
+        body.style.display = 'none';
+      } else {
+        header.classList.remove('collapsed');
+        body.style.display = '';
+      }
+    }
+
+    var STATUS_LABELS = {
+      aguardando: 'Aguardando',
+      desenvolvendo: 'Desenvolvendo',
+      finalizado: 'Finalizado',
+      finalizado_cobrar: 'Finalizado a Cobrar'
+    };
+
+    function buildTable(items) {
+      var canEdit = currentRole !== 'assessoria';
+      var canDelete = currentRole === 'extensao' || currentRole === 'admin' || currentRole === 'dono';
+
+      var html = '<table class="solic-table"><thead><tr>';
+      html += '<th>Status</th><th>Nome do Aluno</th><th>Responsável</th>';
+      html += '<th>Horas Contratadas</th><th>Horas Validadas</th><th>Evolução</th><th>Horas a Validar</th><th></th>';
+      html += '</tr></thead><tbody>';
+
+      items.forEach(function (s) {
+        var assessorName = _assessorNames[s.assessor_id] || (s.origem === 'aluno' ? 'Aluno Direto' : 'Assessoria');
         var horas = s.horas || 0;
         var horasValidadas = s.horas_validadas || 0;
         var horasAValidar = Math.max(0, horas - horasValidadas);
@@ -366,6 +454,12 @@
         if (evolucao > 100) evolucao = 100;
         var badgeClass = 'badge-' + (s.status || 'aguardando');
         var statusText = STATUS_LABELS[s.status] || s.status;
+        var origem = s.origem || 'assessoria';
+
+        // Tag de origem
+        var origemTag = origem === 'aluno'
+          ? '<span class="origem-tag origem-aluno">Aluno</span>'
+          : '<span class="origem-tag origem-assessoria">Assessoria</span>';
 
         html += '<tr data-id="' + s.id + '">';
 
@@ -381,44 +475,71 @@
           html += '<td><span class="badge-status ' + badgeClass + '">' + statusText + '</span></td>';
         }
 
-        // Nome do Aluno
-        html += '<td class="td-aluno">' + escapeHtml(s.aluno_nome) + '</td>';
+        // Nome + origem tag
+        html += '<td class="td-aluno">' + escapeHtml(s.aluno_nome) + origemTag + '</td>';
 
-        // Responsável + Origem
-        var origemTag = (s.origem === 'aluno') ? '<span style="font-size:0.68rem;background:#dbeafe;color:#1d4ed8;padding:1px 6px;border-radius:4px;margin-left:4px;">Direto</span>' : '';
-        html += '<td class="td-assessor">' + escapeHtml(assessorName) + origemTag + '</td>';
+        // Responsável
+        html += '<td class="td-assessor">' + escapeHtml(assessorName) + '</td>';
 
         // Horas Contratadas
-        html += '<td style="text-align:center;">' + horas + ' Horas</td>';
+        html += '<td style="text-align:center;">' + horas + 'h</td>';
 
         // Horas Validadas
         if (canEdit) {
           html += '<td><input type="number" class="progresso-input" data-id="' + s.id + '" data-field="horas_validadas" value="' + horasValidadas + '" min="0" oninput="markChanged(this)" style="width:70px;text-align:center;"></td>';
         } else {
-          html += '<td style="text-align:center;">' + (horasValidadas || '') + (horasValidadas ? ' Horas' : '—') + '</td>';
+          html += '<td style="text-align:center;">' + (horasValidadas ? horasValidadas + 'h' : '—') + '</td>';
         }
 
-        // Evolução (barra de progresso)
+        // Evolução
         html += '<td>'
           + '<div class="evolucao-bar">'
           + '<div class="evolucao-fill" style="width:' + evolucao + '%;' + (evolucao >= 100 ? 'background:linear-gradient(90deg,#22c55e,#16a34a);' : '') + '"></div>'
           + '<div class="evolucao-text">' + (evolucao > 0 ? evolucao + '%' : '') + '</div>'
           + '</div></td>';
 
-        // Horas a Validar (calculado automaticamente)
-        html += '<td style="text-align:center;font-weight:600;color:' + (horasAValidar > 0 ? '#d97706' : '#16a34a') + ';">' + horasAValidar + ' Horas</td>';
+        // Horas a Validar
+        html += '<td style="text-align:center;font-weight:600;color:' + (horasAValidar > 0 ? '#d97706' : '#16a34a') + ';">' + horasAValidar + 'h</td>';
 
-        // Save button
+        // Ações
+        html += '<td><div class="row-actions">';
+        // Botão info (ver detalhes)
+        html += '<button class="btn-icon btn-info" onclick="showDetail(\'' + s.id + '\')" title="Ver detalhes">🔍</button>';
+        // Botão salvar
         if (canEdit) {
-          html += '<td><button class="btn-save-row" data-id="' + s.id + '" onclick="saveRow(\'' + s.id + '\')" style="display:none;">💾</button></td>';
-        } else {
-          html += '<td></td>';
+          html += '<button class="btn-icon btn-save-row" data-id="' + s.id + '" onclick="saveRow(\'' + s.id + '\')" style="display:none;" title="Salvar">💾</button>';
         }
+        // Botão excluir
+        if (canDelete) {
+          html += '<button class="btn-icon btn-delete" onclick="deleteRow(\'' + s.id + '\')" title="Excluir">🗑️</button>';
+        }
+        html += '</div></td>';
 
         html += '</tr>';
       });
 
-      tbody.innerHTML = html;
+      html += '</tbody></table>';
+      return html;
+    }
+
+    function renderStats() {
+      var stats = { aguardando: 0, desenvolvendo: 0, finalizado: 0, finalizado_cobrar: 0, total: _solicitacoes.length, assessoria: 0, aluno: 0 };
+      _solicitacoes.forEach(function (s) {
+        stats[s.status] = (stats[s.status] || 0) + 1;
+        if (s.origem === 'aluno') stats.aluno++;
+        else stats.assessoria++;
+      });
+      var origemInfo = currentRole !== 'assessoria'
+        ? '<div class="stat-pill" style="background:rgba(59,130,246,0.08);color:#2563eb;">📋 ' + stats.assessoria + ' assessorias</div>' +
+          '<div class="stat-pill" style="background:rgba(139,92,246,0.08);color:#7c3aed;">👤 ' + stats.aluno + ' alunos direto</div>'
+        : '';
+      var ativas = stats.aguardando + stats.desenvolvendo;
+      document.getElementById('stats-inline').innerHTML =
+        '<div class="stat-pill total">📊 ' + stats.total + ' total</div>' +
+        origemInfo +
+        '<div class="stat-pill aguardando">⏳ ' + stats.aguardando + ' aguardando</div>' +
+        '<div class="stat-pill desenvolvendo">🔄 ' + stats.desenvolvendo + ' desenvolvendo</div>' +
+        '<div class="stat-pill finalizado">✅ ' + (stats.finalizado + stats.finalizado_cobrar) + ' finalizados</div>';
     }
 
     function markChanged(el) {
@@ -432,35 +553,95 @@
       var horasValEl = document.querySelector('input[data-id="' + id + '"][data-field="horas_validadas"]');
       var btn = document.querySelector('.btn-save-row[data-id="' + id + '"]');
 
-      var update = {
-        updated_at: new Date().toISOString()
-      };
+      var update = { updated_at: new Date().toISOString() };
       if (statusEl) update.status = statusEl.value;
       if (horasValEl) update.horas_validadas = parseInt(horasValEl.value) || 0;
 
-      btn.textContent = '...';
-      btn.disabled = true;
+      if (btn) { btn.textContent = '...'; btn.disabled = true; }
 
       try {
         var { error } = await sb.from('solicitacoes').update(update).eq('id', id);
         if (error) throw error;
-        btn.style.display = 'none';
         showToast('Atualizado!', 'success');
-        // Update local data
         _solicitacoes.forEach(function (s) {
           if (s.id === id) {
             if (update.status) s.status = update.status;
             if (update.horas_validadas !== undefined) s.horas_validadas = update.horas_validadas;
           }
         });
-        renderTable();
-        renderStats();
+        renderAll();
       } catch (err) {
         showToast('Erro: ' + (err.message || err), 'error');
       } finally {
-        btn.textContent = '💾';
-        btn.disabled = false;
+        if (btn) { btn.textContent = '💾'; btn.disabled = false; }
       }
+    }
+
+    async function deleteRow(id) {
+      var item = _solicitacoes.find(function(s) { return s.id === id; });
+      if (!item) return;
+      if (!confirm('Excluir solicitação de "' + item.aluno_nome + '"?\n\nEssa ação não pode ser desfeita.')) return;
+
+      try {
+        var { error } = await sb.from('solicitacoes').delete().eq('id', id);
+        if (error) throw error;
+        _solicitacoes = _solicitacoes.filter(function(s) { return s.id !== id; });
+        showToast('Solicitação excluída!', 'success');
+        renderAll();
+      } catch(err) {
+        showToast('Erro ao excluir: ' + (err.message || err), 'error');
+      }
+    }
+
+    function showDetail(id) {
+      var s = _solicitacoes.find(function(item) { return item.id === id; });
+      if (!s) return;
+
+      var assessorName = _assessorNames[s.assessor_id] || (s.origem === 'aluno' ? 'Aluno Direto' : 'Assessoria');
+      var horas = s.horas || 0;
+      var horasValidadas = s.horas_validadas || 0;
+      var horasAValidar = Math.max(0, horas - horasValidadas);
+      var evolucao = horas > 0 ? Math.round((horasValidadas / horas) * 100) : 0;
+      var statusText = STATUS_LABELS[s.status] || s.status;
+      var origem = s.origem === 'aluno' ? 'Compra pelo site' : 'Assessoria';
+      var data = s.created_at ? new Date(s.created_at).toLocaleDateString('pt-BR') : '—';
+
+      var html = '<h3>📋 Detalhes da Solicitação</h3>';
+      html += '<div class="detail-grid">';
+
+      html += '<div class="detail-item"><div class="detail-label">Aluno</div><div class="detail-value">' + escapeHtml(s.aluno_nome) + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">RA</div><div class="detail-value">' + escapeHtml(s.ra || '—') + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge-status badge-' + s.status + '">' + statusText + '</span></div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Origem</div><div class="detail-value">' + origem + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Responsável</div><div class="detail-value">' + escapeHtml(assessorName) + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Data</div><div class="detail-value">' + data + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Horas Contratadas</div><div class="detail-value">' + horas + 'h</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Horas Validadas</div><div class="detail-value">' + horasValidadas + 'h</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Horas Restantes</div><div class="detail-value" style="color:' + (horasAValidar > 0 ? '#d97706' : '#16a34a') + ';">' + horasAValidar + 'h</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Progresso</div><div class="detail-value">' + evolucao + '%</div></div>';
+
+      if (s.valor_hora) {
+        html += '<div class="detail-item"><div class="detail-label">Valor/Hora</div><div class="detail-value">R$ ' + parseFloat(s.valor_hora).toFixed(2) + '</div></div>';
+      }
+      if (s.valor_pago) {
+        html += '<div class="detail-item"><div class="detail-label">Valor Pago</div><div class="detail-value">R$ ' + parseFloat(s.valor_pago).toFixed(2) + '</div></div>';
+      }
+
+      // Senha (apenas extensao/admin)
+      if ((currentRole === 'extensao' || currentRole === 'admin' || currentRole === 'dono') && s.senha) {
+        html += '<div class="detail-item"><div class="detail-label">Senha Studeo</div><div class="detail-value" style="font-family:monospace;">' + escapeHtml(s.senha) + '</div></div>';
+      }
+
+      // Observações (tema etc)
+      if (s.observacoes) {
+        html += '<div class="detail-item full"><div class="detail-label">Observações / Tema</div><div class="detail-value">' + escapeHtml(s.observacoes) + '</div></div>';
+      }
+
+      html += '</div>';
+      html += '<button class="detail-close" onclick="document.getElementById(\'detail-modal\').classList.remove(\'open\')">Fechar</button>';
+
+      document.getElementById('detail-content').innerHTML = html;
+      document.getElementById('detail-modal').classList.add('open');
     }
   </script>
 </body>
