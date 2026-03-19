@@ -80,6 +80,216 @@
       .sheet-frame { min-height: 400px; }
     }
 
+    /* ─── Calculadora de Extensão ─── */
+    .calc-container {
+      display: none;
+      padding: 24px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .calc-container.visible { display: block; }
+    .calc-card {
+      background: var(--white, #fff);
+      border: 1px solid var(--gray-200, #e5e7eb);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .calc-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--dark, #1a1a2e);
+      margin: 0 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .calc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-100, #f3f4f6);
+    }
+    .calc-row:last-child { border-bottom: none; }
+    .calc-row-label {
+      font-size: 0.88rem;
+      color: var(--gray-500, #6b7280);
+      font-weight: 500;
+    }
+    .calc-row-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--dark, #1a1a2e);
+    }
+    .calc-row-value.highlight {
+      font-size: 1.15rem;
+      color: var(--gold, #f0c030);
+    }
+    .calc-input-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .calc-input-group label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--gray-600, #4b5563);
+      white-space: nowrap;
+    }
+    .calc-input {
+      width: 120px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--gray-200, #e5e7eb);
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+      background: var(--white, #fff);
+      color: var(--dark, #1a1a2e);
+    }
+    .calc-input:focus {
+      border-color: var(--gold, #f0c030);
+      box-shadow: 0 0 0 3px rgba(240,192,48,0.15);
+    }
+    .calc-input-suffix {
+      font-size: 0.85rem;
+      color: var(--gray-400, #8892a4);
+      font-weight: 500;
+    }
+    .calc-total-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, rgba(240,192,48,0.1), rgba(240,192,48,0.05));
+      border-radius: 10px;
+      margin-top: 12px;
+    }
+    .calc-total-label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--dark, #1a1a2e);
+    }
+    .calc-total-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--gold, #f0c030);
+    }
+    .calc-option-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--dark, #1a1a2e);
+      margin: 0 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--gold, #f0c030);
+      display: inline-block;
+    }
+    .calc-option-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: rgba(34,197,94,0.12);
+      color: #16a34a;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .calc-options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 600px) {
+      .calc-options-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+    }
+    .calc-option-card {
+      background: var(--white, #fff);
+      border: 1px solid var(--gray-200, #e5e7eb);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+    .calc-option-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      transform: translateY(-2px);
+    }
+    .calc-option-card.recommended {
+      border-color: var(--gold, #f0c030);
+      box-shadow: 0 0 0 1px var(--gold, #f0c030);
+    }
+    .calc-parcelas-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .calc-parcelas-input {
+      width: 60px;
+      padding: 6px 8px;
+      border: 1.5px solid var(--gray-200, #e5e7eb);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-family: inherit;
+      text-align: center;
+      outline: none;
+      background: var(--white, #fff);
+      color: var(--dark, #1a1a2e);
+    }
+    .calc-parcelas-input:focus {
+      border-color: var(--gold, #f0c030);
+    }
+    .calc-copy-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      margin-top: 20px;
+      padding: 10px 18px;
+      border: 1.5px solid var(--gold, #f0c030);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--gold, #f0c030);
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .calc-copy-btn:hover {
+      background: var(--gold, #f0c030);
+      color: var(--dark, #1a1a2e);
+    }
+    .calc-copy-btn.copied {
+      background: #16a34a;
+      border-color: #16a34a;
+      color: #fff;
+    }
+
+    /* Dark mode */
+    [data-theme="dark"] .calc-card { background: #1c2128; border-color: #30363d; }
+    [data-theme="dark"] .calc-card h3 { color: #e6edf3; }
+    [data-theme="dark"] .calc-row { border-bottom-color: #21262d; }
+    [data-theme="dark"] .calc-row-label { color: #8b949e; }
+    [data-theme="dark"] .calc-row-value { color: #e6edf3; }
+    [data-theme="dark"] .calc-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+    [data-theme="dark"] .calc-total-row { background: linear-gradient(135deg, rgba(240,192,48,0.12), rgba(240,192,48,0.05)); }
+    [data-theme="dark"] .calc-total-label { color: #e6edf3; }
+    [data-theme="dark"] .calc-option-title { color: #e6edf3; }
+    [data-theme="dark"] .calc-option-card { background: #1c2128; border-color: #30363d; }
+    [data-theme="dark"] .calc-option-card.recommended { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+    [data-theme="dark"] .calc-parcelas-input { background: #161b22; border-color: #30363d; color: #e6edf3; }
+
     /* ─── Assessor View: Project List ─── */
     .ext-projects {
       padding: 24px;
@@ -218,6 +428,7 @@
         <div class="sheet-toolbar">
           <button class="tab-btn active" onclick="switchTab(0, this)">📋 Alunos</button>
           <button class="tab-btn" onclick="switchTab(1023205118, this)">💰 Pre&ccedil;os</button>
+          <button class="tab-btn" onclick="showCalc(this)">🧮 Calculadora</button>
           <span class="sheet-spacer"></span>
           <a href="https://docs.google.com/spreadsheets/d/1yeFlBBZSMHqTziM7QBB3IVkMJQgXqTbvDEz9SvXXKDw/edit" target="_blank" class="btn-open-sheet">📊 Abrir no Google Sheets</a>
           <button class="btn-fullscreen" onclick="toggleFullscreen()" id="btn-fs" title="Tela cheia">⛶</button>
@@ -228,6 +439,98 @@
           src="https://docs.google.com/spreadsheets/d/1yeFlBBZSMHqTziM7QBB3IVkMJQgXqTbvDEz9SvXXKDw/edit?gid=0&rm=minimal"
           allowfullscreen>
         </iframe>
+      </div>
+
+      <!-- CALCULADORA -->
+      <div class="calc-container" id="calc-container">
+        <div class="calc-card">
+          <h3>🧮 Calculadora de Extensão</h3>
+          <div class="calc-input-group">
+            <label>Carga Horária:</label>
+            <input type="number" class="calc-input" id="calc-horas" value="178" min="1" max="9999" oninput="calcExtensao()">
+            <span class="calc-input-suffix">horas</span>
+            <label style="margin-left:16px;">Valor/Hora:</label>
+            <span style="font-weight:700;color:var(--gray-500);">R$</span>
+            <input type="number" class="calc-input" id="calc-valor-hora" value="2.50" min="0.01" step="0.01" oninput="calcExtensao()" style="width:90px;">
+          </div>
+          <div class="calc-total-row">
+            <span class="calc-total-label">Valor Total</span>
+            <span class="calc-total-value" id="calc-total">R$ 445,00</span>
+          </div>
+        </div>
+
+        <div class="calc-card">
+          <h3>💳 Modalidades de Pagamento</h3>
+          <div class="calc-options-grid">
+
+            <!-- Opção 1 -->
+            <div class="calc-option-card recommended">
+              <div class="calc-option-title">1ª Opção — Cartão de Crédito<span class="calc-option-badge">Mais recomendado</span></div>
+              <div class="calc-row">
+                <span class="calc-row-label">Desconto aplicado</span>
+                <span class="calc-row-value" style="color:#16a34a;">15%</span>
+              </div>
+              <div class="calc-row">
+                <span class="calc-row-label">Valor com desconto</span>
+                <span class="calc-row-value" id="calc-op1-total">R$ 378,25</span>
+              </div>
+              <div class="calc-row">
+                <span class="calc-row-label">Parcelas</span>
+                <div class="calc-parcelas-group">
+                  <input type="number" class="calc-parcelas-input" id="calc-op1-parcelas" value="6" min="1" max="12" oninput="calcExtensao()">
+                  <span class="calc-input-suffix">x</span>
+                </div>
+              </div>
+              <div class="calc-row">
+                <span class="calc-row-label">Valor por parcela</span>
+                <span class="calc-row-value highlight" id="calc-op1-parcela">R$ 63,04</span>
+              </div>
+            </div>
+
+            <!-- Opção 2 -->
+            <div class="calc-option-card">
+              <div class="calc-option-title">2ª Opção — Sinal + Parcelamento</div>
+              <div class="calc-row">
+                <span class="calc-row-label">Sinal (entrada)</span>
+                <div class="calc-parcelas-group">
+                  <span style="font-weight:600;color:var(--gray-500);font-size:0.85rem;">R$</span>
+                  <input type="number" class="calc-parcelas-input" id="calc-op2-sinal" value="200" min="0" step="10" oninput="calcExtensao()" style="width:80px;">
+                </div>
+              </div>
+              <div class="calc-row">
+                <span class="calc-row-label">Restante</span>
+                <span class="calc-row-value" id="calc-op2-restante">R$ 245,00</span>
+              </div>
+              <div class="calc-row">
+                <span class="calc-row-label">Parcelas</span>
+                <div class="calc-parcelas-group">
+                  <input type="number" class="calc-parcelas-input" id="calc-op2-parcelas" value="6" min="1" max="12" oninput="calcExtensao()">
+                  <span class="calc-input-suffix">x</span>
+                </div>
+              </div>
+              <div class="calc-row">
+                <span class="calc-row-label">Valor por parcela</span>
+                <span class="calc-row-value highlight" id="calc-op2-parcela">R$ 40,83</span>
+              </div>
+            </div>
+
+            <!-- Opção 3 -->
+            <div class="calc-option-card">
+              <div class="calc-option-title">3ª Opção — Pix à Vista</div>
+              <div class="calc-row">
+                <span class="calc-row-label">Desconto aplicado</span>
+                <span class="calc-row-value" style="color:#16a34a;">20%</span>
+              </div>
+              <div class="calc-row">
+                <span class="calc-row-label">Valor à vista</span>
+                <span class="calc-row-value highlight" id="calc-op3-total">R$ 356,00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botão copiar resumo -->
+        <button class="calc-copy-btn" id="calc-copy-btn" onclick="copyCalcResumo()">📋 Copiar Resumo para Enviar ao Aluno</button>
       </div>
 
       <!-- ASSESSOR VIEW: Project List -->
@@ -252,6 +555,9 @@
     var SHEET_ID = '1yeFlBBZSMHqTziM7QBB3IVkMJQgXqTbvDEz9SvXXKDw';
 
     function switchTab(gid, btn) {
+      _calcShowingCalc = false;
+      document.getElementById('calc-container').classList.remove('visible');
+      document.getElementById('sheet-frame').style.display = '';
       document.getElementById('sheet-frame').src =
         'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/edit?gid=' + gid + '&rm=minimal';
       document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -264,6 +570,115 @@
       document.body.style.overflow = container.classList.contains('fullscreen') ? 'hidden' : '';
       var btn = document.getElementById('btn-fs');
       btn.textContent = container.classList.contains('fullscreen') ? '✕' : '⛶';
+    }
+
+    // ─── Calculadora de Extensão ───
+    var _calcShowingCalc = false;
+
+    function showCalc(btn) {
+      _calcShowingCalc = true;
+      document.getElementById('sheet-frame').style.display = 'none';
+      document.getElementById('calc-container').classList.add('visible');
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      calcExtensao();
+    }
+
+    function switchTabOriginal(gid, btn) {
+      _calcShowingCalc = false;
+      document.getElementById('calc-container').classList.remove('visible');
+      document.getElementById('sheet-frame').style.display = '';
+      document.getElementById('sheet-frame').src =
+        'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/edit?gid=' + gid + '&rm=minimal';
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    }
+
+    function formatBRL(val) {
+      return 'R$ ' + val.toFixed(2).replace('.', ',');
+    }
+
+    function calcExtensao() {
+      var horas = parseFloat(document.getElementById('calc-horas').value) || 0;
+      var valorHora = parseFloat(document.getElementById('calc-valor-hora').value) || 0;
+      var total = horas * valorHora;
+
+      document.getElementById('calc-total').textContent = formatBRL(total);
+
+      // Opção 1: Cartão com 15% desconto
+      var desconto1 = total * 0.85;
+      var parcelas1 = parseInt(document.getElementById('calc-op1-parcelas').value) || 1;
+      var vlrParcela1 = parcelas1 > 0 ? desconto1 / parcelas1 : desconto1;
+      document.getElementById('calc-op1-total').textContent = formatBRL(desconto1);
+      document.getElementById('calc-op1-parcela').textContent = formatBRL(vlrParcela1);
+
+      // Opção 2: Sinal + parcelamento
+      var sinal = parseFloat(document.getElementById('calc-op2-sinal').value) || 0;
+      var restante = Math.max(0, total - sinal);
+      var parcelas2 = parseInt(document.getElementById('calc-op2-parcelas').value) || 1;
+      var vlrParcela2 = parcelas2 > 0 ? restante / parcelas2 : restante;
+      document.getElementById('calc-op2-restante').textContent = formatBRL(restante);
+      document.getElementById('calc-op2-parcela').textContent = formatBRL(vlrParcela2);
+
+      // Opção 3: Pix à vista 20% desconto
+      var desconto3 = total * 0.80;
+      document.getElementById('calc-op3-total').textContent = formatBRL(desconto3);
+    }
+
+    function copyCalcResumo() {
+      var horas = parseFloat(document.getElementById('calc-horas').value) || 0;
+      var valorHora = parseFloat(document.getElementById('calc-valor-hora').value) || 0;
+      var total = horas * valorHora;
+      var parcelas1 = parseInt(document.getElementById('calc-op1-parcelas').value) || 1;
+      var sinal = parseFloat(document.getElementById('calc-op2-sinal').value) || 0;
+      var parcelas2 = parseInt(document.getElementById('calc-op2-parcelas').value) || 1;
+
+      var desconto1 = total * 0.85;
+      var vlrParcela1 = parcelas1 > 0 ? desconto1 / parcelas1 : desconto1;
+      var restante = Math.max(0, total - sinal);
+      var vlrParcela2 = parcelas2 > 0 ? restante / parcelas2 : restante;
+      var desconto3 = total * 0.80;
+
+      var texto = '📋 *' + horas + ' Horas a serem cumpridas*\n\n' +
+        'Carga Horária: ' + horas + ' hrs\n' +
+        'Valor por Hora: ' + formatBRL(valorHora) + '\n' +
+        '*Valor Total: ' + formatBRL(total) + '*\n\n' +
+        '━━━━━━━━━━━━━━━━━━━━\n\n' +
+        '💳 *1ª Opção — Cartão de Crédito sem Juros (Mais recomendado)*\n' +
+        'Desconto: 15%\n' +
+        'Valor com desconto: ' + formatBRL(desconto1) + '\n' +
+        'Parcelas: ' + parcelas1 + 'x de ' + formatBRL(vlrParcela1) + '\n\n' +
+        '💰 *2ª Opção — Sinal + Parcelamento sem Juros*\n' +
+        'Sinal: ' + formatBRL(sinal) + '\n' +
+        'Parcelas: ' + parcelas2 + 'x de ' + formatBRL(vlrParcela2) + '\n\n' +
+        '🟢 *3ª Opção — Pix à Vista*\n' +
+        'Desconto: 20%\n' +
+        'Valor à vista: ' + formatBRL(desconto3);
+
+      var btn = document.getElementById('calc-copy-btn');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function() {
+          btn.classList.add('copied');
+          btn.innerHTML = '✅ Copiado!';
+          setTimeout(function() {
+            btn.classList.remove('copied');
+            btn.innerHTML = '📋 Copiar Resumo para Enviar ao Aluno';
+          }, 2000);
+        });
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = texto;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.classList.add('copied');
+        btn.innerHTML = '✅ Copiado!';
+        setTimeout(function() {
+          btn.classList.remove('copied');
+          btn.innerHTML = '📋 Copiar Resumo para Enviar ao Aluno';
+        }, 2000);
+      }
     }
 
     document.addEventListener('keydown', function(e) {
