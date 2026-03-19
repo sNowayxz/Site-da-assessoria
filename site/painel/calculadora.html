@@ -11,10 +11,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/painel.css?v=7">
   <style>
+    /* Remove padding/margin extras do layout geral nesta página */
+    .main-content {
+      padding: 0 !important;
+      min-height: auto !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100vh !important;
+    }
+    .topbar {
+      margin-bottom: 0 !important;
+      padding: 12px 20px;
+    }
+    html, body {
+      overflow: hidden !important;
+      height: 100vh;
+    }
+
     .calc-page {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 56px);
+      flex: 1;
       overflow: hidden;
       padding: 8px 16px;
       gap: 6px;
