@@ -448,4 +448,48 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 
+-- ═══ 18. TABELA GABARITOS ═══
+
+CREATE TABLE IF NOT EXISTS gabaritos (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  disciplina TEXT NOT NULL,
+  shortname TEXT DEFAULT '',
+  atividade TEXT NOT NULL,
+  id_questionario TEXT,
+  tipo TEXT DEFAULT 'questionario' CHECK (tipo IN ('questionario', 'discursiva')),
+  enunciado TEXT DEFAULT '',
+  alternativas JSONB DEFAULT '[]',
+  gabarito TEXT DEFAULT '',
+  status TEXT DEFAULT 'pendente' CHECK (status IN ('pendente', 'pronto', 'enviado', 'erro')),
+  enviado_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+DROP TRIGGER IF EXISTS gabaritos_updated_at ON gabaritos;
+CREATE TRIGGER gabaritos_updated_at
+  BEFORE UPDATE ON gabaritos
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE INDEX IF NOT EXISTS idx_gabaritos_disciplina ON gabaritos(disciplina);
+CREATE INDEX IF NOT EXISTS idx_gabaritos_shortname ON gabaritos(shortname);
+CREATE INDEX IF NOT EXISTS idx_gabaritos_status ON gabaritos(status);
+CREATE INDEX IF NOT EXISTS idx_gabaritos_tipo ON gabaritos(tipo);
+
+ALTER TABLE gabaritos ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "Auth pode ver gabaritos" ON gabaritos FOR SELECT TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "Auth pode inserir gabaritos" ON gabaritos FOR INSERT TO authenticated WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "Auth pode editar gabaritos" ON gabaritos FOR UPDATE TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "Auth pode deletar gabaritos" ON gabaritos FOR DELETE TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+
 -- ═══ FIM ═══
