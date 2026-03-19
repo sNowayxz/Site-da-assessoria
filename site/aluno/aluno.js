@@ -327,47 +327,100 @@ function autoSyncAndShowStudeo(aluno) {
       return;
     }
 
-    // Salvar no Supabase (studeo_sync) — limpar antigos e inserir novos
+    // Renderizar diretamente do resultado da API (sem depender do banco)
+    var atvs = [];
+    data.resultado.forEach(function(disc) {
+      (disc.atividades || []).forEach(function(atv) {
+        atvs.push({
+          disciplina: disc.disciplina,
+          atividade: atv.descricao || atv.tipo || 'Atividade',
+          data_final: atv.dataFinal || null
+        });
+      });
+    });
+
+    renderStudeoDirectly(atvs, panel, container, statsEl);
+
+    // Salvar no banco em background (non-blocking)
     var SUPA = 'https://lztfoprapoyicldunhzw.supabase.co';
     var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6dGZvcHJhcG95aWNsZHVuaHp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzY0MzIsImV4cCI6MjA4ODkxMjQzMn0.8Qyq2bVA0oK8gji9hG2AWG-gQ3oH4nWm3QOqQ59S9IA';
-
-    // Deletar antigos
     fetch(SUPA + '/rest/v1/studeo_sync?aluno_id=eq.' + aluno.id, {
       method: 'DELETE',
       headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
     }).then(function() {
-      // Inserir novos
-      var rows = [];
-      data.resultado.forEach(function(disc) {
-        (disc.atividades || []).forEach(function(atv) {
-          rows.push({
-            aluno_id: aluno.id,
-            disciplina: disc.disciplina,
-            cd_shortname: disc.cd_shortname,
-            atividade: atv.descricao || atv.tipo || 'Atividade',
-            data_final: atv.dataFinal || null,
-            respondida: false
-          });
+      if (atvs.length > 0) {
+        var rows = atvs.map(function(a) {
+          return { aluno_id: aluno.id, disciplina: a.disciplina, atividade: a.atividade, data_final: a.data_final, respondida: false };
         });
-      });
-
-      if (rows.length > 0) {
         fetch(SUPA + '/rest/v1/studeo_sync', {
           method: 'POST',
           headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
           body: JSON.stringify(rows)
         }).catch(function() {});
       }
-
-      // Mostrar atividades
-      loadStudeoActivities(aluno.id);
-    });
+    }).catch(function() {});
   })
   .catch(function(err) {
     console.error('[aluno] Sync error:', err);
     // Fallback: mostrar dados existentes do banco
     loadStudeoActivities(aluno.id);
   });
+}
+
+// ─── Render Studeo directly from API result ───
+function renderStudeoDirectly(atvs, panel, container, statsEl) {
+  if (!atvs.length) {
+    statsEl.innerHTML = '<div style="padding:6px 16px;border-radius:20px;font-size:0.82rem;font-weight:600;background:rgba(34,197,94,0.1);color:#16a34a;">✅ Todas as atividades em dia!</div>';
+    container.innerHTML = '<div class="aluno-empty" style="padding:20px;">Nenhuma atividade pendente no momento. Parabéns! 🎉</div>';
+    return;
+  }
+
+  var now = new Date();
+  var urgentes = 0, proximas = 0;
+  atvs.forEach(function(a) {
+    if (a.data_final) {
+      var diff = Math.ceil((parseDate(a.data_final) - now) / (1000*60*60*24));
+      if (diff <= 3) urgentes++;
+      else if (diff <= 7) proximas++;
+    }
+  });
+
+  statsEl.innerHTML =
+    '<div style="padding:6px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;background:rgba(59,130,246,0.1);color:#2563eb;">📚 ' + atvs.length + ' pendente' + (atvs.length > 1 ? 's' : '') + '</div>' +
+    (urgentes > 0 ? '<div style="padding:6px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;background:rgba(239,68,68,0.1);color:#dc2626;">🔴 ' + urgentes + ' urgente' + (urgentes > 1 ? 's' : '') + '</div>' : '') +
+    (proximas > 0 ? '<div style="padding:6px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;background:rgba(245,158,11,0.1);color:#d97706;">⚠️ ' + proximas + ' esta semana</div>' : '');
+
+  container.innerHTML = atvs.map(function(a) {
+    var deadline = a.data_final ? parseDate(a.data_final) : null;
+    var diffDays = deadline ? Math.ceil((deadline - now) / (1000*60*60*24)) : null;
+    var prazoText = '—', prazoClass = '', prazoIcon = '📅';
+
+    if (diffDays !== null) {
+      if (diffDays < 0) { prazoText = 'Atrasada!'; prazoClass = 'studeo-atrasada'; prazoIcon = '🔴'; }
+      else if (diffDays === 0) { prazoText = 'Vence hoje!'; prazoClass = 'studeo-hoje'; prazoIcon = '🔴'; }
+      else if (diffDays <= 3) { prazoText = diffDays + ' dia' + (diffDays > 1 ? 's' : ''); prazoClass = 'studeo-urgente'; prazoIcon = '🟡'; }
+      else if (diffDays <= 7) { prazoText = diffDays + ' dias'; prazoClass = 'studeo-proxima'; prazoIcon = '🟢'; }
+      else { prazoText = formatDate(a.data_final); }
+    }
+
+    var disciplina = a.disciplina || 'Disciplina';
+    var atividade = a.atividade || 'Atividade';
+    if (disciplina.length > 40) disciplina = disciplina.substring(0, 37) + '...';
+    if (atividade.length > 60) atividade = atividade.substring(0, 57) + '...';
+
+    return '<div class="studeo-card ' + prazoClass + '">' +
+      '<div class="studeo-card-header">' +
+        '<div class="studeo-card-info">' +
+          '<div class="studeo-disciplina">' + escapeHtml(disciplina) + '</div>' +
+          '<div class="studeo-atividade">' + escapeHtml(atividade) + '</div>' +
+        '</div>' +
+        '<div class="studeo-prazo">' +
+          '<span class="studeo-prazo-icon">' + prazoIcon + '</span>' +
+          '<span class="studeo-prazo-text">' + prazoText + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // ─── Studeo Activities (mensalistas) ───
