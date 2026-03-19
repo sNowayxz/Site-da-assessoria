@@ -15,10 +15,13 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Assessoria Acadêmica — Suporte Especializado">
   <meta name="twitter:description" content="Suporte especializado para sua jornada acadêmica. Atividades, TCC, mapas, extensões e pacotes mensalistas.">
-  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="icon" href="favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="style.css" as="style">
+  <link rel="preload" href="script.js" as="script">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -28,7 +31,7 @@
   <nav class="navbar" id="navbar">
     <div class="navbar-inner">
       <a href="#home" class="navbar-brand">
-        <img src="logo.png" alt="Logo" class="navbar-logo-img" loading="lazy">
+        <img src="logo.png" alt="Logo" class="navbar-logo-img" loading="eager" width="40" height="40">
         <span>Assessoria <strong>Acadêmica</strong></span>
       </a>
       <div class="navbar-links" id="navLinks">
