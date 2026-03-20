@@ -53,8 +53,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 function resetDescricaoFields() {
   var container = document.getElementById('descricao-fields');
   container.innerHTML =
-    '<div class="descricao-row" style="display:flex;gap:6px;margin-bottom:6px;">' +
+    '<div class="descricao-row" style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">' +
       '<input type="text" class="descricao-input" placeholder="Ex: MAPA - Gestão de Pessoas" style="flex:1">' +
+      '<input type="number" class="valor-input" placeholder="Valor" step="0.01" min="0" style="width:100px;text-align:right">' +
     '</div>';
   updateDescricaoCounter();
   toggleAddBtn();
@@ -71,9 +72,10 @@ function addDescricaoField() {
 
   var div = document.createElement('div');
   div.className = 'descricao-row';
-  div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;';
+  div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;align-items:center;';
   div.innerHTML =
     '<input type="text" class="descricao-input" placeholder="Ex: MAPA - Gestão de Pessoas" style="flex:1">' +
+    '<input type="number" class="valor-input" placeholder="Valor" step="0.01" min="0" style="width:100px;text-align:right">' +
     '<button type="button" class="btn-remove-desc" onclick="removeDescricaoField(this)" style="background:none;border:1px solid rgba(239,68,68,.2);color:#ef4444;width:32px;height:38px;border-radius:6px;cursor:pointer;font-size:1.1rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;">&times;</button>';
   container.appendChild(div);
 
@@ -131,12 +133,15 @@ function toggleRemoveBtns() {
   }
 }
 
-function getDescricaoValues() {
-  var inputs = document.querySelectorAll('#descricao-fields .descricao-input');
+function getDisciplinaValues() {
+  var rows = document.querySelectorAll('#descricao-fields .descricao-row');
   var values = [];
-  for (var i = 0; i < inputs.length; i++) {
-    var v = inputs[i].value.trim();
-    if (v) values.push(v);
+  for (var i = 0; i < rows.length; i++) {
+    var descInput = rows[i].querySelector('.descricao-input');
+    var valorInput = rows[i].querySelector('.valor-input');
+    var desc = descInput ? descInput.value.trim() : '';
+    var valor = valorInput ? (parseFloat(valorInput.value) || 0) : 0;
+    if (desc) values.push({ descricao: desc, valor: valor });
   }
   return values;
 }
@@ -251,7 +256,6 @@ async function handleSaveAtividade(e) {
     aluno_id: form.aluno_id.value,
     tipo: form.tipo.value,
     status: form.status.value,
-    valor: parseFloat(form.valor.value) || 0,
     observacoes: form.observacoes.value.trim()
   };
 
@@ -263,26 +267,29 @@ async function handleSaveAtividade(e) {
 
   try {
     if (currentEditAtivId) {
-      // Edição: campo único de descrição (primeiro input)
-      var descInputs = document.querySelectorAll('#descricao-fields .descricao-input');
-      baseData.descricao = descInputs.length > 0 ? descInputs[0].value.trim() : '';
+      // Edição: campo único de descrição + valor
+      var rows = document.querySelectorAll('#descricao-fields .descricao-row');
+      var descInput = rows.length > 0 ? rows[0].querySelector('.descricao-input') : null;
+      var valorInput = rows.length > 0 ? rows[0].querySelector('.valor-input') : null;
+      baseData.descricao = descInput ? descInput.value.trim() : '';
+      baseData.valor = valorInput ? (parseFloat(valorInput.value) || 0) : 0;
       var { error } = await sb.from('atividades').update(baseData).eq('id', currentEditAtivId);
       if (error) throw error;
       logAudit('update_atividade', 'atividades', currentEditAtivId, { tipo: baseData.tipo, descricao: baseData.descricao });
       showToast('Atividade atualizada!', 'success');
     } else {
-      // Criação: múltiplas disciplinas
-      var descricoes = getDescricaoValues();
-      if (descricoes.length === 0) descricoes = [''];
+      // Criação: múltiplas disciplinas com valores individuais
+      var disciplinas = getDisciplinaValues();
+      if (disciplinas.length === 0) disciplinas = [{ descricao: '', valor: 0 }];
 
       var records = [];
-      for (var i = 0; i < descricoes.length; i++) {
+      for (var i = 0; i < disciplinas.length; i++) {
         records.push({
           aluno_id: baseData.aluno_id,
           tipo: baseData.tipo,
           status: baseData.status,
-          valor: baseData.valor,
-          descricao: descricoes[i],
+          valor: disciplinas[i].valor,
+          descricao: disciplinas[i].descricao,
           observacoes: baseData.observacoes
         });
       }
@@ -292,29 +299,31 @@ async function handleSaveAtividade(e) {
 
       logAudit('create_atividade', 'atividades', 'batch_' + records.length, {
         tipo: baseData.tipo,
-        descricoes: descricoes.join(', '),
+        disciplinas: disciplinas.map(function(d) { return d.descricao + ' (R$' + d.valor + ')'; }).join(', '),
         count: records.length
       });
 
       // Auto-criar pagamentos para atividades com valor > 0
-      if (baseData.valor > 0) {
-        var pagamentos = [];
-        for (var j = 0; j < records.length; j++) {
+      var pagamentos = [];
+      for (var j = 0; j < records.length; j++) {
+        if (records[j].valor > 0) {
           pagamentos.push({
             aluno_id: baseData.aluno_id,
-            valor: baseData.valor,
+            valor: records[j].valor,
             tipo: (baseData.tipo === 'pacote') ? 'pacote' : 'avulso',
             status: 'pendente',
             referencia: records[j].descricao || formatTipo(baseData.tipo),
             observacoes: 'Gerado automaticamente via atividade'
           });
         }
+      }
+      if (pagamentos.length > 0) {
         var pagResult = await sb.from('pagamentos').insert(pagamentos);
         if (pagResult.error) {
           console.error('Erro ao criar pagamentos:', pagResult.error);
           showToast('Atividade(s) criada(s), mas erro ao gerar pagamento(s)', 'warning');
         } else {
-          showToast(records.length + ' atividade(s) criada(s) + pagamento(s) pendente(s) no Financeiro!', 'success');
+          showToast(records.length + ' atividade(s) criada(s) + ' + pagamentos.length + ' pagamento(s) pendente(s) no Financeiro!', 'success');
         }
       } else {
         showToast(records.length + ' atividade(s) criada(s)!', 'success');
@@ -342,14 +351,14 @@ async function editAtividade(id) {
   form.aluno_id.value = ativ.aluno_id;
   form.tipo.value = ativ.tipo;
   form.status.value = ativ.status;
-  form.valor.value = ativ.valor || 0;
   form.observacoes.value = ativ.observacoes || '';
 
-  // Reset to single description field for edit
+  // Reset to single description + valor field for edit
   var container = document.getElementById('descricao-fields');
   container.innerHTML =
-    '<div class="descricao-row" style="display:flex;gap:6px;margin-bottom:6px;">' +
+    '<div class="descricao-row" style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">' +
       '<input type="text" class="descricao-input" placeholder="Ex: MAPA - Gestão de Pessoas" style="flex:1" value="' + escapeHtml(ativ.descricao || '') + '">' +
+      '<input type="number" class="valor-input" placeholder="Valor" step="0.01" min="0" style="width:100px;text-align:right" value="' + (ativ.valor || 0) + '">' +
     '</div>';
 
   // Hide add button and counter in edit mode
