@@ -20,8 +20,22 @@
     [data-theme="dark"] .bit-tab:hover { color:#e6edf3; }
     [data-theme="dark"] .bit-tab.active { color:var(--gold); border-bottom-color:var(--gold); }
 
+    /* ── Summary Cards ── */
+    .bit-summary { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px; }
+    .bit-card { background:var(--white, #fff); border:1px solid var(--gray-200, #e5e7eb); border-radius:10px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
+    .bit-card-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+    .bit-card-icon.green { background:rgba(34,197,94,0.12); color:#16a34a; }
+    .bit-card-icon.red { background:rgba(239,68,68,0.12); color:#dc2626; }
+    .bit-card-icon.gold { background:rgba(240,192,48,0.12); color:#d4a017; }
+    .bit-card-icon.blue { background:rgba(59,130,246,0.12); color:#3b82f6; }
+    .bit-card-info { min-width:0; }
+    .bit-card-label { font-size:0.72rem; font-weight:600; color:var(--gray-400, #9ca3af); text-transform:uppercase; letter-spacing:0.4px; }
+    .bit-card-value { font-size:1.3rem; font-weight:700; color:var(--dark, #1a1a2e); margin-top:2px; }
+    [data-theme="dark"] .bit-card { background:#161b22; border-color:#30363d; }
+    [data-theme="dark"] .bit-card-value { color:#e6edf3; }
+
     /* ── Filters ── */
-    .bit-filters { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+    .bit-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .bit-filter { padding:6px 16px; border-radius:6px; border:1px solid var(--gray-200, #e5e7eb); background:var(--white, #fff); color:var(--gray-500, #6b7280); font-size:0.82rem; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; }
     .bit-filter:hover { background:rgba(240,192,48,0.08); color:var(--gold, #f0c030); border-color:rgba(240,192,48,0.3); }
     .bit-filter.active { background:rgba(240,192,48,0.12); color:var(--gold, #f0c030); border-color:var(--gold, #f0c030); }
@@ -35,20 +49,40 @@
     [data-theme="dark"] .bit-search { background:#161b22; border-color:#30363d; color:#e6edf3; }
 
     /* ── Table ── */
-    .bit-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
-    .bit-table th { text-align:left; padding:10px 12px; font-weight:600; color:var(--gray-500, #6b7280); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--gray-200, #e5e7eb); }
-    .bit-table td { padding:10px 12px; color:var(--dark, #1a1a2e); border-bottom:1px solid var(--gray-100, #f3f4f6); vertical-align:middle; }
+    .bit-table { width:100%; border-collapse:collapse; font-size:0.84rem; }
+    .bit-table th { text-align:left; padding:10px 10px; font-weight:600; color:var(--gray-500, #6b7280); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--gray-200, #e5e7eb); white-space:nowrap; }
+    .bit-table td { padding:9px 10px; color:var(--dark, #1a1a2e); border-bottom:1px solid var(--gray-100, #f3f4f6); vertical-align:middle; }
+    .bit-table tbody tr { transition:background .15s; }
     .bit-table tbody tr:hover { background:rgba(240,192,48,0.04); }
+    .bit-table .td-valor { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap; }
+    .bit-table .td-acoes { white-space:nowrap; }
     [data-theme="dark"] .bit-table th { color:#8b949e; border-bottom-color:#30363d; }
     [data-theme="dark"] .bit-table td { color:#e6edf3; border-bottom-color:#21262d; }
 
     /* ── Badges ── */
-    .badge-ativo { background:rgba(34,197,94,0.12); color:#16a34a; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
-    .badge-expirado { background:rgba(239,68,68,0.12); color:#dc2626; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
-    .badge-pago { background:rgba(34,197,94,0.12); color:#16a34a; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
-    .badge-aberto { background:rgba(250,204,21,0.12); color:#ca8a04; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
-    .badge-vencido { background:rgba(239,68,68,0.12); color:#dc2626; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
-    .badge-recebido { background:rgba(34,197,94,0.12); color:#16a34a; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
+    .badge { padding:3px 10px; border-radius:4px; font-size:0.73rem; font-weight:600; display:inline-block; }
+    .badge-ativo { background:rgba(34,197,94,0.12); color:#16a34a; }
+    .badge-expirado { background:rgba(239,68,68,0.12); color:#dc2626; }
+    .badge-pago { background:rgba(34,197,94,0.12); color:#16a34a; }
+    .badge-aberto { background:rgba(250,204,21,0.12); color:#ca8a04; }
+    .badge-vencido { background:rgba(239,68,68,0.12); color:#dc2626; }
+    .badge-recebido { background:rgba(34,197,94,0.12); color:#16a34a; }
+
+    /* ── Action buttons ── */
+    .bit-actions { display:flex; gap:4px; align-items:center; }
+    .bit-icon-btn { width:30px; height:30px; border-radius:6px; border:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all .15s; font-size:0.85rem; }
+    .bit-icon-btn:hover { transform:scale(1.1); }
+    .bit-icon-btn.wpp { background:rgba(37,211,102,0.12); color:#25d366; }
+    .bit-icon-btn.edit { background:rgba(59,130,246,0.12); color:#3b82f6; }
+    .bit-icon-btn.del { background:rgba(239,68,68,0.12); color:#ef4444; }
+    .bit-icon-btn.quitar { background:rgba(34,197,94,0.12); color:#16a34a; }
+    .bit-icon-btn.copy { background:rgba(156,163,175,0.12); color:var(--gray-500, #6b7280); }
+    [data-theme="dark"] .bit-icon-btn.copy { color:#8b949e; }
+
+    /* ── Login/senha row detail ── */
+    .bit-detail { font-size:0.75rem; color:var(--gray-400, #9ca3af); margin-top:3px; }
+    .bit-detail code { background:rgba(240,192,48,0.08); padding:1px 6px; border-radius:3px; font-family:'Courier New',monospace; font-size:0.73rem; color:var(--gray-500, #6b7280); }
+    [data-theme="dark"] .bit-detail code { background:rgba(240,192,48,0.06); color:#8b949e; }
 
     /* ── Modal ── */
     .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; }
@@ -74,14 +108,6 @@
     [data-theme="dark"] .modal-footer { border-top-color:#30363d; }
     [data-theme="dark"] .modal-footer .btn-cancel { border-color:#30363d; color:#8b949e; }
 
-    /* ── Action buttons ── */
-    .bit-btn { padding:4px 10px; border-radius:4px; border:none; font-size:0.75rem; font-weight:600; cursor:pointer; transition:opacity .2s; }
-    .bit-btn:hover { opacity:0.8; }
-    .bit-btn-edit { background:rgba(59,130,246,0.15); color:#3b82f6; }
-    .bit-btn-del { background:rgba(239,68,68,0.15); color:#ef4444; }
-    .bit-btn-quitar { background:rgba(34,197,94,0.15); color:#16a34a; }
-    .bit-btn-wpp { background:rgba(37,211,102,0.15); color:#25d366; text-decoration:none; display:inline-block; }
-
     /* ── Fade animation ── */
     @keyframes calcFadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
     .bit-fade { animation: calcFadeUp 0.4s ease both; }
@@ -89,8 +115,23 @@
     /* ── Tab content ── */
     .bit-tab-content { display:none; }
     .bit-tab-content.active { display:block; }
-
     .bit-top-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+
+    /* ── Empty state ── */
+    .bit-empty { text-align:center; padding:40px 20px; color:var(--gray-400, #9ca3af); }
+    .bit-empty-icon { font-size:2.5rem; margin-bottom:8px; opacity:0.5; }
+    .bit-empty-text { font-size:0.9rem; }
+
+    /* ── Responsive ── */
+    @media (max-width:768px) {
+      .bit-summary { grid-template-columns:repeat(2, 1fr); gap:10px; }
+      .bit-card { padding:12px 14px; }
+      .bit-card-value { font-size:1.1rem; }
+      .bit-tabs { overflow-x:auto; }
+      .bit-tab { padding:8px 14px; font-size:0.84rem; white-space:nowrap; }
+      .bit-top-bar { flex-direction:column; align-items:stretch; }
+      .bit-search { width:100%; }
+    }
   </style>
 </head>
 <body>
@@ -159,10 +200,10 @@
       <div class="topbar">
         <div style="display:flex;align-items:center;gap:12px;">
           <button class="mobile-toggle" id="mobile-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-          <h1>💎 Bit</h1>
+          <h1>Bit</h1>
         </div>
         <div class="topbar-actions">
-          <button class="btn-notif-bell" id="btn-notif-bell" title="Notificações" style="position:relative;background:none;border:none;cursor:pointer;font-size:1.2rem;padding:6px;">🔔<span class="notif-badge" id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#ef4444;color:white;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;"></span></button>
+          <button class="btn-notif-bell" id="btn-notif-bell" title="Notifica&ccedil;&otilde;es" style="position:relative;background:none;border:none;cursor:pointer;font-size:1.2rem;padding:6px;">&#128276;<span class="notif-badge" id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#ef4444;color:white;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;"></span></button>
           <button class="btn btn-gold" id="btn-novo" onclick="openModal(currentTab)">+ Novo</button>
         </div>
       </div>
@@ -174,7 +215,10 @@
         <button class="bit-tab" onclick="switchTab('cr')" id="tab-btn-cr">Contas a Receber</button>
       </div>
 
-      <!-- Tab: Gestão de Serviço -->
+      <!-- Summary Cards -->
+      <div class="bit-summary" id="bit-summary"></div>
+
+      <!-- Tab: Gestao de Servico -->
       <div class="bit-tab-content active bit-fade" id="tab-gestao">
         <div class="bit-top-bar">
           <div class="bit-filters">
@@ -185,7 +229,7 @@
           <input type="text" class="bit-search" id="bit-search" placeholder="Buscar cliente..." oninput="searchBit()">
         </div>
         <div class="panel">
-          <div class="panel-body">
+          <div class="panel-body" style="padding:0;">
             <div class="table-wrap">
               <table class="bit-table">
                 <thead>
@@ -193,9 +237,9 @@
                     <th>Cliente</th>
                     <th>WhatsApp</th>
                     <th>Servi&ccedil;o</th>
-                    <th>Valor</th>
+                    <th style="text-align:right;">Valor</th>
                     <th>Expira&ccedil;&atilde;o</th>
-                    <th>Situa&ccedil;&atilde;o</th>
+                    <th>Status</th>
                     <th>A&ccedil;&otilde;es</th>
                   </tr>
                 </thead>
@@ -220,18 +264,18 @@
           <input type="text" class="bit-search" id="bit-search-cp" placeholder="Buscar fornecedor..." oninput="searchBit()">
         </div>
         <div class="panel">
-          <div class="panel-body">
+          <div class="panel-body" style="padding:0;">
             <div class="table-wrap">
               <table class="bit-table">
                 <thead>
                   <tr>
                     <th>Fornecedor</th>
                     <th>N&ordm; Doc</th>
-                    <th>Valor</th>
+                    <th style="text-align:right;">Valor</th>
                     <th>Vencimento</th>
-                    <th>Valor Pago</th>
-                    <th>Aberto</th>
-                    <th>Situa&ccedil;&atilde;o</th>
+                    <th style="text-align:right;">Pago</th>
+                    <th style="text-align:right;">Aberto</th>
+                    <th>Status</th>
                     <th>A&ccedil;&otilde;es</th>
                   </tr>
                 </thead>
@@ -256,18 +300,18 @@
           <input type="text" class="bit-search" id="bit-search-cr" placeholder="Buscar cliente..." oninput="searchBit()">
         </div>
         <div class="panel">
-          <div class="panel-body">
+          <div class="panel-body" style="padding:0;">
             <div class="table-wrap">
               <table class="bit-table">
                 <thead>
                   <tr>
                     <th>Cliente</th>
                     <th>N&ordm; Doc</th>
-                    <th>Valor</th>
+                    <th style="text-align:right;">Valor</th>
                     <th>Vencimento</th>
-                    <th>Recebido</th>
-                    <th>Aberto</th>
-                    <th>Situa&ccedil;&atilde;o</th>
+                    <th style="text-align:right;">Recebido</th>
+                    <th style="text-align:right;">Aberto</th>
+                    <th>Status</th>
                     <th>A&ccedil;&otilde;es</th>
                   </tr>
                 </thead>
@@ -301,7 +345,7 @@
   <script src="js/supabase-config.js"></script>
   <script src="js/auth.js?v=7"></script>
   <script src="js/utils.js?v=7"></script>
-  <script src="js/bit.js?v=1"></script>
+  <script src="js/bit.js?v=2"></script>
   <script>
     document.getElementById('mobile-toggle').addEventListener('click', function () { document.getElementById('sidebar').classList.toggle('open'); });
     document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });

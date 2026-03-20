@@ -20,10 +20,8 @@ function formatBRL(val) {
 
 function formatDate(dateStr) {
   if (!dateStr) return '—';
-  // Handle ISO timestamps like "2026-04-10T15:15:00+00:00"
   var d = new Date(dateStr);
   if (isNaN(d.getTime())) {
-    // Fallback: try simple split
     var parts = dateStr.split('-');
     if (parts.length >= 3) return parts[2].substring(0, 2) + '/' + parts[1] + '/' + parts[0];
     return dateStr;
@@ -37,7 +35,6 @@ function formatDate(dateStr) {
 function formatWhatsApp(num) {
   if (!num) return '—';
   var n = String(num).replace(/\D/g, '');
-  // Remove country code 55 if present
   if (n.length === 13 && n.substring(0, 2) === '55') n = n.substring(2);
   if (n.length === 12 && n.substring(0, 2) === '55') n = n.substring(2);
   if (n.length === 11) return '(' + n.slice(0, 2) + ') ' + n.slice(2, 7) + '-' + n.slice(7);
@@ -47,7 +44,10 @@ function formatWhatsApp(num) {
 
 function cleanPhone(num) {
   if (!num) return '';
-  return String(num).replace(/\D/g, '');
+  var n = String(num).replace(/\D/g, '');
+  if (n.length >= 12 && n.substring(0, 2) === '55') return n;
+  if (n.length === 11 || n.length === 10) return '55' + n;
+  return n;
 }
 
 function todayStr() {
@@ -57,27 +57,86 @@ function todayStr() {
   return d.getFullYear() + '-' + mm + '-' + dd;
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Copiado!', 'success');
+  });
+}
+
+/* ── Summary Cards ─────────────────── */
+
+function updateSummary() {
+  var container = document.getElementById('bit-summary');
+  var today = todayStr();
+  var html = '';
+
+  if (currentTab === 'gestao') {
+    var ativos = 0, expirados = 0, totalReceita = 0;
+    for (var i = 0; i < gestaoData.length; i++) {
+      var g = gestaoData[i];
+      var exp = g.data_expiracao && g.data_expiracao < today;
+      if (exp) { expirados++; } else { ativos++; }
+      totalReceita += Number(g.valor) || 0;
+    }
+    html =
+      '<div class="bit-card"><div class="bit-card-icon blue">&#128203;</div><div class="bit-card-info"><div class="bit-card-label">Total</div><div class="bit-card-value">' + gestaoData.length + '</div></div></div>' +
+      '<div class="bit-card"><div class="bit-card-icon green">&#9989;</div><div class="bit-card-info"><div class="bit-card-label">Ativos</div><div class="bit-card-value">' + ativos + '</div></div></div>' +
+      '<div class="bit-card"><div class="bit-card-icon red">&#9888;&#65039;</div><div class="bit-card-info"><div class="bit-card-label">Expirados</div><div class="bit-card-value">' + expirados + '</div></div></div>' +
+      '<div class="bit-card"><div class="bit-card-icon gold">&#128176;</div><div class="bit-card-info"><div class="bit-card-label">Receita Total</div><div class="bit-card-value">' + formatBRL(totalReceita) + '</div></div></div>';
+  } else if (currentTab === 'cp') {
+    var abertos = 0, pagos = 0, vencidos = 0, totalAberto = 0;
+    for (var j = 0; j < cpData.length; j++) {
+      var c = cpData[j];
+      if (c.situacao == 1) { pagos++; }
+      else if (c.vencimento && c.vencimento < today) { vencidos++; totalAberto += (Number(c.valor) || 0) - (Number(c.valor_pago) || 0); }
+      else { abertos++; totalAberto += (Number(c.valor) || 0) - (Number(c.valor_pago) || 0); }
+    }
+    html =
+      '<div class="bit-card"><div class="bit-card-icon blue">&#128203;</div><div class="bit-card-info"><div class="bit-card-label">Total</div><div class="bit-card-value">' + cpData.length + '</div></div></div>' +
+      '<div class="bit-card"><div class="bit-card-icon gold">&#9203;</div><div class="bit-card-info"><div class="bit-card-label">Abertos</div><div class="bit-card-value">' + abertos + '</div></div></div>' +
+      '<div class="bit-card"><div class="bit-card-icon red">&#128308;</div><div class="bit-card-info"><div class="bit-card-label">Vencidos</div><div class="bit-card-value">' + vencidos + '</div></div></div>' +
+      '<div class="bit-card"><div class="bit-card-icon green">&#9989;</div><div class="bit-card-info"><div class="bit-card-label">Pagos</div><div class="bit-card-value">' + pagos + '</div></div></div>';
+  } else if (currentTab === 'cr') {
+    var crAbertos = 0, recebidos = 0, crVencidos = 0, crTotalAberto = 0;
+    for (var k = 0; k < crData.length; k++) {
+      var cr = crData[k];
+      if (cr.situacao == 1) { recebidos++; }
+      else if (cr.vencimento && cr.vencimento < today) { crVencidos++; crTotalAberto += (Number(cr.valor) || 0) - (Number(cr.valor_recebido) || 0); }
+      else { crAbertos++; crTotalAberto += (Number(cr.valor) || 0) - (Number(cr.valor_recebido) || 0); }
+    }
+    html =
+      '<div class="bit-card"><div class="bit-card-icon blue">&#128203;</div><div class="bit-card-info"><div class="bit-card-label">Total</div><div class="bit-card-value">' + crData.length + '</div></div></div>' +
+      '<div class="bit-card"><div class="bit-card-icon gold">&#9203;</div><div class="bit-card-info"><div class="bit-card-label">Abertos</div><div class="bit-card-value">' + crAbertos + '</div></div></div>' +
+      '<div class="bit-card"><div class="bit-card-icon red">&#128308;</div><div class="bit-card-info"><div class="bit-card-label">Vencidos</div><div class="bit-card-value">' + crVencidos + '</div></div></div>' +
+      '<div class="bit-card"><div class="bit-card-icon green">&#9989;</div><div class="bit-card-info"><div class="bit-card-label">Recebidos</div><div class="bit-card-value">' + recebidos + '</div></div></div>';
+  }
+
+  container.innerHTML = html;
+}
+
 /* ── Tab Switching ──────────────────── */
 
 function switchTab(tab) {
   currentTab = tab;
   currentFilter = 'todos';
 
-  // Update tab buttons
   var tabs = document.querySelectorAll('.bit-tab');
   for (var i = 0; i < tabs.length; i++) {
     tabs[i].classList.remove('active');
   }
   document.getElementById('tab-btn-' + tab).classList.add('active');
 
-  // Show/hide tab content
   var contents = document.querySelectorAll('.bit-tab-content');
   for (var j = 0; j < contents.length; j++) {
     contents[j].classList.remove('active');
   }
   document.getElementById('tab-' + tab).classList.add('active');
 
-  // Reset filter buttons
   var activeContent = document.getElementById('tab-' + tab);
   var filters = activeContent.querySelectorAll('.bit-filter');
   for (var k = 0; k < filters.length; k++) {
@@ -85,7 +144,6 @@ function switchTab(tab) {
     if (filters[k].textContent === 'Todos') filters[k].classList.add('active');
   }
 
-  // Load data
   if (tab === 'gestao') loadGestao();
   else if (tab === 'cp') loadContasPagar();
   else if (tab === 'cr') loadContasReceber();
@@ -98,13 +156,14 @@ async function loadGestao() {
     var { data, error } = await sb
       .from('bit_gestao')
       .select('*, bit_clientes(id,nome,whatsapp), bit_servicos(id,descricao)')
-      .order('created_at', { ascending: false });
+      .order('data_expiracao', { ascending: false });
     if (error) throw error;
     gestaoData = data || [];
     renderGestao();
+    updateSummary();
   } catch (e) {
-    console.error('Erro ao carregar gestão:', e);
-    showToast('Erro ao carregar gestão', 'error');
+    console.error('Erro ao carregar gestao:', e);
+    showToast('Erro ao carregar gestao', 'error');
   }
 }
 
@@ -117,6 +176,7 @@ async function loadContasPagar() {
     if (error) throw error;
     cpData = data || [];
     renderContasPagar();
+    updateSummary();
   } catch (e) {
     console.error('Erro ao carregar contas a pagar:', e);
     showToast('Erro ao carregar contas a pagar', 'error');
@@ -132,6 +192,7 @@ async function loadContasReceber() {
     if (error) throw error;
     crData = data || [];
     renderContasReceber();
+    updateSummary();
   } catch (e) {
     console.error('Erro ao carregar contas a receber:', e);
     showToast('Erro ao carregar contas a receber', 'error');
@@ -162,7 +223,7 @@ async function loadServicos() {
     if (error) throw error;
     servicosList = data || [];
   } catch (e) {
-    console.error('Erro ao carregar serviços:', e);
+    console.error('Erro ao carregar servicos:', e);
   }
 }
 
@@ -174,11 +235,8 @@ function renderGestao() {
   var search = (document.getElementById('bit-search').value || '').toLowerCase();
 
   var filtered = gestaoData.filter(function (r) {
-    // Filter by search
     var nome = (r.bit_clientes && r.bit_clientes.nome) ? r.bit_clientes.nome.toLowerCase() : '';
     if (search && nome.indexOf(search) === -1) return false;
-
-    // Filter by status
     var expired = r.data_expiracao && r.data_expiracao < today;
     if (currentFilter === 'ativos' && expired) return false;
     if (currentFilter === 'expirados' && !expired) return false;
@@ -186,7 +244,7 @@ function renderGestao() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum registro encontrado</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7"><div class="bit-empty"><div class="bit-empty-icon">&#128203;</div><div class="bit-empty-text">Nenhum registro encontrado</div></div></td></tr>';
     return;
   }
 
@@ -198,25 +256,34 @@ function renderGestao() {
     var servicoDesc = (r.bit_servicos && r.bit_servicos.descricao) || '—';
     var expired = r.data_expiracao && r.data_expiracao < today;
     var badge = expired
-      ? '<span class="badge-expirado">Expirado</span>'
-      : '<span class="badge-ativo">Ativo</span>';
+      ? '<span class="badge badge-expirado">Expirado</span>'
+      : '<span class="badge badge-ativo">Ativo</span>';
 
     var wppClean = cleanPhone(whatsapp);
-    var wppLink = wppClean
-      ? '<a href="https://wa.me/55' + wppClean + '" target="_blank" class="bit-btn bit-btn-wpp" title="WhatsApp">📱</a>'
+    var wppBtn = wppClean
+      ? '<a href="https://wa.me/' + wppClean + '" target="_blank" class="bit-icon-btn wpp" title="WhatsApp">&#128172;</a>'
       : '';
 
+    // Login/senha detail
+    var detail = '';
+    if (r.login || r.senha) {
+      detail = '<div class="bit-detail">';
+      if (r.login) detail += '&#128100; <code>' + escapeHtml(r.login) + '</code> <button class="bit-icon-btn copy" style="width:20px;height:20px;font-size:0.65rem;" onclick="copyText(\'' + escapeHtml(r.login).replace(/'/g, "\\'") + '\')" title="Copiar login">&#128203;</button> ';
+      if (r.senha) detail += '&#128274; <code>' + escapeHtml(r.senha) + '</code> <button class="bit-icon-btn copy" style="width:20px;height:20px;font-size:0.65rem;" onclick="copyText(\'' + escapeHtml(r.senha).replace(/'/g, "\\'") + '\')" title="Copiar senha">&#128203;</button>';
+      detail += '</div>';
+    }
+
     html += '<tr>' +
-      '<td>' + clienteNome + '</td>' +
-      '<td>' + formatWhatsApp(whatsapp) + ' ' + wppLink + '</td>' +
-      '<td>' + servicoDesc + '</td>' +
-      '<td>' + formatBRL(r.valor) + '</td>' +
+      '<td><strong>' + escapeHtml(clienteNome) + '</strong>' + detail + '</td>' +
+      '<td>' + formatWhatsApp(whatsapp) + ' ' + wppBtn + '</td>' +
+      '<td>' + escapeHtml(servicoDesc) + '</td>' +
+      '<td class="td-valor">' + formatBRL(r.valor) + '</td>' +
       '<td>' + formatDate(r.data_expiracao) + '</td>' +
       '<td>' + badge + '</td>' +
-      '<td>' +
-        '<button class="bit-btn bit-btn-edit" onclick="openModal(\'gestao\',' + r.id + ')">Editar</button> ' +
-        '<button class="bit-btn bit-btn-del" onclick="deleteRecord(\'bit_gestao\',' + r.id + ')">Excluir</button>' +
-      '</td>' +
+      '<td class="td-acoes"><div class="bit-actions">' +
+        '<button class="bit-icon-btn edit" onclick="openModal(\'gestao\',' + r.id + ')" title="Editar">&#9998;</button>' +
+        '<button class="bit-icon-btn del" onclick="deleteRecord(\'bit_gestao\',' + r.id + ')" title="Excluir">&#128465;</button>' +
+      '</div></td>' +
     '</tr>';
   }
   tbody.innerHTML = html;
@@ -229,11 +296,9 @@ function renderContasPagar() {
 
   var filtered = cpData.filter(function (r) {
     if (search && (r.fornecedor || '').toLowerCase().indexOf(search) === -1) return false;
-
     var pago = r.situacao == 1;
     var vencido = !pago && r.vencimento && r.vencimento < today;
     var aberto = !pago && !vencido;
-
     if (currentFilter === 'pagos' && !pago) return false;
     if (currentFilter === 'vencidos' && !vencido) return false;
     if (currentFilter === 'abertos' && !aberto) return false;
@@ -241,7 +306,7 @@ function renderContasPagar() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum registro encontrado</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="bit-empty"><div class="bit-empty-icon">&#128176;</div><div class="bit-empty-text">Nenhum registro encontrado</div></div></td></tr>';
     return;
   }
 
@@ -253,30 +318,30 @@ function renderContasPagar() {
     var badge, quitarBtn = '';
 
     if (pago) {
-      badge = '<span class="badge-pago">Pago</span>';
+      badge = '<span class="badge badge-pago">Pago</span>';
     } else if (vencido) {
-      badge = '<span class="badge-vencido">Vencido</span>';
-      quitarBtn = '<button class="bit-btn bit-btn-quitar" onclick="quitarConta(' + r.id + ',\'pagar\')">Quitar</button> ';
+      badge = '<span class="badge badge-vencido">Vencido</span>';
+      quitarBtn = '<button class="bit-icon-btn quitar" onclick="quitarConta(' + r.id + ',\'pagar\')" title="Quitar">&#10004;</button>';
     } else {
-      badge = '<span class="badge-aberto">Aberto</span>';
-      quitarBtn = '<button class="bit-btn bit-btn-quitar" onclick="quitarConta(' + r.id + ',\'pagar\')">Quitar</button> ';
+      badge = '<span class="badge badge-aberto">Aberto</span>';
+      quitarBtn = '<button class="bit-icon-btn quitar" onclick="quitarConta(' + r.id + ',\'pagar\')" title="Quitar">&#10004;</button>';
     }
 
     var valorAberto = (Number(r.valor) || 0) - (Number(r.valor_pago) || 0);
 
     html += '<tr>' +
-      '<td>' + (r.fornecedor || '—') + '</td>' +
-      '<td>' + (r.num_documento || '—') + '</td>' +
-      '<td>' + formatBRL(r.valor) + '</td>' +
+      '<td><strong>' + escapeHtml(r.fornecedor || '—') + '</strong></td>' +
+      '<td>' + escapeHtml(r.num_documento || '—') + '</td>' +
+      '<td class="td-valor">' + formatBRL(r.valor) + '</td>' +
       '<td>' + formatDate(r.vencimento) + '</td>' +
-      '<td>' + formatBRL(r.valor_pago) + '</td>' +
-      '<td>' + formatBRL(valorAberto) + '</td>' +
+      '<td class="td-valor">' + formatBRL(r.valor_pago) + '</td>' +
+      '<td class="td-valor">' + formatBRL(valorAberto) + '</td>' +
       '<td>' + badge + '</td>' +
-      '<td>' +
+      '<td class="td-acoes"><div class="bit-actions">' +
         quitarBtn +
-        '<button class="bit-btn bit-btn-edit" onclick="openModal(\'cp\',' + r.id + ')">Editar</button> ' +
-        '<button class="bit-btn bit-btn-del" onclick="deleteRecord(\'bit_contas_pagar\',' + r.id + ')">Excluir</button>' +
-      '</td>' +
+        '<button class="bit-icon-btn edit" onclick="openModal(\'cp\',' + r.id + ')" title="Editar">&#9998;</button>' +
+        '<button class="bit-icon-btn del" onclick="deleteRecord(\'bit_contas_pagar\',' + r.id + ')" title="Excluir">&#128465;</button>' +
+      '</div></td>' +
     '</tr>';
   }
   tbody.innerHTML = html;
@@ -290,11 +355,9 @@ function renderContasReceber() {
   var filtered = crData.filter(function (r) {
     var nome = (r.bit_clientes && r.bit_clientes.nome) ? r.bit_clientes.nome.toLowerCase() : '';
     if (search && nome.indexOf(search) === -1) return false;
-
     var recebido = r.situacao == 1;
     var vencido = !recebido && r.vencimento && r.vencimento < today;
     var aberto = !recebido && !vencido;
-
     if (currentFilter === 'recebidos' && !recebido) return false;
     if (currentFilter === 'vencidos' && !vencido) return false;
     if (currentFilter === 'abertos' && !aberto) return false;
@@ -302,7 +365,7 @@ function renderContasReceber() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum registro encontrado</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="bit-empty"><div class="bit-empty-icon">&#128176;</div><div class="bit-empty-text">Nenhum registro encontrado</div></div></td></tr>';
     return;
   }
 
@@ -315,30 +378,30 @@ function renderContasReceber() {
     var badge, receberBtn = '';
 
     if (recebido) {
-      badge = '<span class="badge-recebido">Recebido</span>';
+      badge = '<span class="badge badge-recebido">Recebido</span>';
     } else if (vencido) {
-      badge = '<span class="badge-vencido">Vencido</span>';
-      receberBtn = '<button class="bit-btn bit-btn-quitar" onclick="quitarConta(' + r.id + ',\'receber\')">Receber</button> ';
+      badge = '<span class="badge badge-vencido">Vencido</span>';
+      receberBtn = '<button class="bit-icon-btn quitar" onclick="quitarConta(' + r.id + ',\'receber\')" title="Receber">&#10004;</button>';
     } else {
-      badge = '<span class="badge-aberto">Aberto</span>';
-      receberBtn = '<button class="bit-btn bit-btn-quitar" onclick="quitarConta(' + r.id + ',\'receber\')">Receber</button> ';
+      badge = '<span class="badge badge-aberto">Aberto</span>';
+      receberBtn = '<button class="bit-icon-btn quitar" onclick="quitarConta(' + r.id + ',\'receber\')" title="Receber">&#10004;</button>';
     }
 
     var valorAberto = (Number(r.valor) || 0) - (Number(r.valor_recebido) || 0);
 
     html += '<tr>' +
-      '<td>' + clienteNome + '</td>' +
-      '<td>' + (r.num_documento || '—') + '</td>' +
-      '<td>' + formatBRL(r.valor) + '</td>' +
+      '<td><strong>' + escapeHtml(clienteNome) + '</strong></td>' +
+      '<td>' + escapeHtml(r.num_documento || '—') + '</td>' +
+      '<td class="td-valor">' + formatBRL(r.valor) + '</td>' +
       '<td>' + formatDate(r.vencimento) + '</td>' +
-      '<td>' + formatBRL(r.valor_recebido) + '</td>' +
-      '<td>' + formatBRL(valorAberto) + '</td>' +
+      '<td class="td-valor">' + formatBRL(r.valor_recebido) + '</td>' +
+      '<td class="td-valor">' + formatBRL(valorAberto) + '</td>' +
       '<td>' + badge + '</td>' +
-      '<td>' +
+      '<td class="td-acoes"><div class="bit-actions">' +
         receberBtn +
-        '<button class="bit-btn bit-btn-edit" onclick="openModal(\'cr\',' + r.id + ')">Editar</button> ' +
-        '<button class="bit-btn bit-btn-del" onclick="deleteRecord(\'bit_contas_receber\',' + r.id + ')">Excluir</button>' +
-      '</td>' +
+        '<button class="bit-icon-btn edit" onclick="openModal(\'cr\',' + r.id + ')" title="Editar">&#9998;</button>' +
+        '<button class="bit-icon-btn del" onclick="deleteRecord(\'bit_contas_receber\',' + r.id + ')" title="Excluir">&#128465;</button>' +
+      '</div></td>' +
     '</tr>';
   }
   tbody.innerHTML = html;
@@ -349,7 +412,6 @@ function renderContasReceber() {
 function setFilter(filter) {
   currentFilter = filter;
 
-  // Update active filter button in current tab
   var activeContent = document.getElementById('tab-' + currentTab);
   var filters = activeContent.querySelectorAll('.bit-filter');
   for (var i = 0; i < filters.length; i++) {
@@ -377,50 +439,51 @@ function openModal(type, id) {
   var bodyHtml = '';
 
   if (type === 'gestao') {
-    title = editingId ? 'Editar Gestão' : 'Nova Gestão';
+    title = editingId ? 'Editar Gestao' : 'Nova Gestao';
     var clienteOpts = '<option value="">Selecione o cliente</option>';
     for (var i = 0; i < clientesList.length; i++) {
-      clienteOpts += '<option value="' + clientesList[i].id + '">' + clientesList[i].nome + '</option>';
+      clienteOpts += '<option value="' + clientesList[i].id + '">' + escapeHtml(clientesList[i].nome) + '</option>';
     }
-    var servicoOpts = '<option value="">Selecione o serviço</option>';
+    var servicoOpts = '<option value="">Selecione o servico</option>';
     for (var j = 0; j < servicosList.length; j++) {
-      servicoOpts += '<option value="' + servicosList[j].id + '">' + servicosList[j].descricao + ' (' + formatBRL(servicosList[j].valor) + ')</option>';
+      servicoOpts += '<option value="' + servicosList[j].id + '">' + escapeHtml(servicosList[j].descricao) + ' (' + formatBRL(servicosList[j].valor) + ')</option>';
     }
     bodyHtml =
       '<label>Cliente</label><select id="m-cliente">' + clienteOpts + '</select>' +
-      '<label>Serviço</label><select id="m-servico" onchange="preencherValorServico()">' + servicoOpts + '</select>' +
+      '<label>Servico</label><select id="m-servico" onchange="preencherValorServico()">' + servicoOpts + '</select>' +
       '<label>Valor (R$)</label><input type="number" id="m-valor" step="0.01" min="0" placeholder="0.00">' +
-      '<label>Data de Expiração</label><input type="date" id="m-expiracao">' +
-      '<label>Observação</label><textarea id="m-obs" placeholder="Observações..."></textarea>';
+      '<label>Data de Expiracao</label><input type="date" id="m-expiracao">' +
+      '<label>Login</label><input type="text" id="m-login" placeholder="Login de acesso">' +
+      '<label>Senha</label><input type="text" id="m-senha" placeholder="Senha de acesso">' +
+      '<label>Observacao</label><textarea id="m-obs" placeholder="Observacoes..."></textarea>';
   } else if (type === 'cp') {
     title = editingId ? 'Editar Conta a Pagar' : 'Nova Conta a Pagar';
     bodyHtml =
       '<label>Fornecedor</label><input type="text" id="m-fornecedor" placeholder="Nome do fornecedor">' +
-      '<label>Nº Documento</label><input type="text" id="m-numdoc" placeholder="Nº do documento">' +
+      '<label>N. Documento</label><input type="text" id="m-numdoc" placeholder="N. do documento">' +
       '<label>Valor (R$)</label><input type="number" id="m-valor" step="0.01" min="0" placeholder="0.00">' +
-      '<label>Emissão</label><input type="date" id="m-emissao">' +
+      '<label>Emissao</label><input type="date" id="m-emissao">' +
       '<label>Vencimento</label><input type="date" id="m-vencimento">' +
-      '<label>Observação</label><textarea id="m-obs" placeholder="Observações..."></textarea>';
+      '<label>Observacao</label><textarea id="m-obs" placeholder="Observacoes..."></textarea>';
   } else if (type === 'cr') {
     title = editingId ? 'Editar Conta a Receber' : 'Nova Conta a Receber';
     var crClienteOpts = '<option value="">Selecione o cliente</option>';
     for (var k = 0; k < clientesList.length; k++) {
-      crClienteOpts += '<option value="' + clientesList[k].id + '">' + clientesList[k].nome + '</option>';
+      crClienteOpts += '<option value="' + clientesList[k].id + '">' + escapeHtml(clientesList[k].nome) + '</option>';
     }
     bodyHtml =
       '<label>Cliente</label><select id="m-cliente">' + crClienteOpts + '</select>' +
-      '<label>Nº Documento</label><input type="text" id="m-numdoc" placeholder="Nº do documento">' +
+      '<label>N. Documento</label><input type="text" id="m-numdoc" placeholder="N. do documento">' +
       '<label>Valor (R$)</label><input type="number" id="m-valor" step="0.01" min="0" placeholder="0.00">' +
-      '<label>Emissão</label><input type="date" id="m-emissao">' +
+      '<label>Emissao</label><input type="date" id="m-emissao">' +
       '<label>Vencimento</label><input type="date" id="m-vencimento">' +
-      '<label>Observação</label><textarea id="m-obs" placeholder="Observações..."></textarea>';
+      '<label>Observacao</label><textarea id="m-obs" placeholder="Observacoes..."></textarea>';
   }
 
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').innerHTML = bodyHtml;
   document.getElementById('modal-overlay').classList.add('show');
 
-  // If editing, fill the form
   if (editingId) {
     fillModalForEdit(type, editingId);
   }
@@ -433,7 +496,9 @@ function fillModalForEdit(type, id) {
     document.getElementById('m-cliente').value = rec.cliente_id || '';
     document.getElementById('m-servico').value = rec.servico_id || '';
     document.getElementById('m-valor').value = rec.valor || '';
-    document.getElementById('m-expiracao').value = rec.data_expiracao || '';
+    document.getElementById('m-expiracao').value = rec.data_expiracao ? rec.data_expiracao.substring(0, 10) : '';
+    document.getElementById('m-login').value = rec.login || '';
+    document.getElementById('m-senha').value = rec.senha || '';
     document.getElementById('m-obs').value = rec.observacao || '';
   } else if (type === 'cp') {
     var rec2 = cpData.find(function (r) { return r.id === id; });
@@ -485,10 +550,12 @@ async function saveRecord() {
         servico_id: Number(document.getElementById('m-servico').value) || null,
         valor: Number(document.getElementById('m-valor').value) || 0,
         data_expiracao: document.getElementById('m-expiracao').value || null,
+        login: document.getElementById('m-login').value || '',
+        senha: document.getElementById('m-senha').value || '',
         observacao: document.getElementById('m-obs').value || ''
       };
       if (!payload.cliente_id || !payload.servico_id) {
-        showToast('Selecione cliente e serviço', 'error');
+        showToast('Selecione cliente e servico', 'error');
         return;
       }
     } else if (currentTab === 'cp') {
@@ -527,7 +594,6 @@ async function saveRecord() {
 
     var error;
     if (editingId) {
-      // Don't overwrite valor_pago/valor_recebido/situacao on edit
       if (currentTab === 'cp') {
         delete payload.valor_pago;
         delete payload.situacao;
@@ -565,7 +631,7 @@ async function deleteRecord(table, id) {
     var { error } = await sb.from(table).delete().eq('id', id);
     if (error) throw error;
 
-    showToast('Registro excluído!', 'success');
+    showToast('Registro excluido!', 'success');
 
     if (currentTab === 'gestao') loadGestao();
     else if (currentTab === 'cp') loadContasPagar();
@@ -587,7 +653,6 @@ async function quitarConta(id, tipo) {
 
     if (tipo === 'pagar') {
       table = 'bit_contas_pagar';
-      // Find the record to get valor
       var rec = cpData.find(function (r) { return r.id === id; });
       payload = {
         situacao: 1,
