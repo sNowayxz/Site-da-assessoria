@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('filter-aluno-ativ').addEventListener('input', filterAtividadesPedidos);
   document.getElementById('filter-status-ativ').addEventListener('change', filterAtividadesPedidos);
   document.getElementById('filter-tipo-ativ').addEventListener('change', filterAtividadesPedidos);
-  document.getElementById('filter-descricao-ativ').addEventListener('input', filterAtividadesPedidos);
+  document.getElementById('filter-descricao-ativ').addEventListener('change', filterAtividadesPedidos);
 });
 
 /* ── Tab Switching ──────────────────── */
@@ -170,8 +170,26 @@ async function loadAtividadesPedidos() {
 
   if (error) { console.error(error); return; }
   _pedidosAtiv = data || [];
+  populateDescricaoFilter(_pedidosAtiv);
   renderAtividadesPedidos(_pedidosAtiv);
   if (currentPedidoTab === 'atividades') updateStatsForTab();
+}
+
+function populateDescricaoFilter(atividades) {
+  var select = document.getElementById('filter-descricao-ativ');
+  if (!select) return;
+  var currentVal = select.value;
+  var unique = {};
+  atividades.forEach(function (a) {
+    var desc = (a.descricao || '').trim();
+    if (desc && !unique[desc]) unique[desc] = true;
+  });
+  var sorted = Object.keys(unique).sort();
+  select.innerHTML = '<option value="">Todas as disciplinas</option>';
+  sorted.forEach(function (desc) {
+    select.innerHTML += '<option value="' + escapeHtml(desc) + '">' + escapeHtml(desc) + '</option>';
+  });
+  if (currentVal) select.value = currentVal;
 }
 
 function renderAtividadesPedidos(atividades) {
@@ -199,14 +217,14 @@ function filterAtividadesPedidos() {
   var aluno = document.getElementById('filter-aluno-ativ').value.toLowerCase();
   var status = document.getElementById('filter-status-ativ').value;
   var tipo = document.getElementById('filter-tipo-ativ').value;
-  var descricao = document.getElementById('filter-descricao-ativ').value.toLowerCase();
+  var descricao = document.getElementById('filter-descricao-ativ').value;
 
   var filtered = _pedidosAtiv.filter(function (a) {
     var alunoData = a.alunos || {};
     var matchAluno = !aluno || (alunoData.nome || '').toLowerCase().includes(aluno) || (alunoData.ra || '').toLowerCase().includes(aluno);
     var matchStatus = !status || a.status === status;
     var matchTipo = !tipo || a.tipo === tipo;
-    var matchDesc = !descricao || (a.descricao || '').toLowerCase().includes(descricao);
+    var matchDesc = !descricao || (a.descricao || '').trim() === descricao;
     return matchAluno && matchStatus && matchTipo && matchDesc;
   });
   renderAtividadesPedidos(filtered);
