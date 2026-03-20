@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bit — Painel Assessoria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://lztfoprapoyicldunhzw.supabase.co">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/painel.css?v=7">
+  <style>
+    /* ── Tabs ── */
+    .bit-tabs { display:flex; gap:0; border-bottom:2px solid var(--gray-200, #e5e7eb); margin-bottom:20px; padding:0 4px; }
+    .bit-tab { padding:10px 22px; font-size:0.92rem; font-weight:600; cursor:pointer; border:none; background:none; color:var(--gray-500, #6b7280); border-bottom:2px solid transparent; margin-bottom:-2px; transition:color .2s, border-color .2s; font-family:inherit; }
+    .bit-tab:hover { color:var(--dark, #1a1a2e); }
+    .bit-tab.active { color:var(--gold, #f0c030); border-bottom-color:var(--gold, #f0c030); }
+    [data-theme="dark"] .bit-tabs { border-bottom-color:#30363d; }
+    [data-theme="dark"] .bit-tab { color:#8b949e; }
+    [data-theme="dark"] .bit-tab:hover { color:#e6edf3; }
+    [data-theme="dark"] .bit-tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+
+    /* ── Filters ── */
+    .bit-filters { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+    .bit-filter { padding:6px 16px; border-radius:6px; border:1px solid var(--gray-200, #e5e7eb); background:var(--white, #fff); color:var(--gray-500, #6b7280); font-size:0.82rem; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; }
+    .bit-filter:hover { background:rgba(240,192,48,0.08); color:var(--gold, #f0c030); border-color:rgba(240,192,48,0.3); }
+    .bit-filter.active { background:rgba(240,192,48,0.12); color:var(--gold, #f0c030); border-color:var(--gold, #f0c030); }
+    [data-theme="dark"] .bit-filter { border-color:#30363d; background:#21262d; color:#8b949e; }
+    [data-theme="dark"] .bit-filter.active { background:rgba(240,192,48,0.12); color:var(--gold); border-color:var(--gold); }
+
+    /* ── Search ── */
+    .bit-search { padding:8px 14px; border-radius:6px; border:1px solid var(--gray-200, #e5e7eb); background:var(--white, #fff); color:var(--dark, #1a1a2e); font-size:0.85rem; width:260px; max-width:100%; font-family:inherit; }
+    .bit-search::placeholder { color:var(--gray-400, #9ca3af); }
+    .bit-search:focus { outline:none; border-color:var(--gold, #f0c030); }
+    [data-theme="dark"] .bit-search { background:#161b22; border-color:#30363d; color:#e6edf3; }
+
+    /* ── Table ── */
+    .bit-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    .bit-table th { text-align:left; padding:10px 12px; font-weight:600; color:var(--gray-500, #6b7280); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--gray-200, #e5e7eb); }
+    .bit-table td { padding:10px 12px; color:var(--dark, #1a1a2e); border-bottom:1px solid var(--gray-100, #f3f4f6); vertical-align:middle; }
+    .bit-table tbody tr:hover { background:rgba(240,192,48,0.04); }
+    [data-theme="dark"] .bit-table th { color:#8b949e; border-bottom-color:#30363d; }
+    [data-theme="dark"] .bit-table td { color:#e6edf3; border-bottom-color:#21262d; }
+
+    /* ── Badges ── */
+    .badge-ativo { background:rgba(34,197,94,0.12); color:#16a34a; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
+    .badge-expirado { background:rgba(239,68,68,0.12); color:#dc2626; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
+    .badge-pago { background:rgba(34,197,94,0.12); color:#16a34a; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
+    .badge-aberto { background:rgba(250,204,21,0.12); color:#ca8a04; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
+    .badge-vencido { background:rgba(239,68,68,0.12); color:#dc2626; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
+    .badge-recebido { background:rgba(34,197,94,0.12); color:#16a34a; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; }
+
+    /* ── Modal ── */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; }
+    .modal-overlay.show { display:flex; }
+    .modal-box { background:var(--white, #fff); border-radius:12px; width:95%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2); border:1px solid var(--gray-200, #e5e7eb); }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; padding:18px 24px; border-bottom:1px solid var(--gray-200, #e5e7eb); }
+    .modal-header h3 { margin:0; font-size:1.05rem; color:var(--dark, #1a1a2e); }
+    .modal-header .modal-close { background:none; border:none; color:var(--gray-400, #9ca3af); font-size:1.4rem; cursor:pointer; }
+    .modal-body { padding:20px 24px; }
+    .modal-body label { display:block; font-size:0.8rem; font-weight:600; color:var(--gray-500, #6b7280); margin-bottom:4px; margin-top:12px; }
+    .modal-body label:first-child { margin-top:0; }
+    .modal-body input, .modal-body select, .modal-body textarea { width:100%; padding:8px 12px; border-radius:6px; border:1px solid var(--gray-200, #e5e7eb); background:var(--white, #fff); color:var(--dark, #1a1a2e); font-size:0.85rem; box-sizing:border-box; font-family:inherit; }
+    .modal-body input:focus, .modal-body select:focus, .modal-body textarea:focus { outline:none; border-color:var(--gold, #f0c030); }
+    .modal-body textarea { min-height:60px; resize:vertical; }
+    .modal-footer { display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; border-top:1px solid var(--gray-200, #e5e7eb); }
+    .modal-footer .btn-cancel { padding:8px 18px; border-radius:6px; border:1px solid var(--gray-200, #e5e7eb); background:none; color:var(--gray-500, #6b7280); cursor:pointer; font-size:0.85rem; font-family:inherit; }
+    .modal-footer .btn-save { padding:8px 18px; border-radius:6px; border:none; background:var(--gold, #f0c030); color:var(--dark, #1a1a2e); font-weight:600; cursor:pointer; font-size:0.85rem; font-family:inherit; }
+    [data-theme="dark"] .modal-box { background:#1c2128; border-color:#30363d; }
+    [data-theme="dark"] .modal-header { border-bottom-color:#30363d; }
+    [data-theme="dark"] .modal-header h3 { color:#e6edf3; }
+    [data-theme="dark"] .modal-body label { color:#8b949e; }
+    [data-theme="dark"] .modal-body input, [data-theme="dark"] .modal-body select, [data-theme="dark"] .modal-body textarea { background:#161b22; border-color:#30363d; color:#e6edf3; }
+    [data-theme="dark"] .modal-footer { border-top-color:#30363d; }
+    [data-theme="dark"] .modal-footer .btn-cancel { border-color:#30363d; color:#8b949e; }
+
+    /* ── Action buttons ── */
+    .bit-btn { padding:4px 10px; border-radius:4px; border:none; font-size:0.75rem; font-weight:600; cursor:pointer; transition:opacity .2s; }
+    .bit-btn:hover { opacity:0.8; }
+    .bit-btn-edit { background:rgba(59,130,246,0.15); color:#3b82f6; }
+    .bit-btn-del { background:rgba(239,68,68,0.15); color:#ef4444; }
+    .bit-btn-quitar { background:rgba(34,197,94,0.15); color:#16a34a; }
+    .bit-btn-wpp { background:rgba(37,211,102,0.15); color:#25d366; text-decoration:none; display:inline-block; }
+
+    /* ── Fade animation ── */
+    @keyframes calcFadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .bit-fade { animation: calcFadeUp 0.4s ease both; }
+
+    /* ── Tab content ── */
+    .bit-tab-content { display:none; }
+    .bit-tab-content.active { display:block; }
+
+    .bit-top-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+  </style>
+</head>
+<body>
+  <div class="page-loader" id="page-loader">
+    <div class="loader-spinner">
+      <div class="loader-logo"><img src="../logo.png" alt="" onerror="this.parentElement.textContent='A'"></div>
+    </div>
+    <div class="loader-text">Carregando</div>
+    <div class="loader-dots"><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo"><img src="../logo.png" alt="Logo" onerror="this.style.display='none'"></div>
+        <div class="sidebar-brand-text">Assessoria<br><small>Painel de Gest&atilde;o</small></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-label" data-category="geral">Vis&atilde;o Geral<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="app.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+          <a href="agenda.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agenda</a>
+          <a href="chat.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat</a>
+        </div>
+        <div class="sidebar-nav-label" data-category="academico">Acad&ecirc;mico<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="alunos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Alunos</a>
+          <a href="atividades.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Atividades</a>
+          <a href="solicitar.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Solicitar</a>
+          <a href="kanban.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>Kanban</a>
+          <a href="rastreio.html" class="sidebar-link"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Rastreio</a>
+          <a href="gabaritos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Gabaritos</a>
+        </div>
+        <div class="sidebar-nav-label" data-category="extensao">Extens&atilde;o<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="acompanhar.html" class="sidebar-link"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Acompanhar</a>
+          <a href="extensoes.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Extens&otilde;es</a>
+          <a href="calculadora.html" class="sidebar-link"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="12" y1="10" x2="14" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="12" y1="14" x2="14" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>Calculadora</a>
+          <a href="depoimentos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Depoimentos</a>
+        </div>
+        <div class="sidebar-nav-label" data-category="financeiro">Financeiro<svg class="sidebar-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sidebar-category-links">
+          <a href="financeiro.html" class="sidebar-link"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Financeiro</a>
+          <a href="pedidos.html" class="sidebar-link"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Pedidos</a>
+          <a href="relatorios.html" class="sidebar-link"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Relat&oacute;rios</a>
+          <a href="bit.html" class="sidebar-link active"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Bit</a>
+        </div>
+      </nav>
+      <div class="sidebar-user">
+        <a href="config.html" class="sidebar-user-link" title="Configura&ccedil;&otilde;es">
+          <div class="sidebar-avatar" id="user-avatar">A</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="user-name">Assessor</div>
+            <div class="sidebar-user-role" id="user-role-label">Assessor</div>
+          </div>
+        </a>
+        <button class="sidebar-theme-toggle" id="btn-theme" title="Alternar tema">&#127769;</button>
+        <button class="sidebar-logout" id="btn-logout" title="Sair">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main-content">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="mobile-toggle" id="mobile-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <h1>💎 Bit</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn-notif-bell" id="btn-notif-bell" title="Notificações" style="position:relative;background:none;border:none;cursor:pointer;font-size:1.2rem;padding:6px;">🔔<span class="notif-badge" id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#ef4444;color:white;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;"></span></button>
+          <button class="btn btn-gold" id="btn-novo" onclick="openModal(currentTab)">+ Novo</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bit-tabs">
+        <button class="bit-tab active" onclick="switchTab('gestao')" id="tab-btn-gestao">Gest&atilde;o de Servi&ccedil;o</button>
+        <button class="bit-tab" onclick="switchTab('cp')" id="tab-btn-cp">Contas a Pagar</button>
+        <button class="bit-tab" onclick="switchTab('cr')" id="tab-btn-cr">Contas a Receber</button>
+      </div>
+
+      <!-- Tab: Gestão de Serviço -->
+      <div class="bit-tab-content active bit-fade" id="tab-gestao">
+        <div class="bit-top-bar">
+          <div class="bit-filters">
+            <button class="bit-filter active" onclick="setFilter('todos')">Todos</button>
+            <button class="bit-filter" onclick="setFilter('ativos')">Ativos</button>
+            <button class="bit-filter" onclick="setFilter('expirados')">Expirados</button>
+          </div>
+          <input type="text" class="bit-search" id="bit-search" placeholder="Buscar cliente..." oninput="searchBit()">
+        </div>
+        <div class="panel">
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table class="bit-table">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>WhatsApp</th>
+                    <th>Servi&ccedil;o</th>
+                    <th>Valor</th>
+                    <th>Expira&ccedil;&atilde;o</th>
+                    <th>Situa&ccedil;&atilde;o</th>
+                    <th>A&ccedil;&otilde;es</th>
+                  </tr>
+                </thead>
+                <tbody id="gestao-table">
+                  <tr><td colspan="7" class="empty-state">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Contas a Pagar -->
+      <div class="bit-tab-content" id="tab-cp">
+        <div class="bit-top-bar">
+          <div class="bit-filters">
+            <button class="bit-filter active" onclick="setFilter('todos')">Todos</button>
+            <button class="bit-filter" onclick="setFilter('abertos')">Abertos</button>
+            <button class="bit-filter" onclick="setFilter('pagos')">Pagos</button>
+            <button class="bit-filter" onclick="setFilter('vencidos')">Vencidos</button>
+          </div>
+          <input type="text" class="bit-search" id="bit-search-cp" placeholder="Buscar fornecedor..." oninput="searchBit()">
+        </div>
+        <div class="panel">
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table class="bit-table">
+                <thead>
+                  <tr>
+                    <th>Fornecedor</th>
+                    <th>N&ordm; Doc</th>
+                    <th>Valor</th>
+                    <th>Vencimento</th>
+                    <th>Valor Pago</th>
+                    <th>Aberto</th>
+                    <th>Situa&ccedil;&atilde;o</th>
+                    <th>A&ccedil;&otilde;es</th>
+                  </tr>
+                </thead>
+                <tbody id="cp-table">
+                  <tr><td colspan="8" class="empty-state">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Contas a Receber -->
+      <div class="bit-tab-content" id="tab-cr">
+        <div class="bit-top-bar">
+          <div class="bit-filters">
+            <button class="bit-filter active" onclick="setFilter('todos')">Todos</button>
+            <button class="bit-filter" onclick="setFilter('abertos')">Abertos</button>
+            <button class="bit-filter" onclick="setFilter('recebidos')">Recebidos</button>
+            <button class="bit-filter" onclick="setFilter('vencidos')">Vencidos</button>
+          </div>
+          <input type="text" class="bit-search" id="bit-search-cr" placeholder="Buscar cliente..." oninput="searchBit()">
+        </div>
+        <div class="panel">
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table class="bit-table">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>N&ordm; Doc</th>
+                    <th>Valor</th>
+                    <th>Vencimento</th>
+                    <th>Recebido</th>
+                    <th>Aberto</th>
+                    <th>Situa&ccedil;&atilde;o</th>
+                    <th>A&ccedil;&otilde;es</th>
+                  </tr>
+                </thead>
+                <tbody id="cr-table">
+                  <tr><td colspan="8" class="empty-state">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title">Novo Registro</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn-save" id="modal-save-btn" onclick="saveRecord()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js?v=7"></script>
+  <script src="js/utils.js?v=7"></script>
+  <script src="js/bit.js?v=1"></script>
+  <script>
+    document.getElementById('mobile-toggle').addEventListener('click', function () { document.getElementById('sidebar').classList.toggle('open'); });
+    document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });
+  </script>
+</body>
+</html>
