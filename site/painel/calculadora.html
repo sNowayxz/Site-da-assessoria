@@ -556,7 +556,14 @@
             </div>
             <div class="calc-line">
               <span class="calc-line-label">Desconto</span>
-              <span class="calc-line-val green">15%</span>
+              <div class="calc-line-input">
+                <div class="calc-parc-stepper">
+                  <button type="button" onclick="stepPercent('calc-op1-desc', -1)">-</button>
+                  <input type="number" id="calc-op1-desc" value="15" min="0" max="100" oninput="calcExtensao()">
+                  <button type="button" onclick="stepPercent('calc-op1-desc', 1)">+</button>
+                </div>
+                <span class="calc-suffix">%</span>
+              </div>
             </div>
             <div class="calc-line">
               <span class="calc-line-label">Com desconto</span>
@@ -734,8 +741,9 @@
 
       document.getElementById('calc-total').textContent = formatBRL(total);
 
-      // Op 1: Cartao 15%
-      var desconto1 = total * 0.85;
+      // Op 1: Cartão — desconto editável
+      var cartaoDesc = parseFloat(document.getElementById('calc-op1-desc').value) || 0;
+      var desconto1 = total * (1 - cartaoDesc / 100);
       var parcelas1 = parseInt(document.getElementById('calc-op1-parcelas').value) || 1;
       var vlrParcela1 = parcelas1 > 0 ? desconto1 / parcelas1 : desconto1;
       document.getElementById('calc-op1-total').textContent = formatBRL(desconto1);
@@ -765,7 +773,8 @@
       var sinal = parseFloat(document.getElementById('calc-op2-sinal').value) || 0;
       var parcelas2 = parseInt(document.getElementById('calc-op2-parcelas').value) || 1;
 
-      var desconto1 = total * 0.85;
+      var cartaoDesc = parseFloat(document.getElementById('calc-op1-desc').value) || 0;
+      var desconto1 = total * (1 - cartaoDesc / 100);
       var vlrParcela1 = parcelas1 > 0 ? desconto1 / parcelas1 : desconto1;
       var restante = Math.max(0, total - sinal);
       var vlrParcela2 = parcelas2 > 0 ? restante / parcelas2 : restante;
@@ -778,7 +787,7 @@
         '*Valor Total: ' + formatBRL(total) + '*\n\n' +
         '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\n' +
         '\ud83d\udcb3 *1\u00aa Op\u00e7\u00e3o \u2014 Cart\u00e3o de Cr\u00e9dito sem Juros (Mais recomendado)*\n' +
-        'Desconto: 15%\n' +
+        'Desconto: ' + cartaoDesc + '%\n' +
         'Valor com desconto: ' + formatBRL(desconto1) + '\n' +
         'Parcelas: ' + parcelas1 + 'x de ' + formatBRL(vlrParcela1) + '\n\n' +
         '\ud83d\udcb0 *2\u00aa Op\u00e7\u00e3o \u2014 Sinal + Parcelamento sem Juros*\n' +
