@@ -20,14 +20,26 @@ function formatBRL(val) {
 
 function formatDate(dateStr) {
   if (!dateStr) return '—';
-  var parts = dateStr.split('-');
-  if (parts.length !== 3) return dateStr;
-  return parts[2] + '/' + parts[1] + '/' + parts[0];
+  // Handle ISO timestamps like "2026-04-10T15:15:00+00:00"
+  var d = new Date(dateStr);
+  if (isNaN(d.getTime())) {
+    // Fallback: try simple split
+    var parts = dateStr.split('-');
+    if (parts.length >= 3) return parts[2].substring(0, 2) + '/' + parts[1] + '/' + parts[0];
+    return dateStr;
+  }
+  var dd = String(d.getDate()).padStart(2, '0');
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  var yyyy = d.getFullYear();
+  return dd + '/' + mm + '/' + yyyy;
 }
 
 function formatWhatsApp(num) {
   if (!num) return '—';
   var n = String(num).replace(/\D/g, '');
+  // Remove country code 55 if present
+  if (n.length === 13 && n.substring(0, 2) === '55') n = n.substring(2);
+  if (n.length === 12 && n.substring(0, 2) === '55') n = n.substring(2);
   if (n.length === 11) return '(' + n.slice(0, 2) + ') ' + n.slice(2, 7) + '-' + n.slice(7);
   if (n.length === 10) return '(' + n.slice(0, 2) + ') ' + n.slice(2, 6) + '-' + n.slice(6);
   return n;
