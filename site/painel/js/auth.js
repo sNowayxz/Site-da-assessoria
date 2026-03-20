@@ -43,20 +43,16 @@ async function handleLogin(email, password) {
 async function handleLogout() {
   _cachedRole = null;
   _cachedUser = null;
-  sessionStorage.clear();
-  try {
-    await sb.auth.signOut({ scope: 'local' });
-  } catch (e) {
-    console.warn('[auth] signOut error:', e.message);
-  }
-  // Força remoção dos tokens do Supabase de ambos os storages
-  var keys = Object.keys(localStorage);
-  for (var i = 0; i < keys.length; i++) {
-    if (keys[i].indexOf('sb-') === 0 || keys[i].indexOf('supabase') === 0) {
-      localStorage.removeItem(keys[i]);
-    }
-  }
-  window.location.href = '/painel/';
+
+  // 1. Tenta signOut global (invalida sessão no servidor)
+  try { await sb.auth.signOut(); } catch (e) { /* ignore */ }
+
+  // 2. Limpa TODOS os storages (nuclear - garante logout)
+  try { localStorage.clear(); } catch (e) { /* ignore */ }
+  try { sessionStorage.clear(); } catch (e) { /* ignore */ }
+
+  // 3. Redireciona
+  window.location.replace('/painel/');
 }
 
 function getUserName(user) {

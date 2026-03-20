@@ -523,6 +523,11 @@ function setFilter(filter) {
   currentFilter = filter;
   renderFilters();
 
+  // Sync select dropdown with current filter
+  var selId = currentTab === 'gestao' ? 'bit-filter-status' : (currentTab === 'cp' ? 'bit-filter-status-cp' : 'bit-filter-status-cr');
+  var sel = document.getElementById(selId);
+  if (sel && sel.value !== filter) sel.value = filter;
+
   if (currentTab === 'gestao') renderGestao();
   else if (currentTab === 'cp') renderContasPagar();
   else if (currentTab === 'cr') renderContasReceber();

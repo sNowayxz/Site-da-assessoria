@@ -281,6 +281,11 @@
       <div class="bit-tab-content active bit-fade" id="tab-gestao">
         <div class="bit-toolbar">
           <div class="bit-filters" id="gestao-filters"></div>
+          <select class="bit-search" id="bit-filter-status" onchange="setFilter(this.value)" style="width:auto;min-width:160px">
+            <option value="todos">Todos os status</option>
+            <option value="ativos">Ativos</option>
+            <option value="expirados">Expirados</option>
+          </select>
           <input type="text" class="bit-search" id="bit-search" placeholder="Buscar cliente..." oninput="searchBit()">
         </div>
         <div class="panel"><div class="panel-body" style="padding:0"><div class="table-wrap">
@@ -294,6 +299,12 @@
       <div class="bit-tab-content" id="tab-cp">
         <div class="bit-toolbar">
           <div class="bit-filters" id="cp-filters"></div>
+          <select class="bit-search" id="bit-filter-status-cp" onchange="setFilter(this.value)" style="width:auto;min-width:160px">
+            <option value="todos">Todos os status</option>
+            <option value="abertos">Abertos</option>
+            <option value="vencidos">Vencidos</option>
+            <option value="pagos">Pagos</option>
+          </select>
           <input type="text" class="bit-search" id="bit-search-cp" placeholder="Buscar fornecedor..." oninput="searchBit()">
         </div>
         <div class="panel"><div class="panel-body" style="padding:0"><div class="table-wrap">
@@ -307,6 +318,12 @@
       <div class="bit-tab-content" id="tab-cr">
         <div class="bit-toolbar">
           <div class="bit-filters" id="cr-filters"></div>
+          <select class="bit-search" id="bit-filter-status-cr" onchange="setFilter(this.value)" style="width:auto;min-width:160px">
+            <option value="todos">Todos os status</option>
+            <option value="abertos">Abertos</option>
+            <option value="vencidos">Vencidos</option>
+            <option value="recebidos">Recebidos</option>
+          </select>
           <input type="text" class="bit-search" id="bit-search-cr" placeholder="Buscar cliente..." oninput="searchBit()">
         </div>
         <div class="panel"><div class="panel-body" style="padding:0"><div class="table-wrap">
