@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════
-   Bit — Gestão de Serviços / Contas
+   Bit — Gestão de Serviços / Contas  v3
    ══════════════════════════════════════ */
 
 var currentTab = 'gestao';
@@ -10,6 +10,24 @@ var crData = [];
 var clientesList = [];
 var servicosList = [];
 var editingId = null;
+
+/* ── SVG icon helpers ────────────────── */
+
+var SVG_ICONS = {
+  clipboard: '<svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>',
+  check: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
+  alert: '<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  dollar: '<svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  whatsapp: '<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+  edit: '<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  trash: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  checkCircle: '<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  user: '<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  lock: '<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  empty: '<svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>'
+};
 
 /* ── Utility ────────────────────────── */
 
@@ -84,10 +102,10 @@ function updateSummary() {
       totalReceita += Number(g.valor) || 0;
     }
     html =
-      '<div class="bit-card"><div class="bit-card-icon blue">&#128203;</div><div class="bit-card-info"><div class="bit-card-label">Total</div><div class="bit-card-value">' + gestaoData.length + '</div></div></div>' +
-      '<div class="bit-card"><div class="bit-card-icon green">&#9989;</div><div class="bit-card-info"><div class="bit-card-label">Ativos</div><div class="bit-card-value">' + ativos + '</div></div></div>' +
-      '<div class="bit-card"><div class="bit-card-icon red">&#9888;&#65039;</div><div class="bit-card-info"><div class="bit-card-label">Expirados</div><div class="bit-card-value">' + expirados + '</div></div></div>' +
-      '<div class="bit-card"><div class="bit-card-icon gold">&#128176;</div><div class="bit-card-info"><div class="bit-card-label">Receita Total</div><div class="bit-card-value">' + formatBRL(totalReceita) + '</div></div></div>';
+      '<div class="bit-card c-blue"><div class="bit-card-icon i-blue">' + SVG_ICONS.clipboard + '</div><div class="bit-card-info"><div class="bit-card-label">Total</div><div class="bit-card-value">' + gestaoData.length + '</div></div></div>' +
+      '<div class="bit-card c-green"><div class="bit-card-icon i-green">' + SVG_ICONS.check + '</div><div class="bit-card-info"><div class="bit-card-label">Ativos</div><div class="bit-card-value">' + ativos + '</div></div></div>' +
+      '<div class="bit-card c-red"><div class="bit-card-icon i-red">' + SVG_ICONS.alert + '</div><div class="bit-card-info"><div class="bit-card-label">Expirados</div><div class="bit-card-value">' + expirados + '</div></div></div>' +
+      '<div class="bit-card c-gold"><div class="bit-card-icon i-gold">' + SVG_ICONS.dollar + '</div><div class="bit-card-info"><div class="bit-card-label">Receita Total</div><div class="bit-card-value">' + formatBRL(totalReceita) + '</div></div></div>';
   } else if (currentTab === 'cp') {
     var abertos = 0, pagos = 0, vencidos = 0, totalAberto = 0;
     for (var j = 0; j < cpData.length; j++) {
@@ -97,10 +115,10 @@ function updateSummary() {
       else { abertos++; totalAberto += (Number(c.valor) || 0) - (Number(c.valor_pago) || 0); }
     }
     html =
-      '<div class="bit-card"><div class="bit-card-icon blue">&#128203;</div><div class="bit-card-info"><div class="bit-card-label">Total</div><div class="bit-card-value">' + cpData.length + '</div></div></div>' +
-      '<div class="bit-card"><div class="bit-card-icon gold">&#9203;</div><div class="bit-card-info"><div class="bit-card-label">Abertos</div><div class="bit-card-value">' + abertos + '</div></div></div>' +
-      '<div class="bit-card"><div class="bit-card-icon red">&#128308;</div><div class="bit-card-info"><div class="bit-card-label">Vencidos</div><div class="bit-card-value">' + vencidos + '</div></div></div>' +
-      '<div class="bit-card"><div class="bit-card-icon green">&#9989;</div><div class="bit-card-info"><div class="bit-card-label">Pagos</div><div class="bit-card-value">' + pagos + '</div></div></div>';
+      '<div class="bit-card c-blue"><div class="bit-card-icon i-blue">' + SVG_ICONS.clipboard + '</div><div class="bit-card-info"><div class="bit-card-label">Total</div><div class="bit-card-value">' + cpData.length + '</div></div></div>' +
+      '<div class="bit-card c-gold"><div class="bit-card-icon i-gold">' + SVG_ICONS.clock + '</div><div class="bit-card-info"><div class="bit-card-label">Abertos</div><div class="bit-card-value">' + abertos + '</div></div></div>' +
+      '<div class="bit-card c-red"><div class="bit-card-icon i-red">' + SVG_ICONS.alert + '</div><div class="bit-card-info"><div class="bit-card-label">Vencidos</div><div class="bit-card-value">' + vencidos + '</div></div></div>' +
+      '<div class="bit-card c-green"><div class="bit-card-icon i-green">' + SVG_ICONS.check + '</div><div class="bit-card-info"><div class="bit-card-label">Pagos</div><div class="bit-card-value">' + pagos + '</div></div></div>';
   } else if (currentTab === 'cr') {
     var crAbertos = 0, recebidos = 0, crVencidos = 0, crTotalAberto = 0;
     for (var k = 0; k < crData.length; k++) {
@@ -110,13 +128,61 @@ function updateSummary() {
       else { crAbertos++; crTotalAberto += (Number(cr.valor) || 0) - (Number(cr.valor_recebido) || 0); }
     }
     html =
-      '<div class="bit-card"><div class="bit-card-icon blue">&#128203;</div><div class="bit-card-info"><div class="bit-card-label">Total</div><div class="bit-card-value">' + crData.length + '</div></div></div>' +
-      '<div class="bit-card"><div class="bit-card-icon gold">&#9203;</div><div class="bit-card-info"><div class="bit-card-label">Abertos</div><div class="bit-card-value">' + crAbertos + '</div></div></div>' +
-      '<div class="bit-card"><div class="bit-card-icon red">&#128308;</div><div class="bit-card-info"><div class="bit-card-label">Vencidos</div><div class="bit-card-value">' + crVencidos + '</div></div></div>' +
-      '<div class="bit-card"><div class="bit-card-icon green">&#9989;</div><div class="bit-card-info"><div class="bit-card-label">Recebidos</div><div class="bit-card-value">' + recebidos + '</div></div></div>';
+      '<div class="bit-card c-blue"><div class="bit-card-icon i-blue">' + SVG_ICONS.clipboard + '</div><div class="bit-card-info"><div class="bit-card-label">Total</div><div class="bit-card-value">' + crData.length + '</div></div></div>' +
+      '<div class="bit-card c-gold"><div class="bit-card-icon i-gold">' + SVG_ICONS.clock + '</div><div class="bit-card-info"><div class="bit-card-label">Abertos</div><div class="bit-card-value">' + crAbertos + '</div></div></div>' +
+      '<div class="bit-card c-red"><div class="bit-card-icon i-red">' + SVG_ICONS.alert + '</div><div class="bit-card-info"><div class="bit-card-label">Vencidos</div><div class="bit-card-value">' + crVencidos + '</div></div></div>' +
+      '<div class="bit-card c-green"><div class="bit-card-icon i-green">' + SVG_ICONS.check + '</div><div class="bit-card-info"><div class="bit-card-label">Recebidos</div><div class="bit-card-value">' + recebidos + '</div></div></div>';
   }
 
   container.innerHTML = html;
+}
+
+/* ── Dynamic Filter Rendering ─────── */
+
+function renderFilters() {
+  var today = todayStr();
+
+  if (currentTab === 'gestao') {
+    var ativos = 0, expirados = 0;
+    for (var i = 0; i < gestaoData.length; i++) {
+      var g = gestaoData[i];
+      if (g.data_expiracao && g.data_expiracao < today) expirados++;
+      else ativos++;
+    }
+    var el = document.getElementById('gestao-filters');
+    el.innerHTML =
+      '<button class="bit-filter' + (currentFilter === 'todos' ? ' active' : '') + '" onclick="setFilter(\'todos\')">Todos <span class="fcount">' + gestaoData.length + '</span></button>' +
+      '<button class="bit-filter' + (currentFilter === 'ativos' ? ' active' : '') + '" onclick="setFilter(\'ativos\')">Ativos <span class="fcount">' + ativos + '</span></button>' +
+      '<button class="bit-filter' + (currentFilter === 'expirados' ? ' active' : '') + '" onclick="setFilter(\'expirados\')">Expirados <span class="fcount">' + expirados + '</span></button>';
+  } else if (currentTab === 'cp') {
+    var cpAbertos = 0, cpPagos = 0, cpVencidos = 0;
+    for (var j = 0; j < cpData.length; j++) {
+      var c = cpData[j];
+      if (c.situacao == 1) cpPagos++;
+      else if (c.vencimento && c.vencimento < today) cpVencidos++;
+      else cpAbertos++;
+    }
+    var el2 = document.getElementById('cp-filters');
+    el2.innerHTML =
+      '<button class="bit-filter' + (currentFilter === 'todos' ? ' active' : '') + '" onclick="setFilter(\'todos\')">Todos <span class="fcount">' + cpData.length + '</span></button>' +
+      '<button class="bit-filter' + (currentFilter === 'abertos' ? ' active' : '') + '" onclick="setFilter(\'abertos\')">Abertos <span class="fcount">' + cpAbertos + '</span></button>' +
+      '<button class="bit-filter' + (currentFilter === 'vencidos' ? ' active' : '') + '" onclick="setFilter(\'vencidos\')">Vencidos <span class="fcount">' + cpVencidos + '</span></button>' +
+      '<button class="bit-filter' + (currentFilter === 'pagos' ? ' active' : '') + '" onclick="setFilter(\'pagos\')">Pagos <span class="fcount">' + cpPagos + '</span></button>';
+  } else if (currentTab === 'cr') {
+    var crAbertos = 0, crRecebidos = 0, crVencidos = 0;
+    for (var k = 0; k < crData.length; k++) {
+      var r = crData[k];
+      if (r.situacao == 1) crRecebidos++;
+      else if (r.vencimento && r.vencimento < today) crVencidos++;
+      else crAbertos++;
+    }
+    var el3 = document.getElementById('cr-filters');
+    el3.innerHTML =
+      '<button class="bit-filter' + (currentFilter === 'todos' ? ' active' : '') + '" onclick="setFilter(\'todos\')">Todos <span class="fcount">' + crData.length + '</span></button>' +
+      '<button class="bit-filter' + (currentFilter === 'abertos' ? ' active' : '') + '" onclick="setFilter(\'abertos\')">Abertos <span class="fcount">' + crAbertos + '</span></button>' +
+      '<button class="bit-filter' + (currentFilter === 'vencidos' ? ' active' : '') + '" onclick="setFilter(\'vencidos\')">Vencidos <span class="fcount">' + crVencidos + '</span></button>' +
+      '<button class="bit-filter' + (currentFilter === 'recebidos' ? ' active' : '') + '" onclick="setFilter(\'recebidos\')">Recebidos <span class="fcount">' + crRecebidos + '</span></button>';
+  }
 }
 
 /* ── Tab Switching ──────────────────── */
@@ -137,13 +203,6 @@ function switchTab(tab) {
   }
   document.getElementById('tab-' + tab).classList.add('active');
 
-  var activeContent = document.getElementById('tab-' + tab);
-  var filters = activeContent.querySelectorAll('.bit-filter');
-  for (var k = 0; k < filters.length; k++) {
-    filters[k].classList.remove('active');
-    if (filters[k].textContent === 'Todos') filters[k].classList.add('active');
-  }
-
   if (tab === 'gestao') loadGestao();
   else if (tab === 'cp') loadContasPagar();
   else if (tab === 'cr') loadContasReceber();
@@ -153,28 +212,30 @@ function switchTab(tab) {
 
 async function loadGestao() {
   try {
-    var { data, error } = await sb
+    var result = await sb
       .from('bit_gestao')
       .select('*, bit_clientes(id,nome,whatsapp), bit_servicos(id,descricao)')
       .order('data_expiracao', { ascending: false });
-    if (error) throw error;
-    gestaoData = data || [];
+    if (result.error) throw result.error;
+    gestaoData = result.data || [];
+    renderFilters();
     renderGestao();
     updateSummary();
   } catch (e) {
     console.error('Erro ao carregar gestao:', e);
-    showToast('Erro ao carregar gestao', 'error');
+    showToast('Erro ao carregar gestão', 'error');
   }
 }
 
 async function loadContasPagar() {
   try {
-    var { data, error } = await sb
+    var result = await sb
       .from('bit_contas_pagar')
       .select('*')
       .order('vencimento', { ascending: false });
-    if (error) throw error;
-    cpData = data || [];
+    if (result.error) throw result.error;
+    cpData = result.data || [];
+    renderFilters();
     renderContasPagar();
     updateSummary();
   } catch (e) {
@@ -185,12 +246,13 @@ async function loadContasPagar() {
 
 async function loadContasReceber() {
   try {
-    var { data, error } = await sb
+    var result = await sb
       .from('bit_contas_receber')
       .select('*, bit_clientes(id,nome)')
       .order('vencimento', { ascending: false });
-    if (error) throw error;
-    crData = data || [];
+    if (result.error) throw result.error;
+    crData = result.data || [];
+    renderFilters();
     renderContasReceber();
     updateSummary();
   } catch (e) {
@@ -201,13 +263,13 @@ async function loadContasReceber() {
 
 async function loadClientes() {
   try {
-    var { data, error } = await sb
+    var result = await sb
       .from('bit_clientes')
       .select('id, nome, whatsapp')
       .eq('ativo', true)
       .order('nome');
-    if (error) throw error;
-    clientesList = data || [];
+    if (result.error) throw result.error;
+    clientesList = result.data || [];
   } catch (e) {
     console.error('Erro ao carregar clientes:', e);
   }
@@ -215,13 +277,13 @@ async function loadClientes() {
 
 async function loadServicos() {
   try {
-    var { data, error } = await sb
+    var result = await sb
       .from('bit_servicos')
       .select('id, descricao, valor')
       .eq('ativo', true)
       .order('descricao');
-    if (error) throw error;
-    servicosList = data || [];
+    if (result.error) throw result.error;
+    servicosList = result.data || [];
   } catch (e) {
     console.error('Erro ao carregar servicos:', e);
   }
@@ -244,7 +306,7 @@ function renderGestao() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="bit-empty"><div class="bit-empty-icon">&#128203;</div><div class="bit-empty-text">Nenhum registro encontrado</div></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7"><div class="bit-empty">' + SVG_ICONS.empty + '<div class="bit-empty-text">Nenhum registro encontrado</div></div></td></tr>';
     return;
   }
 
@@ -260,29 +322,39 @@ function renderGestao() {
       : '<span class="badge badge-ativo">Ativo</span>';
 
     var wppClean = cleanPhone(whatsapp);
-    var wppBtn = wppClean
-      ? '<a href="https://wa.me/' + wppClean + '" target="_blank" class="bit-icon-btn wpp" title="WhatsApp">&#128172;</a>'
-      : '';
+    var wppCell = '';
+    if (wppClean) {
+      wppCell = '<div class="bit-wpp-cell"><span class="bit-wpp-num">' + formatWhatsApp(whatsapp) + '</span>' +
+        '<a href="https://wa.me/' + wppClean + '" target="_blank" class="bit-ab a-wpp" title="WhatsApp">' + SVG_ICONS.whatsapp + '</a></div>';
+    } else {
+      wppCell = '<span class="bit-wpp-num">—</span>';
+    }
 
-    // Login/senha detail
-    var detail = '';
+    // Login/senha credentials
+    var cred = '';
     if (r.login || r.senha) {
-      detail = '<div class="bit-detail">';
-      if (r.login) detail += '&#128100; <code>' + escapeHtml(r.login) + '</code> <button class="bit-icon-btn copy" style="width:20px;height:20px;font-size:0.65rem;" onclick="copyText(\'' + escapeHtml(r.login).replace(/'/g, "\\'") + '\')" title="Copiar login">&#128203;</button> ';
-      if (r.senha) detail += '&#128274; <code>' + escapeHtml(r.senha) + '</code> <button class="bit-icon-btn copy" style="width:20px;height:20px;font-size:0.65rem;" onclick="copyText(\'' + escapeHtml(r.senha).replace(/'/g, "\\'") + '\')" title="Copiar senha">&#128203;</button>';
-      detail += '</div>';
+      cred = '<div class="bit-cred">';
+      if (r.login) {
+        cred += SVG_ICONS.user + ' <code>' + escapeHtml(r.login) + '</code>' +
+          '<button class="bit-ab a-copy" onclick="copyText(\'' + escapeHtml(r.login).replace(/'/g, "\\'") + '\')" title="Copiar login">' + SVG_ICONS.copy + '</button>';
+      }
+      if (r.senha) {
+        cred += ' ' + SVG_ICONS.lock + ' <code>' + escapeHtml(r.senha) + '</code>' +
+          '<button class="bit-ab a-copy" onclick="copyText(\'' + escapeHtml(r.senha).replace(/'/g, "\\'") + '\')" title="Copiar senha">' + SVG_ICONS.copy + '</button>';
+      }
+      cred += '</div>';
     }
 
     html += '<tr>' +
-      '<td><strong>' + escapeHtml(clienteNome) + '</strong>' + detail + '</td>' +
-      '<td>' + formatWhatsApp(whatsapp) + ' ' + wppBtn + '</td>' +
+      '<td class="td-name"><strong>' + escapeHtml(clienteNome) + '</strong>' + cred + '</td>' +
+      '<td>' + wppCell + '</td>' +
       '<td>' + escapeHtml(servicoDesc) + '</td>' +
-      '<td class="td-valor">' + formatBRL(r.valor) + '</td>' +
+      '<td class="td-r">' + formatBRL(r.valor) + '</td>' +
       '<td>' + formatDate(r.data_expiracao) + '</td>' +
       '<td>' + badge + '</td>' +
-      '<td class="td-acoes"><div class="bit-actions">' +
-        '<button class="bit-icon-btn edit" onclick="openModal(\'gestao\',' + r.id + ')" title="Editar">&#9998;</button>' +
-        '<button class="bit-icon-btn del" onclick="deleteRecord(\'bit_gestao\',' + r.id + ')" title="Excluir">&#128465;</button>' +
+      '<td class="td-a"><div class="bit-actions">' +
+        '<button class="bit-ab a-edit" onclick="openModal(\'gestao\',' + r.id + ')" title="Editar">' + SVG_ICONS.edit + '</button>' +
+        '<button class="bit-ab a-del" onclick="deleteRecord(\'bit_gestao\',' + r.id + ')" title="Excluir">' + SVG_ICONS.trash + '</button>' +
       '</div></td>' +
     '</tr>';
   }
@@ -306,7 +378,7 @@ function renderContasPagar() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="bit-empty"><div class="bit-empty-icon">&#128176;</div><div class="bit-empty-text">Nenhum registro encontrado</div></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="bit-empty">' + SVG_ICONS.empty + '<div class="bit-empty-text">Nenhum registro encontrado</div></div></td></tr>';
     return;
   }
 
@@ -321,26 +393,26 @@ function renderContasPagar() {
       badge = '<span class="badge badge-pago">Pago</span>';
     } else if (vencido) {
       badge = '<span class="badge badge-vencido">Vencido</span>';
-      quitarBtn = '<button class="bit-icon-btn quitar" onclick="quitarConta(' + r.id + ',\'pagar\')" title="Quitar">&#10004;</button>';
+      quitarBtn = '<button class="bit-ab a-ok" onclick="quitarConta(' + r.id + ',\'pagar\')" title="Quitar">' + SVG_ICONS.checkCircle + '</button>';
     } else {
       badge = '<span class="badge badge-aberto">Aberto</span>';
-      quitarBtn = '<button class="bit-icon-btn quitar" onclick="quitarConta(' + r.id + ',\'pagar\')" title="Quitar">&#10004;</button>';
+      quitarBtn = '<button class="bit-ab a-ok" onclick="quitarConta(' + r.id + ',\'pagar\')" title="Quitar">' + SVG_ICONS.checkCircle + '</button>';
     }
 
     var valorAberto = (Number(r.valor) || 0) - (Number(r.valor_pago) || 0);
 
     html += '<tr>' +
-      '<td><strong>' + escapeHtml(r.fornecedor || '—') + '</strong></td>' +
+      '<td class="td-name"><strong>' + escapeHtml(r.fornecedor || '—') + '</strong></td>' +
       '<td>' + escapeHtml(r.num_documento || '—') + '</td>' +
-      '<td class="td-valor">' + formatBRL(r.valor) + '</td>' +
+      '<td class="td-r">' + formatBRL(r.valor) + '</td>' +
       '<td>' + formatDate(r.vencimento) + '</td>' +
-      '<td class="td-valor">' + formatBRL(r.valor_pago) + '</td>' +
-      '<td class="td-valor">' + formatBRL(valorAberto) + '</td>' +
+      '<td class="td-r">' + formatBRL(r.valor_pago) + '</td>' +
+      '<td class="td-r">' + formatBRL(valorAberto) + '</td>' +
       '<td>' + badge + '</td>' +
-      '<td class="td-acoes"><div class="bit-actions">' +
+      '<td class="td-a"><div class="bit-actions">' +
         quitarBtn +
-        '<button class="bit-icon-btn edit" onclick="openModal(\'cp\',' + r.id + ')" title="Editar">&#9998;</button>' +
-        '<button class="bit-icon-btn del" onclick="deleteRecord(\'bit_contas_pagar\',' + r.id + ')" title="Excluir">&#128465;</button>' +
+        '<button class="bit-ab a-edit" onclick="openModal(\'cp\',' + r.id + ')" title="Editar">' + SVG_ICONS.edit + '</button>' +
+        '<button class="bit-ab a-del" onclick="deleteRecord(\'bit_contas_pagar\',' + r.id + ')" title="Excluir">' + SVG_ICONS.trash + '</button>' +
       '</div></td>' +
     '</tr>';
   }
@@ -365,7 +437,7 @@ function renderContasReceber() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="bit-empty"><div class="bit-empty-icon">&#128176;</div><div class="bit-empty-text">Nenhum registro encontrado</div></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="bit-empty">' + SVG_ICONS.empty + '<div class="bit-empty-text">Nenhum registro encontrado</div></div></td></tr>';
     return;
   }
 
@@ -381,26 +453,26 @@ function renderContasReceber() {
       badge = '<span class="badge badge-recebido">Recebido</span>';
     } else if (vencido) {
       badge = '<span class="badge badge-vencido">Vencido</span>';
-      receberBtn = '<button class="bit-icon-btn quitar" onclick="quitarConta(' + r.id + ',\'receber\')" title="Receber">&#10004;</button>';
+      receberBtn = '<button class="bit-ab a-ok" onclick="quitarConta(' + r.id + ',\'receber\')" title="Receber">' + SVG_ICONS.checkCircle + '</button>';
     } else {
       badge = '<span class="badge badge-aberto">Aberto</span>';
-      receberBtn = '<button class="bit-icon-btn quitar" onclick="quitarConta(' + r.id + ',\'receber\')" title="Receber">&#10004;</button>';
+      receberBtn = '<button class="bit-ab a-ok" onclick="quitarConta(' + r.id + ',\'receber\')" title="Receber">' + SVG_ICONS.checkCircle + '</button>';
     }
 
     var valorAberto = (Number(r.valor) || 0) - (Number(r.valor_recebido) || 0);
 
     html += '<tr>' +
-      '<td><strong>' + escapeHtml(clienteNome) + '</strong></td>' +
+      '<td class="td-name"><strong>' + escapeHtml(clienteNome) + '</strong></td>' +
       '<td>' + escapeHtml(r.num_documento || '—') + '</td>' +
-      '<td class="td-valor">' + formatBRL(r.valor) + '</td>' +
+      '<td class="td-r">' + formatBRL(r.valor) + '</td>' +
       '<td>' + formatDate(r.vencimento) + '</td>' +
-      '<td class="td-valor">' + formatBRL(r.valor_recebido) + '</td>' +
-      '<td class="td-valor">' + formatBRL(valorAberto) + '</td>' +
+      '<td class="td-r">' + formatBRL(r.valor_recebido) + '</td>' +
+      '<td class="td-r">' + formatBRL(valorAberto) + '</td>' +
       '<td>' + badge + '</td>' +
-      '<td class="td-acoes"><div class="bit-actions">' +
+      '<td class="td-a"><div class="bit-actions">' +
         receberBtn +
-        '<button class="bit-icon-btn edit" onclick="openModal(\'cr\',' + r.id + ')" title="Editar">&#9998;</button>' +
-        '<button class="bit-icon-btn del" onclick="deleteRecord(\'bit_contas_receber\',' + r.id + ')" title="Excluir">&#128465;</button>' +
+        '<button class="bit-ab a-edit" onclick="openModal(\'cr\',' + r.id + ')" title="Editar">' + SVG_ICONS.edit + '</button>' +
+        '<button class="bit-ab a-del" onclick="deleteRecord(\'bit_contas_receber\',' + r.id + ')" title="Excluir">' + SVG_ICONS.trash + '</button>' +
       '</div></td>' +
     '</tr>';
   }
@@ -411,14 +483,7 @@ function renderContasReceber() {
 
 function setFilter(filter) {
   currentFilter = filter;
-
-  var activeContent = document.getElementById('tab-' + currentTab);
-  var filters = activeContent.querySelectorAll('.bit-filter');
-  for (var i = 0; i < filters.length; i++) {
-    filters[i].classList.remove('active');
-    var txt = filters[i].textContent.toLowerCase().replace(/\s/g, '');
-    if (txt === filter) filters[i].classList.add('active');
-  }
+  renderFilters();
 
   if (currentTab === 'gestao') renderGestao();
   else if (currentTab === 'cp') renderContasPagar();
@@ -439,32 +504,32 @@ function openModal(type, id) {
   var bodyHtml = '';
 
   if (type === 'gestao') {
-    title = editingId ? 'Editar Gestao' : 'Nova Gestao';
+    title = editingId ? 'Editar Gestão' : 'Nova Gestão';
     var clienteOpts = '<option value="">Selecione o cliente</option>';
     for (var i = 0; i < clientesList.length; i++) {
       clienteOpts += '<option value="' + clientesList[i].id + '">' + escapeHtml(clientesList[i].nome) + '</option>';
     }
-    var servicoOpts = '<option value="">Selecione o servico</option>';
+    var servicoOpts = '<option value="">Selecione o serviço</option>';
     for (var j = 0; j < servicosList.length; j++) {
       servicoOpts += '<option value="' + servicosList[j].id + '">' + escapeHtml(servicosList[j].descricao) + ' (' + formatBRL(servicosList[j].valor) + ')</option>';
     }
     bodyHtml =
       '<label>Cliente</label><select id="m-cliente">' + clienteOpts + '</select>' +
-      '<label>Servico</label><select id="m-servico" onchange="preencherValorServico()">' + servicoOpts + '</select>' +
+      '<label>Serviço</label><select id="m-servico" onchange="preencherValorServico()">' + servicoOpts + '</select>' +
       '<label>Valor (R$)</label><input type="number" id="m-valor" step="0.01" min="0" placeholder="0.00">' +
-      '<label>Data de Expiracao</label><input type="date" id="m-expiracao">' +
+      '<label>Data de Expiração</label><input type="date" id="m-expiracao">' +
       '<label>Login</label><input type="text" id="m-login" placeholder="Login de acesso">' +
       '<label>Senha</label><input type="text" id="m-senha" placeholder="Senha de acesso">' +
-      '<label>Observacao</label><textarea id="m-obs" placeholder="Observacoes..."></textarea>';
+      '<label>Observação</label><textarea id="m-obs" placeholder="Observações..."></textarea>';
   } else if (type === 'cp') {
     title = editingId ? 'Editar Conta a Pagar' : 'Nova Conta a Pagar';
     bodyHtml =
       '<label>Fornecedor</label><input type="text" id="m-fornecedor" placeholder="Nome do fornecedor">' +
-      '<label>N. Documento</label><input type="text" id="m-numdoc" placeholder="N. do documento">' +
+      '<label>Nº Documento</label><input type="text" id="m-numdoc" placeholder="Nº do documento">' +
       '<label>Valor (R$)</label><input type="number" id="m-valor" step="0.01" min="0" placeholder="0.00">' +
-      '<label>Emissao</label><input type="date" id="m-emissao">' +
+      '<label>Emissão</label><input type="date" id="m-emissao">' +
       '<label>Vencimento</label><input type="date" id="m-vencimento">' +
-      '<label>Observacao</label><textarea id="m-obs" placeholder="Observacoes..."></textarea>';
+      '<label>Observação</label><textarea id="m-obs" placeholder="Observações..."></textarea>';
   } else if (type === 'cr') {
     title = editingId ? 'Editar Conta a Receber' : 'Nova Conta a Receber';
     var crClienteOpts = '<option value="">Selecione o cliente</option>';
@@ -473,11 +538,11 @@ function openModal(type, id) {
     }
     bodyHtml =
       '<label>Cliente</label><select id="m-cliente">' + crClienteOpts + '</select>' +
-      '<label>N. Documento</label><input type="text" id="m-numdoc" placeholder="N. do documento">' +
+      '<label>Nº Documento</label><input type="text" id="m-numdoc" placeholder="Nº do documento">' +
       '<label>Valor (R$)</label><input type="number" id="m-valor" step="0.01" min="0" placeholder="0.00">' +
-      '<label>Emissao</label><input type="date" id="m-emissao">' +
+      '<label>Emissão</label><input type="date" id="m-emissao">' +
       '<label>Vencimento</label><input type="date" id="m-vencimento">' +
-      '<label>Observacao</label><textarea id="m-obs" placeholder="Observacoes..."></textarea>';
+      '<label>Observação</label><textarea id="m-obs" placeholder="Observações..."></textarea>';
   }
 
   document.getElementById('modal-title').textContent = title;
@@ -555,7 +620,7 @@ async function saveRecord() {
         observacao: document.getElementById('m-obs').value || ''
       };
       if (!payload.cliente_id || !payload.servico_id) {
-        showToast('Selecione cliente e servico', 'error');
+        showToast('Selecione cliente e serviço', 'error');
         return;
       }
     } else if (currentTab === 'cp') {
@@ -628,10 +693,10 @@ async function deleteRecord(table, id) {
   if (!confirm('Deseja realmente excluir este registro?')) return;
 
   try {
-    var { error } = await sb.from(table).delete().eq('id', id);
-    if (error) throw error;
+    var result = await sb.from(table).delete().eq('id', id);
+    if (result.error) throw result.error;
 
-    showToast('Registro excluido!', 'success');
+    showToast('Registro excluído!', 'success');
 
     if (currentTab === 'gestao') loadGestao();
     else if (currentTab === 'cp') loadContasPagar();
@@ -669,8 +734,8 @@ async function quitarConta(id, tipo) {
       };
     }
 
-    var { error } = await sb.from(table).update(payload).eq('id', id);
-    if (error) throw error;
+    var result = await sb.from(table).update(payload).eq('id', id);
+    if (result.error) throw result.error;
 
     showToast(tipo === 'pagar' ? 'Conta quitada!' : 'Recebimento confirmado!', 'success');
 

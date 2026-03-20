@@ -7,130 +7,153 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://lztfoprapoyicldunhzw.supabase.co">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/painel.css?v=7">
   <style>
     /* ── Tabs ── */
-    .bit-tabs { display:flex; gap:0; border-bottom:2px solid var(--gray-200, #e5e7eb); margin-bottom:20px; padding:0 4px; }
-    .bit-tab { padding:10px 22px; font-size:0.92rem; font-weight:600; cursor:pointer; border:none; background:none; color:var(--gray-500, #6b7280); border-bottom:2px solid transparent; margin-bottom:-2px; transition:color .2s, border-color .2s; font-family:inherit; }
-    .bit-tab:hover { color:var(--dark, #1a1a2e); }
-    .bit-tab.active { color:var(--gold, #f0c030); border-bottom-color:var(--gold, #f0c030); }
-    [data-theme="dark"] .bit-tabs { border-bottom-color:#30363d; }
-    [data-theme="dark"] .bit-tab { color:#8b949e; }
-    [data-theme="dark"] .bit-tab:hover { color:#e6edf3; }
-    [data-theme="dark"] .bit-tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+    .bit-tabs{display:flex;gap:0;border-bottom:2px solid var(--gray-200,#e5e7eb);margin-bottom:18px;padding:0 2px}
+    .bit-tab{padding:10px 20px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--gray-500,#6b7280);border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;font-family:inherit}
+    .bit-tab:hover{color:var(--dark,#1a1a2e)}
+    .bit-tab.active{color:var(--gold,#f0c030);border-bottom-color:var(--gold,#f0c030)}
+    [data-theme=dark] .bit-tabs{border-bottom-color:#30363d}
+    [data-theme=dark] .bit-tab{color:#8b949e}
+    [data-theme=dark] .bit-tab:hover{color:#e6edf3}
+    [data-theme=dark] .bit-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 
     /* ── Summary Cards ── */
-    .bit-summary { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px; }
-    .bit-card { background:var(--white, #fff); border:1px solid var(--gray-200, #e5e7eb); border-radius:10px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
-    .bit-card-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
-    .bit-card-icon.green { background:rgba(34,197,94,0.12); color:#16a34a; }
-    .bit-card-icon.red { background:rgba(239,68,68,0.12); color:#dc2626; }
-    .bit-card-icon.gold { background:rgba(240,192,48,0.12); color:#d4a017; }
-    .bit-card-icon.blue { background:rgba(59,130,246,0.12); color:#3b82f6; }
-    .bit-card-info { min-width:0; }
-    .bit-card-label { font-size:0.72rem; font-weight:600; color:var(--gray-400, #9ca3af); text-transform:uppercase; letter-spacing:0.4px; }
-    .bit-card-value { font-size:1.3rem; font-weight:700; color:var(--dark, #1a1a2e); margin-top:2px; }
-    [data-theme="dark"] .bit-card { background:#161b22; border-color:#30363d; }
-    [data-theme="dark"] .bit-card-value { color:#e6edf3; }
+    .bit-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+    .bit-card{background:var(--white,#fff);border:1px solid var(--gray-200,#e5e7eb);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;border-left:3px solid transparent;transition:box-shadow .2s}
+    .bit-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    .bit-card.c-blue{border-left-color:#3b82f6}
+    .bit-card.c-green{border-left-color:#16a34a}
+    .bit-card.c-red{border-left-color:#dc2626}
+    .bit-card.c-gold{border-left-color:#d4a017}
+    .bit-card-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .bit-card-icon svg{width:20px;height:20px;stroke-width:2;fill:none;stroke:currentColor}
+    .bit-card-icon.i-blue{background:rgba(59,130,246,.1);color:#3b82f6}
+    .bit-card-icon.i-green{background:rgba(34,197,94,.1);color:#16a34a}
+    .bit-card-icon.i-red{background:rgba(239,68,68,.1);color:#dc2626}
+    .bit-card-icon.i-gold{background:rgba(240,192,48,.1);color:#d4a017}
+    .bit-card-info{min-width:0}
+    .bit-card-label{font-size:.68rem;font-weight:600;color:var(--gray-400,#9ca3af);text-transform:uppercase;letter-spacing:.5px}
+    .bit-card-value{font-size:1.25rem;font-weight:700;color:var(--dark,#1a1a2e);margin-top:1px;white-space:nowrap}
+    [data-theme=dark] .bit-card{background:#161b22;border-color:#30363d}
+    [data-theme=dark] .bit-card-value{color:#e6edf3}
 
-    /* ── Filters ── */
-    .bit-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    .bit-filter { padding:6px 16px; border-radius:6px; border:1px solid var(--gray-200, #e5e7eb); background:var(--white, #fff); color:var(--gray-500, #6b7280); font-size:0.82rem; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; }
-    .bit-filter:hover { background:rgba(240,192,48,0.08); color:var(--gold, #f0c030); border-color:rgba(240,192,48,0.3); }
-    .bit-filter.active { background:rgba(240,192,48,0.12); color:var(--gold, #f0c030); border-color:var(--gold, #f0c030); }
-    [data-theme="dark"] .bit-filter { border-color:#30363d; background:#21262d; color:#8b949e; }
-    [data-theme="dark"] .bit-filter.active { background:rgba(240,192,48,0.12); color:var(--gold); border-color:var(--gold); }
-
-    /* ── Search ── */
-    .bit-search { padding:8px 14px; border-radius:6px; border:1px solid var(--gray-200, #e5e7eb); background:var(--white, #fff); color:var(--dark, #1a1a2e); font-size:0.85rem; width:260px; max-width:100%; font-family:inherit; }
-    .bit-search::placeholder { color:var(--gray-400, #9ca3af); }
-    .bit-search:focus { outline:none; border-color:var(--gold, #f0c030); }
-    [data-theme="dark"] .bit-search { background:#161b22; border-color:#30363d; color:#e6edf3; }
+    /* ── Toolbar ── */
+    .bit-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+    .bit-filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .bit-filter{padding:5px 14px;border-radius:20px;border:1px solid var(--gray-200,#e5e7eb);background:var(--white,#fff);color:var(--gray-500,#6b7280);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+    .bit-filter:hover{background:rgba(240,192,48,.06);color:var(--gold,#f0c030);border-color:rgba(240,192,48,.3)}
+    .bit-filter.active{background:var(--gold,#f0c030);color:#1a1a2e;border-color:var(--gold,#f0c030)}
+    .bit-filter .fcount{font-weight:700;margin-left:4px;opacity:.7}
+    [data-theme=dark] .bit-filter{border-color:#30363d;background:#21262d;color:#8b949e}
+    [data-theme=dark] .bit-filter.active{background:var(--gold);color:#1a1a2e;border-color:var(--gold)}
+    .bit-search{padding:7px 14px;border-radius:20px;border:1px solid var(--gray-200,#e5e7eb);background:var(--white,#fff);color:var(--dark,#1a1a2e);font-size:.82rem;width:240px;max-width:100%;font-family:inherit}
+    .bit-search::placeholder{color:var(--gray-400,#9ca3af)}
+    .bit-search:focus{outline:none;border-color:var(--gold,#f0c030);box-shadow:0 0 0 3px rgba(240,192,48,.1)}
+    [data-theme=dark] .bit-search{background:#161b22;border-color:#30363d;color:#e6edf3}
 
     /* ── Table ── */
-    .bit-table { width:100%; border-collapse:collapse; font-size:0.84rem; }
-    .bit-table th { text-align:left; padding:10px 10px; font-weight:600; color:var(--gray-500, #6b7280); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--gray-200, #e5e7eb); white-space:nowrap; }
-    .bit-table td { padding:9px 10px; color:var(--dark, #1a1a2e); border-bottom:1px solid var(--gray-100, #f3f4f6); vertical-align:middle; }
-    .bit-table tbody tr { transition:background .15s; }
-    .bit-table tbody tr:hover { background:rgba(240,192,48,0.04); }
-    .bit-table .td-valor { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap; }
-    .bit-table .td-acoes { white-space:nowrap; }
-    [data-theme="dark"] .bit-table th { color:#8b949e; border-bottom-color:#30363d; }
-    [data-theme="dark"] .bit-table td { color:#e6edf3; border-bottom-color:#21262d; }
+    .bit-table{width:100%;border-collapse:collapse;font-size:.82rem}
+    .bit-table th{text-align:left;padding:10px 10px;font-weight:600;color:var(--gray-400,#9ca3af);font-size:.72rem;text-transform:uppercase;letter-spacing:.6px;border-bottom:2px solid var(--gray-200,#e5e7eb);white-space:nowrap}
+    .bit-table td{padding:10px 10px;color:var(--dark,#1a1a2e);border-bottom:1px solid var(--gray-100,#f3f4f6);vertical-align:middle}
+    .bit-table tbody tr{transition:background .12s}
+    .bit-table tbody tr:nth-child(even){background:rgba(0,0,0,.015)}
+    .bit-table tbody tr:hover{background:rgba(240,192,48,.05)}
+    .bit-table .td-r{text-align:right;font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap}
+    .bit-table .td-a{white-space:nowrap}
+    .bit-table .td-name strong{font-weight:600;font-size:.84rem}
+    [data-theme=dark] .bit-table th{color:#6e7681;border-bottom-color:#30363d}
+    [data-theme=dark] .bit-table td{color:#e6edf3;border-bottom-color:#21262d}
+    [data-theme=dark] .bit-table tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
 
     /* ── Badges ── */
-    .badge { padding:3px 10px; border-radius:4px; font-size:0.73rem; font-weight:600; display:inline-block; }
-    .badge-ativo { background:rgba(34,197,94,0.12); color:#16a34a; }
-    .badge-expirado { background:rgba(239,68,68,0.12); color:#dc2626; }
-    .badge-pago { background:rgba(34,197,94,0.12); color:#16a34a; }
-    .badge-aberto { background:rgba(250,204,21,0.12); color:#ca8a04; }
-    .badge-vencido { background:rgba(239,68,68,0.12); color:#dc2626; }
-    .badge-recebido { background:rgba(34,197,94,0.12); color:#16a34a; }
+    .badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;display:inline-block;letter-spacing:.3px}
+    .badge-ativo{background:rgba(34,197,94,.1);color:#16a34a}
+    .badge-expirado{background:rgba(239,68,68,.1);color:#dc2626}
+    .badge-pago{background:rgba(34,197,94,.1);color:#16a34a}
+    .badge-aberto{background:rgba(250,204,21,.12);color:#ca8a04}
+    .badge-vencido{background:rgba(239,68,68,.1);color:#dc2626}
+    .badge-recebido{background:rgba(34,197,94,.1);color:#16a34a}
 
     /* ── Action buttons ── */
-    .bit-actions { display:flex; gap:4px; align-items:center; }
-    .bit-icon-btn { width:30px; height:30px; border-radius:6px; border:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all .15s; font-size:0.85rem; }
-    .bit-icon-btn:hover { transform:scale(1.1); }
-    .bit-icon-btn.wpp { background:rgba(37,211,102,0.12); color:#25d366; }
-    .bit-icon-btn.edit { background:rgba(59,130,246,0.12); color:#3b82f6; }
-    .bit-icon-btn.del { background:rgba(239,68,68,0.12); color:#ef4444; }
-    .bit-icon-btn.quitar { background:rgba(34,197,94,0.12); color:#16a34a; }
-    .bit-icon-btn.copy { background:rgba(156,163,175,0.12); color:var(--gray-500, #6b7280); }
-    [data-theme="dark"] .bit-icon-btn.copy { color:#8b949e; }
+    .bit-actions{display:flex;gap:5px;align-items:center}
+    .bit-ab{width:32px;height:32px;border-radius:8px;border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;background:none}
+    .bit-ab svg{width:16px;height:16px;stroke-width:2;fill:none;stroke:currentColor}
+    .bit-ab:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+    .bit-ab.a-wpp{color:#25d366;border-color:rgba(37,211,102,.2);background:rgba(37,211,102,.06)}
+    .bit-ab.a-wpp:hover{background:rgba(37,211,102,.15)}
+    .bit-ab.a-edit{color:#3b82f6;border-color:rgba(59,130,246,.2);background:rgba(59,130,246,.06)}
+    .bit-ab.a-edit:hover{background:rgba(59,130,246,.15)}
+    .bit-ab.a-del{color:#ef4444;border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.06)}
+    .bit-ab.a-del:hover{background:rgba(239,68,68,.15)}
+    .bit-ab.a-ok{color:#16a34a;border-color:rgba(34,197,94,.2);background:rgba(34,197,94,.06)}
+    .bit-ab.a-ok:hover{background:rgba(34,197,94,.15)}
+    .bit-ab.a-copy{color:var(--gray-400,#9ca3af);border-color:rgba(156,163,175,.15);background:rgba(156,163,175,.05)}
+    .bit-ab.a-copy:hover{background:rgba(156,163,175,.15)}
 
-    /* ── Login/senha row detail ── */
-    .bit-detail { font-size:0.75rem; color:var(--gray-400, #9ca3af); margin-top:3px; }
-    .bit-detail code { background:rgba(240,192,48,0.08); padding:1px 6px; border-radius:3px; font-family:'Courier New',monospace; font-size:0.73rem; color:var(--gray-500, #6b7280); }
-    [data-theme="dark"] .bit-detail code { background:rgba(240,192,48,0.06); color:#8b949e; }
+    /* ── Credential row ── */
+    .bit-cred{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.72rem;color:var(--gray-400,#9ca3af)}
+    .bit-cred code{background:rgba(240,192,48,.06);border:1px solid rgba(240,192,48,.1);padding:1px 7px;border-radius:4px;font-family:'Courier New',monospace;font-size:.72rem;color:var(--gray-500,#6b7280);letter-spacing:.3px}
+    .bit-cred .bit-ab{width:22px;height:22px;border-radius:5px}
+    .bit-cred .bit-ab svg{width:12px;height:12px}
+    [data-theme=dark] .bit-cred code{background:rgba(240,192,48,.04);border-color:rgba(240,192,48,.08);color:#8b949e}
+
+    /* ── WhatsApp column ── */
+    .bit-wpp-cell{display:flex;align-items:center;gap:6px}
+    .bit-wpp-num{font-size:.82rem;color:var(--gray-500,#6b7280);font-variant-numeric:tabular-nums}
+    [data-theme=dark] .bit-wpp-num{color:#8b949e}
 
     /* ── Modal ── */
-    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; }
-    .modal-overlay.show { display:flex; }
-    .modal-box { background:var(--white, #fff); border-radius:12px; width:95%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2); border:1px solid var(--gray-200, #e5e7eb); }
-    .modal-header { display:flex; justify-content:space-between; align-items:center; padding:18px 24px; border-bottom:1px solid var(--gray-200, #e5e7eb); }
-    .modal-header h3 { margin:0; font-size:1.05rem; color:var(--dark, #1a1a2e); }
-    .modal-header .modal-close { background:none; border:none; color:var(--gray-400, #9ca3af); font-size:1.4rem; cursor:pointer; }
-    .modal-body { padding:20px 24px; }
-    .modal-body label { display:block; font-size:0.8rem; font-weight:600; color:var(--gray-500, #6b7280); margin-bottom:4px; margin-top:12px; }
-    .modal-body label:first-child { margin-top:0; }
-    .modal-body input, .modal-body select, .modal-body textarea { width:100%; padding:8px 12px; border-radius:6px; border:1px solid var(--gray-200, #e5e7eb); background:var(--white, #fff); color:var(--dark, #1a1a2e); font-size:0.85rem; box-sizing:border-box; font-family:inherit; }
-    .modal-body input:focus, .modal-body select:focus, .modal-body textarea:focus { outline:none; border-color:var(--gold, #f0c030); }
-    .modal-body textarea { min-height:60px; resize:vertical; }
-    .modal-footer { display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; border-top:1px solid var(--gray-200, #e5e7eb); }
-    .modal-footer .btn-cancel { padding:8px 18px; border-radius:6px; border:1px solid var(--gray-200, #e5e7eb); background:none; color:var(--gray-500, #6b7280); cursor:pointer; font-size:0.85rem; font-family:inherit; }
-    .modal-footer .btn-save { padding:8px 18px; border-radius:6px; border:none; background:var(--gold, #f0c030); color:var(--dark, #1a1a2e); font-weight:600; cursor:pointer; font-size:0.85rem; font-family:inherit; }
-    [data-theme="dark"] .modal-box { background:#1c2128; border-color:#30363d; }
-    [data-theme="dark"] .modal-header { border-bottom-color:#30363d; }
-    [data-theme="dark"] .modal-header h3 { color:#e6edf3; }
-    [data-theme="dark"] .modal-body label { color:#8b949e; }
-    [data-theme="dark"] .modal-body input, [data-theme="dark"] .modal-body select, [data-theme="dark"] .modal-body textarea { background:#161b22; border-color:#30363d; color:#e6edf3; }
-    [data-theme="dark"] .modal-footer { border-top-color:#30363d; }
-    [data-theme="dark"] .modal-footer .btn-cancel { border-color:#30363d; color:#8b949e; }
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;justify-content:center;align-items:center;backdrop-filter:blur(2px)}
+    .modal-overlay.show{display:flex}
+    .modal-box{background:var(--white,#fff);border-radius:14px;width:95%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.2);border:1px solid var(--gray-200,#e5e7eb)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid var(--gray-200,#e5e7eb)}
+    .modal-header h3{margin:0;font-size:1rem;font-weight:700;color:var(--dark,#1a1a2e)}
+    .modal-header .modal-close{background:none;border:none;color:var(--gray-400,#9ca3af);font-size:1.3rem;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+    .modal-header .modal-close:hover{background:rgba(0,0,0,.05)}
+    .modal-body{padding:18px 24px}
+    .modal-body label{display:block;font-size:.76rem;font-weight:600;color:var(--gray-500,#6b7280);margin-bottom:4px;margin-top:14px}
+    .modal-body label:first-child{margin-top:0}
+    .modal-body input,.modal-body select,.modal-body textarea{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--gray-200,#e5e7eb);background:var(--white,#fff);color:var(--dark,#1a1a2e);font-size:.84rem;box-sizing:border-box;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+    .modal-body input:focus,.modal-body select:focus,.modal-body textarea:focus{outline:none;border-color:var(--gold,#f0c030);box-shadow:0 0 0 3px rgba(240,192,48,.1)}
+    .modal-body textarea{min-height:56px;resize:vertical}
+    .modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 24px;border-top:1px solid var(--gray-200,#e5e7eb)}
+    .modal-footer .btn-cancel{padding:8px 20px;border-radius:8px;border:1px solid var(--gray-200,#e5e7eb);background:none;color:var(--gray-500,#6b7280);cursor:pointer;font-size:.84rem;font-family:inherit;font-weight:500;transition:all .15s}
+    .modal-footer .btn-cancel:hover{background:rgba(0,0,0,.03)}
+    .modal-footer .btn-save{padding:8px 22px;border-radius:8px;border:none;background:var(--gold,#f0c030);color:#1a1a2e;font-weight:700;cursor:pointer;font-size:.84rem;font-family:inherit;transition:all .15s}
+    .modal-footer .btn-save:hover{background:#e6b800;box-shadow:0 2px 8px rgba(240,192,48,.3)}
+    [data-theme=dark] .modal-box{background:#1c2128;border-color:#30363d}
+    [data-theme=dark] .modal-header{border-bottom-color:#30363d}
+    [data-theme=dark] .modal-header h3{color:#e6edf3}
+    [data-theme=dark] .modal-header .modal-close:hover{background:rgba(255,255,255,.05)}
+    [data-theme=dark] .modal-body label{color:#8b949e}
+    [data-theme=dark] .modal-body input,[data-theme=dark] .modal-body select,[data-theme=dark] .modal-body textarea{background:#161b22;border-color:#30363d;color:#e6edf3}
+    [data-theme=dark] .modal-footer{border-top-color:#30363d}
+    [data-theme=dark] .modal-footer .btn-cancel{border-color:#30363d;color:#8b949e}
+    [data-theme=dark] .modal-footer .btn-cancel:hover{background:rgba(255,255,255,.04)}
 
-    /* ── Fade animation ── */
-    @keyframes calcFadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-    .bit-fade { animation: calcFadeUp 0.4s ease both; }
+    /* ── Misc ── */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .bit-fade{animation:fadeUp .35s ease both}
+    .bit-tab-content{display:none}
+    .bit-tab-content.active{display:block}
+    .bit-empty{text-align:center;padding:48px 20px;color:var(--gray-400,#9ca3af)}
+    .bit-empty svg{width:48px;height:48px;stroke:var(--gray-300,#d1d5db);stroke-width:1.5;fill:none;margin-bottom:12px}
+    .bit-empty-text{font-size:.88rem;font-weight:500}
+    [data-theme=dark] .bit-empty svg{stroke:#30363d}
 
-    /* ── Tab content ── */
-    .bit-tab-content { display:none; }
-    .bit-tab-content.active { display:block; }
-    .bit-top-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
-
-    /* ── Empty state ── */
-    .bit-empty { text-align:center; padding:40px 20px; color:var(--gray-400, #9ca3af); }
-    .bit-empty-icon { font-size:2.5rem; margin-bottom:8px; opacity:0.5; }
-    .bit-empty-text { font-size:0.9rem; }
-
-    /* ── Responsive ── */
-    @media (max-width:768px) {
-      .bit-summary { grid-template-columns:repeat(2, 1fr); gap:10px; }
-      .bit-card { padding:12px 14px; }
-      .bit-card-value { font-size:1.1rem; }
-      .bit-tabs { overflow-x:auto; }
-      .bit-tab { padding:8px 14px; font-size:0.84rem; white-space:nowrap; }
-      .bit-top-bar { flex-direction:column; align-items:stretch; }
-      .bit-search { width:100%; }
+    @media(max-width:900px){.bit-summary{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){
+      .bit-summary{grid-template-columns:1fr 1fr;gap:8px}
+      .bit-card{padding:10px 12px}
+      .bit-card-value{font-size:1.05rem}
+      .bit-card-icon{width:32px;height:32px}
+      .bit-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .bit-tab{padding:8px 14px;font-size:.82rem;white-space:nowrap}
+      .bit-toolbar{flex-direction:column;align-items:stretch}
+      .bit-search{width:100%}
     }
   </style>
 </head>
@@ -203,130 +226,60 @@
           <h1>Bit</h1>
         </div>
         <div class="topbar-actions">
-          <button class="btn-notif-bell" id="btn-notif-bell" title="Notifica&ccedil;&otilde;es" style="position:relative;background:none;border:none;cursor:pointer;font-size:1.2rem;padding:6px;">&#128276;<span class="notif-badge" id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#ef4444;color:white;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;"></span></button>
+          <button class="btn-notif-bell" id="btn-notif-bell" title="Notifica&ccedil;&otilde;es" style="position:relative;background:none;border:none;cursor:pointer;font-size:1.2rem;padding:6px;">&#128276;<span class="notif-badge" id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#ef4444;color:white;font-size:.55rem;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;"></span></button>
           <button class="btn btn-gold" id="btn-novo" onclick="openModal(currentTab)">+ Novo</button>
         </div>
       </div>
 
-      <!-- Tabs -->
       <div class="bit-tabs">
         <button class="bit-tab active" onclick="switchTab('gestao')" id="tab-btn-gestao">Gest&atilde;o de Servi&ccedil;o</button>
         <button class="bit-tab" onclick="switchTab('cp')" id="tab-btn-cp">Contas a Pagar</button>
         <button class="bit-tab" onclick="switchTab('cr')" id="tab-btn-cr">Contas a Receber</button>
       </div>
 
-      <!-- Summary Cards -->
       <div class="bit-summary" id="bit-summary"></div>
 
-      <!-- Tab: Gestao de Servico -->
+      <!-- Tab: Gestao -->
       <div class="bit-tab-content active bit-fade" id="tab-gestao">
-        <div class="bit-top-bar">
-          <div class="bit-filters">
-            <button class="bit-filter active" onclick="setFilter('todos')">Todos</button>
-            <button class="bit-filter" onclick="setFilter('ativos')">Ativos</button>
-            <button class="bit-filter" onclick="setFilter('expirados')">Expirados</button>
-          </div>
+        <div class="bit-toolbar">
+          <div class="bit-filters" id="gestao-filters"></div>
           <input type="text" class="bit-search" id="bit-search" placeholder="Buscar cliente..." oninput="searchBit()">
         </div>
-        <div class="panel">
-          <div class="panel-body" style="padding:0;">
-            <div class="table-wrap">
-              <table class="bit-table">
-                <thead>
-                  <tr>
-                    <th>Cliente</th>
-                    <th>WhatsApp</th>
-                    <th>Servi&ccedil;o</th>
-                    <th style="text-align:right;">Valor</th>
-                    <th>Expira&ccedil;&atilde;o</th>
-                    <th>Status</th>
-                    <th>A&ccedil;&otilde;es</th>
-                  </tr>
-                </thead>
-                <tbody id="gestao-table">
-                  <tr><td colspan="7" class="empty-state">Carregando...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <div class="panel"><div class="panel-body" style="padding:0"><div class="table-wrap">
+          <table class="bit-table"><thead><tr>
+            <th>Cliente</th><th>WhatsApp</th><th>Servi&ccedil;o</th><th style="text-align:right">Valor</th><th>Expira&ccedil;&atilde;o</th><th>Status</th><th>A&ccedil;&otilde;es</th>
+          </tr></thead><tbody id="gestao-table"><tr><td colspan="7" class="empty-state">Carregando...</td></tr></tbody></table>
+        </div></div></div>
       </div>
 
-      <!-- Tab: Contas a Pagar -->
+      <!-- Tab: CP -->
       <div class="bit-tab-content" id="tab-cp">
-        <div class="bit-top-bar">
-          <div class="bit-filters">
-            <button class="bit-filter active" onclick="setFilter('todos')">Todos</button>
-            <button class="bit-filter" onclick="setFilter('abertos')">Abertos</button>
-            <button class="bit-filter" onclick="setFilter('pagos')">Pagos</button>
-            <button class="bit-filter" onclick="setFilter('vencidos')">Vencidos</button>
-          </div>
+        <div class="bit-toolbar">
+          <div class="bit-filters" id="cp-filters"></div>
           <input type="text" class="bit-search" id="bit-search-cp" placeholder="Buscar fornecedor..." oninput="searchBit()">
         </div>
-        <div class="panel">
-          <div class="panel-body" style="padding:0;">
-            <div class="table-wrap">
-              <table class="bit-table">
-                <thead>
-                  <tr>
-                    <th>Fornecedor</th>
-                    <th>N&ordm; Doc</th>
-                    <th style="text-align:right;">Valor</th>
-                    <th>Vencimento</th>
-                    <th style="text-align:right;">Pago</th>
-                    <th style="text-align:right;">Aberto</th>
-                    <th>Status</th>
-                    <th>A&ccedil;&otilde;es</th>
-                  </tr>
-                </thead>
-                <tbody id="cp-table">
-                  <tr><td colspan="8" class="empty-state">Carregando...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <div class="panel"><div class="panel-body" style="padding:0"><div class="table-wrap">
+          <table class="bit-table"><thead><tr>
+            <th>Fornecedor</th><th>N&ordm; Doc</th><th style="text-align:right">Valor</th><th>Vencimento</th><th style="text-align:right">Pago</th><th style="text-align:right">Aberto</th><th>Status</th><th>A&ccedil;&otilde;es</th>
+          </tr></thead><tbody id="cp-table"><tr><td colspan="8" class="empty-state">Carregando...</td></tr></tbody></table>
+        </div></div></div>
       </div>
 
-      <!-- Tab: Contas a Receber -->
+      <!-- Tab: CR -->
       <div class="bit-tab-content" id="tab-cr">
-        <div class="bit-top-bar">
-          <div class="bit-filters">
-            <button class="bit-filter active" onclick="setFilter('todos')">Todos</button>
-            <button class="bit-filter" onclick="setFilter('abertos')">Abertos</button>
-            <button class="bit-filter" onclick="setFilter('recebidos')">Recebidos</button>
-            <button class="bit-filter" onclick="setFilter('vencidos')">Vencidos</button>
-          </div>
+        <div class="bit-toolbar">
+          <div class="bit-filters" id="cr-filters"></div>
           <input type="text" class="bit-search" id="bit-search-cr" placeholder="Buscar cliente..." oninput="searchBit()">
         </div>
-        <div class="panel">
-          <div class="panel-body" style="padding:0;">
-            <div class="table-wrap">
-              <table class="bit-table">
-                <thead>
-                  <tr>
-                    <th>Cliente</th>
-                    <th>N&ordm; Doc</th>
-                    <th style="text-align:right;">Valor</th>
-                    <th>Vencimento</th>
-                    <th style="text-align:right;">Recebido</th>
-                    <th style="text-align:right;">Aberto</th>
-                    <th>Status</th>
-                    <th>A&ccedil;&otilde;es</th>
-                  </tr>
-                </thead>
-                <tbody id="cr-table">
-                  <tr><td colspan="8" class="empty-state">Carregando...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <div class="panel"><div class="panel-body" style="padding:0"><div class="table-wrap">
+          <table class="bit-table"><thead><tr>
+            <th>Cliente</th><th>N&ordm; Doc</th><th style="text-align:right">Valor</th><th>Vencimento</th><th style="text-align:right">Recebido</th><th style="text-align:right">Aberto</th><th>Status</th><th>A&ccedil;&otilde;es</th>
+          </tr></thead><tbody id="cr-table"><tr><td colspan="8" class="empty-state">Carregando...</td></tr></tbody></table>
+        </div></div></div>
       </div>
     </main>
   </div>
 
-  <!-- Modal -->
   <div class="modal-overlay" id="modal-overlay">
     <div class="modal-box">
       <div class="modal-header">
@@ -345,10 +298,10 @@
   <script src="js/supabase-config.js"></script>
   <script src="js/auth.js?v=7"></script>
   <script src="js/utils.js?v=7"></script>
-  <script src="js/bit.js?v=2"></script>
+  <script src="js/bit.js?v=4"></script>
   <script>
-    document.getElementById('mobile-toggle').addEventListener('click', function () { document.getElementById('sidebar').classList.toggle('open'); });
-    document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });
+    document.getElementById('mobile-toggle').addEventListener('click',function(){document.getElementById('sidebar').classList.toggle('open')});
+    document.getElementById('sidebar-overlay').addEventListener('click',function(){document.getElementById('sidebar').classList.remove('open')});
   </script>
 </body>
 </html>
