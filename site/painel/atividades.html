@@ -11,18 +11,63 @@
   <link rel="stylesheet" href="css/painel.css?v=7">
   <link rel="icon" type="image/png" href="../logo.png">
   <style>
-    /* Modal compacto */
+    /* ── Modal Atividade — design amplo e prático ── */
+    #modal-atividade .modal{max-width:640px;border-radius:16px;overflow:hidden}
+    #modal-atividade .modal-header{padding:20px 28px;border-bottom:1px solid var(--gray-100)}
+    #modal-atividade .modal-header h3{font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:10px}
+    #modal-atividade .modal-body{padding:24px 28px 16px;gap:18px;display:flex;flex-direction:column}
+    #modal-atividade .modal-footer{padding:16px 28px;border-top:1px solid var(--gray-100)}
+
+    /* Form sizing */
     #modal-atividade .form-group{margin-bottom:0}
-    #modal-atividade .form-group label{font-size:.75rem;margin-bottom:2px}
+    #modal-atividade .form-group label{font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--dark)}
     #modal-atividade .form-group select,
     #modal-atividade .form-group input,
-    #modal-atividade .form-group textarea{padding:7px 10px;font-size:.82rem}
-    #modal-atividade .form-group textarea{min-height:50px}
-    #modal-atividade .form-row{gap:8px}
-    #modal-atividade .modal-footer{padding:10px 18px}
-    #modal-atividade .descricao-input,
-    #modal-atividade .valor-input{padding:7px 10px !important;font-size:.82rem !important}
-    #modal-atividade #btn-add-disciplina{padding:4px 12px !important;font-size:.72rem !important}
+    #modal-atividade .form-group textarea{padding:12px 14px;font-size:.92rem;border-radius:10px;border:2px solid var(--gray-200);transition:border-color .2s,box-shadow .2s}
+    #modal-atividade .form-group select:focus,
+    #modal-atividade .form-group input:focus,
+    #modal-atividade .form-group textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
+    #modal-atividade .form-group textarea{min-height:70px;resize:vertical}
+    #modal-atividade .form-row{gap:14px}
+
+    /* Disciplina rows */
+    .disc-row{display:flex;gap:10px;align-items:center;padding:12px 14px;background:var(--gray-50,#f9fafb);border:1.5px solid var(--gray-200,#e5e7eb);border-radius:12px;margin-bottom:10px;transition:border-color .2s,box-shadow .2s}
+    .disc-row:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
+    .disc-row .disc-name{flex:1;border:none;background:transparent;padding:6px 0;font-size:.95rem;color:var(--dark);outline:none}
+    .disc-row .disc-name::placeholder{color:var(--gray-400,#9ca3af)}
+    .disc-valor-wrap{display:flex;align-items:center;gap:0;background:var(--white);border:1.5px solid var(--gray-200,#e5e7eb);border-radius:10px;overflow:hidden;flex-shrink:0}
+    .disc-valor-wrap button{width:34px;height:38px;border:none;background:var(--gray-100,#f3f4f6);color:var(--dark);font-size:1.1rem;font-weight:700;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none}
+    .disc-valor-wrap button:hover{background:var(--gray-200,#e5e7eb)}
+    .disc-valor-wrap button:active{background:var(--gold-light,#fef3c7)}
+    .disc-valor-wrap .disc-valor{width:80px;border:none;text-align:center;font-size:.92rem;font-weight:600;padding:6px 0;color:var(--dark);background:transparent;outline:none;-moz-appearance:textfield}
+    .disc-valor-wrap .disc-valor::-webkit-inner-spin-button,
+    .disc-valor-wrap .disc-valor::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+    .disc-remove{width:34px;height:34px;border:none;background:transparent;color:var(--gray-400,#9ca3af);font-size:1.3rem;cursor:pointer;border-radius:8px;transition:all .15s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .disc-remove:hover{background:rgba(239,68,68,.1);color:#ef4444}
+
+    /* Add discipline button */
+    #btn-add-disciplina{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px;background:transparent;border:2px dashed var(--gray-300,#d1d5db);border-radius:12px;color:var(--gray-400,#9ca3af);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s}
+    #btn-add-disciplina:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-light,rgba(245,158,11,.06))}
+
+    /* Section titles */
+    .modal-section-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-400,#9ca3af);margin-bottom:2px}
+
+    /* Footer buttons */
+    #modal-atividade .btn-cancel{padding:12px 24px;font-size:.9rem;border-radius:10px}
+    #modal-atividade .btn-save{padding:12px 28px;font-size:.9rem;border-radius:10px;font-weight:600}
+
+    /* Dark mode */
+    [data-theme="dark"] .disc-row{background:#161b22;border-color:#30363d}
+    [data-theme="dark"] .disc-row:focus-within{border-color:var(--gold)}
+    [data-theme="dark"] .disc-row .disc-name{color:#e6edf3}
+    [data-theme="dark"] .disc-valor-wrap{background:#0d1117;border-color:#30363d}
+    [data-theme="dark"] .disc-valor-wrap button{background:#21262d;color:#e6edf3}
+    [data-theme="dark"] .disc-valor-wrap button:hover{background:#30363d}
+    [data-theme="dark"] .disc-valor-wrap .disc-valor{color:#e6edf3}
+    [data-theme="dark"] .disc-remove{color:#484f58}
+    [data-theme="dark"] .disc-remove:hover{background:rgba(239,68,68,.15);color:#ef4444}
+    [data-theme="dark"] #btn-add-disciplina{border-color:#30363d;color:#484f58}
+    [data-theme="dark"] #btn-add-disciplina:hover{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.08)}
   </style>
 </head>
 <body>
@@ -200,22 +245,22 @@
 
   <!-- MODAL: Nova/Editar Atividade -->
   <div class="modal-overlay" id="modal-atividade">
-    <div class="modal" style="max-width:480px;">
-      <div class="modal-header" style="padding:14px 18px;">
-        <h3 id="modal-title-ativ" style="font-size:.95rem;">Nova Atividade</h3>
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title-ativ">📋 Nova Atividade</h3>
         <button class="modal-close" onclick="closeModal('modal-atividade')">&times;</button>
       </div>
       <form id="form-atividade">
-        <div class="modal-body" style="padding:14px 18px;gap:10px;display:flex;flex-direction:column;">
+        <div class="modal-body">
           <div class="form-group">
-            <label for="ativ-aluno-id">Aluno</label>
+            <label for="ativ-aluno-id">👤 Aluno</label>
             <select name="aluno_id" id="ativ-aluno-id" required>
               <option value="">Selecione o aluno</option>
             </select>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="ativ-tipo">Tipo</label>
+              <label for="ativ-tipo">📁 Tipo</label>
               <select name="tipo" id="ativ-tipo" required>
                 <option value="atividade">Atividade</option>
                 <option value="mapa">Mapa</option>
@@ -226,7 +271,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="ativ-status">Status</label>
+              <label for="ativ-status">🔄 Status</label>
               <select name="status" id="ativ-status" required>
                 <option value="pendente">Pendente</option>
                 <option value="em_andamento">Em Andamento</option>
@@ -236,23 +281,18 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Disciplina(s) <span id="descricao-counter" style="font-weight:400;color:var(--gray-400,#9ca3af);font-size:.78rem;">1/7</span></label>
-            <div id="descricao-fields">
-              <div class="descricao-row" style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">
-                <input type="text" class="descricao-input" placeholder="Ex: MAPA - Gestão de Pessoas" style="flex:1">
-                <input type="number" class="valor-input" placeholder="Valor" step="0.01" min="0" style="width:100px;text-align:right">
-              </div>
-            </div>
-            <button type="button" id="btn-add-disciplina" onclick="addDescricaoField()" style="background:none;border:1px dashed var(--gray-300,#d1d5db);color:var(--gray-400,#9ca3af);padding:6px 14px;border-radius:6px;font-size:.78rem;cursor:pointer;width:100%;transition:all .15s;">+ Adicionar disciplina</button>
+            <label>📚 Disciplina(s) <span id="descricao-counter" style="font-weight:400;color:var(--gray-400,#9ca3af);font-size:.8rem;margin-left:4px">1/7</span></label>
+            <div id="descricao-fields"></div>
+            <button type="button" id="btn-add-disciplina" onclick="addDescricaoField()">+ Adicionar disciplina</button>
           </div>
           <div class="form-group">
-            <label for="ativ-observacoes">Observações</label>
-            <textarea name="observacoes" id="ativ-observacoes" placeholder="Detalhes adicionais..."></textarea>
+            <label for="ativ-observacoes">💬 Observações</label>
+            <textarea name="observacoes" id="ativ-observacoes" placeholder="Detalhes adicionais, informações do aluno..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-cancel" onclick="closeModal('modal-atividade')">Cancelar</button>
-          <button type="submit" class="btn-save">Salvar</button>
+          <button type="submit" class="btn-save">💾 Salvar</button>
         </div>
       </form>
     </div>

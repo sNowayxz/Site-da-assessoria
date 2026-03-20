@@ -50,91 +50,122 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 /* ── Multi-disciplina helpers ───────── */
 
+function buildDiscRow(descVal, valorVal, showRemove) {
+  var div = document.createElement('div');
+  div.className = 'disc-row';
+  var nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.className = 'disc-name descricao-input';
+  nameInput.placeholder = 'Ex: MAPA - Gest\u00e3o de Pessoas';
+  nameInput.value = descVal || '';
+
+  var valorWrap = document.createElement('div');
+  valorWrap.className = 'disc-valor-wrap';
+  var btnMinus = document.createElement('button');
+  btnMinus.type = 'button';
+  btnMinus.textContent = '\u2212';
+  btnMinus.onclick = function() { stepValor(valInput, -1); };
+  var valInput = document.createElement('input');
+  valInput.type = 'number';
+  valInput.className = 'disc-valor valor-input';
+  valInput.placeholder = 'R$ 0';
+  valInput.step = '1';
+  valInput.min = '0';
+  valInput.value = valorVal || '';
+  var btnPlus = document.createElement('button');
+  btnPlus.type = 'button';
+  btnPlus.textContent = '+';
+  btnPlus.onclick = function() { stepValor(valInput, 1); };
+  valorWrap.appendChild(btnMinus);
+  valorWrap.appendChild(valInput);
+  valorWrap.appendChild(btnPlus);
+
+  div.appendChild(nameInput);
+  div.appendChild(valorWrap);
+
+  if (showRemove) {
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'disc-remove';
+    removeBtn.innerHTML = '&times;';
+    removeBtn.onclick = function() { removeDescricaoField(removeBtn); };
+    div.appendChild(removeBtn);
+  }
+
+  return div;
+}
+
+function stepValor(input, delta) {
+  var cur = parseFloat(input.value) || 0;
+  var next = cur + delta;
+  if (next < 0) next = 0;
+  input.value = next;
+}
+
 function resetDescricaoFields() {
   var container = document.getElementById('descricao-fields');
-  container.innerHTML =
-    '<div class="descricao-row" style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">' +
-      '<input type="text" class="descricao-input" placeholder="Ex: MAPA - Gestão de Pessoas" style="flex:1">' +
-      '<input type="number" class="valor-input" placeholder="Valor" step="0.01" min="0" style="width:100px;text-align:right">' +
-    '</div>';
+  container.innerHTML = '';
+  container.appendChild(buildDiscRow('', '', false));
   updateDescricaoCounter();
   toggleAddBtn();
-  toggleRemoveBtns();
 }
 
 function addDescricaoField() {
   var container = document.getElementById('descricao-fields');
-  var rows = container.querySelectorAll('.descricao-row');
+  var rows = container.querySelectorAll('.disc-row');
   if (rows.length >= 7) {
-    showToast('Máximo de 7 disciplinas', 'warning');
+    showToast('M\u00e1ximo de 7 disciplinas', 'warning');
     return;
   }
 
-  var div = document.createElement('div');
-  div.className = 'descricao-row';
-  div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;align-items:center;';
-  div.innerHTML =
-    '<input type="text" class="descricao-input" placeholder="Ex: MAPA - Gestão de Pessoas" style="flex:1">' +
-    '<input type="number" class="valor-input" placeholder="Valor" step="0.01" min="0" style="width:100px;text-align:right">' +
-    '<button type="button" class="btn-remove-desc" onclick="removeDescricaoField(this)" style="background:none;border:1px solid rgba(239,68,68,.2);color:#ef4444;width:32px;height:38px;border-radius:6px;cursor:pointer;font-size:1.1rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;">&times;</button>';
-  container.appendChild(div);
+  // Ensure first row has remove button when adding second row
+  if (rows.length === 1 && !rows[0].querySelector('.disc-remove')) {
+    var rb = document.createElement('button');
+    rb.type = 'button';
+    rb.className = 'disc-remove';
+    rb.innerHTML = '&times;';
+    rb.onclick = function() { removeDescricaoField(rb); };
+    rows[0].appendChild(rb);
+  }
 
+  var div = buildDiscRow('', '', true);
+  container.appendChild(div);
   updateDescricaoCounter();
   toggleAddBtn();
-  toggleRemoveBtns();
-  div.querySelector('input').focus();
+  div.querySelector('.disc-name').focus();
 }
 
 function removeDescricaoField(btn) {
   var container = document.getElementById('descricao-fields');
-  var rows = container.querySelectorAll('.descricao-row');
+  var rows = container.querySelectorAll('.disc-row');
   if (rows.length <= 1) return;
-  btn.closest('.descricao-row').remove();
+  btn.closest('.disc-row').remove();
+  // If only 1 row left, remove its remove button
+  var remaining = container.querySelectorAll('.disc-row');
+  if (remaining.length === 1) {
+    var rb = remaining[0].querySelector('.disc-remove');
+    if (rb) rb.remove();
+  }
   updateDescricaoCounter();
   toggleAddBtn();
-  toggleRemoveBtns();
 }
 
 function updateDescricaoCounter() {
-  var count = document.querySelectorAll('#descricao-fields .descricao-row').length;
+  var count = document.querySelectorAll('#descricao-fields .disc-row').length;
   var el = document.getElementById('descricao-counter');
   if (el) el.textContent = count + '/7';
 }
 
 function toggleAddBtn() {
-  var count = document.querySelectorAll('#descricao-fields .descricao-row').length;
+  var count = document.querySelectorAll('#descricao-fields .disc-row').length;
   var btn = document.getElementById('btn-add-disciplina');
   if (btn) {
-    btn.style.display = count >= 7 ? 'none' : 'block';
-  }
-}
-
-function toggleRemoveBtns() {
-  var rows = document.querySelectorAll('#descricao-fields .descricao-row');
-  // Show remove buttons only when there's more than 1 row
-  for (var i = 0; i < rows.length; i++) {
-    var removeBtn = rows[i].querySelector('.btn-remove-desc');
-    if (rows.length === 1) {
-      // First row never has remove button when it's the only one
-      if (removeBtn) removeBtn.style.display = 'none';
-    } else {
-      // Add remove button to first row if it doesn't have one
-      if (i === 0 && !removeBtn) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn-remove-desc';
-        btn.onclick = function() { removeDescricaoField(this); };
-        btn.style.cssText = 'background:none;border:1px solid rgba(239,68,68,.2);color:#ef4444;width:32px;height:38px;border-radius:6px;cursor:pointer;font-size:1.1rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;';
-        btn.innerHTML = '&times;';
-        rows[i].appendChild(btn);
-      }
-      if (removeBtn) removeBtn.style.display = 'flex';
-    }
+    btn.style.display = count >= 7 ? 'none' : 'flex';
   }
 }
 
 function getDisciplinaValues() {
-  var rows = document.querySelectorAll('#descricao-fields .descricao-row');
+  var rows = document.querySelectorAll('#descricao-fields .disc-row');
   var values = [];
   for (var i = 0; i < rows.length; i++) {
     var descInput = rows[i].querySelector('.descricao-input');
@@ -268,7 +299,7 @@ async function handleSaveAtividade(e) {
   try {
     if (currentEditAtivId) {
       // Edição: campo único de descrição + valor
-      var rows = document.querySelectorAll('#descricao-fields .descricao-row');
+      var rows = document.querySelectorAll('#descricao-fields .disc-row');
       var descInput = rows.length > 0 ? rows[0].querySelector('.descricao-input') : null;
       var valorInput = rows.length > 0 ? rows[0].querySelector('.valor-input') : null;
       baseData.descricao = descInput ? descInput.value.trim() : '';
@@ -355,11 +386,8 @@ async function editAtividade(id) {
 
   // Reset to single description + valor field for edit
   var container = document.getElementById('descricao-fields');
-  container.innerHTML =
-    '<div class="descricao-row" style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">' +
-      '<input type="text" class="descricao-input" placeholder="Ex: MAPA - Gestão de Pessoas" style="flex:1" value="' + escapeHtml(ativ.descricao || '') + '">' +
-      '<input type="number" class="valor-input" placeholder="Valor" step="0.01" min="0" style="width:100px;text-align:right" value="' + (ativ.valor || 0) + '">' +
-    '</div>';
+  container.innerHTML = '';
+  container.appendChild(buildDiscRow(ativ.descricao || '', ativ.valor || 0, false));
 
   // Hide add button and counter in edit mode
   var addBtn = document.getElementById('btn-add-disciplina');

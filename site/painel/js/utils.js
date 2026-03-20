@@ -4,7 +4,7 @@
 
 // ─── Dark Mode ───
 (function initTheme() {
-  var saved = localStorage.getItem('painel-theme') || 'light';
+  var saved = localStorage.getItem('painel-theme') || 'dark';
   document.documentElement.setAttribute('data-theme', saved);
 })();
 
