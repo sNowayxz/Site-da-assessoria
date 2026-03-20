@@ -57,8 +57,26 @@
     #modal-atividade .btn-cancel{padding:12px 24px;font-size:.9rem;border-radius:10px}
     #modal-atividade .btn-save{padding:12px 28px;font-size:.9rem;border-radius:10px;font-weight:600}
 
+    /* File upload */
+    .file-upload-area{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .btn-file-select{padding:10px 18px;border:2px dashed var(--gray-300,#d1d5db);border-radius:10px;background:transparent;color:var(--gray-600,#4a5568);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit}
+    .btn-file-select:hover{border-color:var(--gold);color:var(--gold);background:rgba(240,192,48,.04)}
+    .file-hint{font-size:.75rem;color:var(--gray-400,#9ca3af)}
+    #file-list,#existing-files{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+    .file-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--gray-50,#f9fafb);border:1px solid var(--gray-200,#e5e7eb);border-radius:8px;font-size:.84rem}
+    .file-item .file-name{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .file-item .file-size{color:var(--gray-400);font-size:.75rem;flex-shrink:0}
+    .file-item .file-remove{width:26px;height:26px;border:none;background:transparent;color:var(--gray-400);font-size:1rem;cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+    .file-item .file-remove:hover{background:rgba(239,68,68,.1);color:#ef4444}
+    .file-item a{color:var(--gold);font-weight:500;text-decoration:none;font-size:.8rem;flex-shrink:0}
+    .file-item a:hover{text-decoration:underline}
+
     /* Dark mode */
     [data-theme="dark"] #modal-atividade .form-group label{color:#c9d1d9}
+    [data-theme="dark"] .btn-file-select{border-color:#30363d;color:#8b949e}
+    [data-theme="dark"] .btn-file-select:hover{border-color:var(--gold);color:var(--gold);background:rgba(240,192,48,.06)}
+    [data-theme="dark"] .file-item{background:#161b22;border-color:#30363d;color:#c9d1d9}
+    [data-theme="dark"] .file-hint{color:#6e7681}
     [data-theme="dark"] .disc-row{background:#161b22;border-color:#30363d}
     [data-theme="dark"] .disc-row:focus-within{border-color:var(--gold)}
     [data-theme="dark"] .disc-row .disc-name{color:#e6edf3}
@@ -200,6 +218,7 @@
       <div class="panel">
         <div class="filters-bar">
           <input type="text" id="filter-aluno" placeholder="Buscar por aluno ou RA...">
+          <input type="text" id="filter-descricao" placeholder="Buscar por descrição...">
           <select id="filter-status">
             <option value="">Todos os status</option>
             <option value="pendente">Pendente</option>
@@ -290,6 +309,16 @@
           <div class="form-group">
             <label for="ativ-observacoes">💬 Observações</label>
             <textarea name="observacoes" id="ativ-observacoes" placeholder="Detalhes adicionais, informações do aluno..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>📎 Arquivos</label>
+            <div class="file-upload-area" id="file-upload-area">
+              <input type="file" id="ativ-arquivos" multiple style="display:none" onchange="handleFileSelect(this)">
+              <button type="button" class="btn-file-select" onclick="document.getElementById('ativ-arquivos').click()">📂 Selecionar arquivos</button>
+              <span class="file-hint">PDF, imagens, documentos (máx. 10MB cada)</span>
+            </div>
+            <div id="file-list"></div>
+            <div id="existing-files"></div>
           </div>
         </div>
         <div class="modal-footer">

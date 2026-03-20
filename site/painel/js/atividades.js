@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.getElementById('modal-title-ativ').textContent = 'Nova Atividade';
     document.getElementById('form-atividade').reset();
     resetDescricaoFields();
+    clearFileUI();
     openModal('modal-atividade');
   });
 
@@ -42,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('filter-status').addEventListener('change', filterAtividades);
   document.getElementById('filter-tipo').addEventListener('change', filterAtividades);
   document.getElementById('filter-aluno').addEventListener('input', debounce(filterAtividades, 300));
+  document.getElementById('filter-descricao').addEventListener('input', debounce(filterAtividades, 300));
   var dtInicio = document.getElementById('filter-data-inicio');
   var dtFim = document.getElementById('filter-data-fim');
   if (dtInicio) dtInicio.addEventListener('change', filterAtividades);
@@ -252,6 +254,7 @@ function filterAtividades() {
   var status = document.getElementById('filter-status').value;
   var tipo = document.getElementById('filter-tipo').value;
   var aluno = document.getElementById('filter-aluno').value.toLowerCase();
+  var descricao = document.getElementById('filter-descricao').value.toLowerCase();
   var dtInicio = document.getElementById('filter-data-inicio') ? document.getElementById('filter-data-inicio').value : '';
   var dtFim = document.getElementById('filter-data-fim') ? document.getElementById('filter-data-fim').value : '';
 
@@ -260,6 +263,7 @@ function filterAtividades() {
     var matchStatus = !status || a.status === status;
     var matchTipo = !tipo || a.tipo === tipo;
     var matchAluno = !aluno || (alunoData.nome || '').toLowerCase().includes(aluno) || (alunoData.ra || '').toLowerCase().includes(aluno);
+    var matchDescricao = !descricao || (a.descricao || '').toLowerCase().includes(descricao);
     var matchDate = true;
     if (dtInicio) {
       var created = (a.created_at || '').slice(0, 10);
@@ -269,7 +273,7 @@ function filterAtividades() {
       var created = (a.created_at || '').slice(0, 10);
       matchDate = matchDate && created <= dtFim;
     }
-    return matchStatus && matchTipo && matchAluno && matchDate;
+    return matchStatus && matchTipo && matchAluno && matchDescricao && matchDate;
   });
   renderAtividades(filtered);
   updateCounters(filtered);
@@ -306,6 +310,7 @@ async function handleSaveAtividade(e) {
       baseData.valor = valorInput ? (parseFloat(valorInput.value) || 0) : 0;
       var { error } = await sb.from('atividades').update(baseData).eq('id', currentEditAtivId);
       if (error) throw error;
+      if (_pendingFiles.length > 0) await uploadFiles(currentEditAtivId);
       logAudit('update_atividade', 'atividades', currentEditAtivId, { tipo: baseData.tipo, descricao: baseData.descricao });
       showToast('Atividade atualizada!', 'success');
     } else {
@@ -327,6 +332,11 @@ async function handleSaveAtividade(e) {
 
       var { data: inserted, error } = await sb.from('atividades').insert(records).select();
       if (error) throw error;
+
+      // Upload arquivos para a primeira atividade criada
+      if (_pendingFiles.length > 0 && inserted && inserted.length > 0) {
+        await uploadFiles(inserted[0].id);
+      }
 
       logAudit('create_atividade', 'atividades', 'batch_' + records.length, {
         tipo: baseData.tipo,
@@ -395,6 +405,10 @@ async function editAtividade(id) {
   if (addBtn) addBtn.style.display = 'none';
   if (counter) counter.textContent = '';
 
+  // Load existing files and clear pending
+  clearFileUI();
+  loadExistingFiles(id);
+
   openModal('modal-atividade');
 }
 
@@ -415,6 +429,114 @@ async function deleteAtividade(id) {
       });
     }
   }, { title: 'Excluir Atividade', confirmText: 'Excluir', type: 'danger' });
+}
+
+/* ── File Upload ────────────────────── */
+
+var _pendingFiles = [];
+
+function handleFileSelect(input) {
+  var files = Array.prototype.slice.call(input.files);
+  for (var i = 0; i < files.length; i++) {
+    if (files[i].size > 10 * 1024 * 1024) {
+      showToast('Arquivo "' + files[i].name + '" excede 10MB', 'warning');
+      continue;
+    }
+    _pendingFiles.push(files[i]);
+  }
+  input.value = '';
+  renderPendingFiles();
+}
+
+function renderPendingFiles() {
+  var container = document.getElementById('file-list');
+  if (!container) return;
+  container.innerHTML = '';
+  for (var i = 0; i < _pendingFiles.length; i++) {
+    var f = _pendingFiles[i];
+    var div = document.createElement('div');
+    div.className = 'file-item';
+    var sizeKB = (f.size / 1024).toFixed(0);
+    var sizeLabel = sizeKB > 1024 ? (f.size / 1024 / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+    div.innerHTML = '<span class="file-name">' + escapeHtml(f.name) + '</span>' +
+      '<span class="file-size">' + sizeLabel + '</span>' +
+      '<button type="button" class="file-remove" data-idx="' + i + '" title="Remover">&times;</button>';
+    container.appendChild(div);
+  }
+  container.querySelectorAll('.file-remove').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      _pendingFiles.splice(parseInt(this.getAttribute('data-idx')), 1);
+      renderPendingFiles();
+    });
+  });
+}
+
+async function uploadFiles(atividadeId) {
+  var uploaded = [];
+  for (var i = 0; i < _pendingFiles.length; i++) {
+    var file = _pendingFiles[i];
+    var ext = file.name.split('.').pop();
+    var path = 'atividades/' + atividadeId + '/' + Date.now() + '_' + i + '.' + ext;
+    var { data, error } = await sb.storage.from('arquivos').upload(path, file, { upsert: true });
+    if (error) {
+      console.error('Upload error:', error);
+      showToast('Erro ao enviar "' + file.name + '"', 'error');
+      continue;
+    }
+    var { data: urlData } = sb.storage.from('arquivos').getPublicUrl(path);
+    uploaded.push({
+      atividade_id: atividadeId,
+      nome: file.name,
+      tamanho: file.size,
+      tipo: file.type || 'application/octet-stream',
+      url: urlData.publicUrl,
+      path: path
+    });
+  }
+  if (uploaded.length > 0) {
+    var { error } = await sb.from('atividade_arquivos').insert(uploaded);
+    if (error) console.error('Erro ao salvar metadados:', error);
+  }
+  _pendingFiles = [];
+  return uploaded;
+}
+
+async function loadExistingFiles(atividadeId) {
+  var container = document.getElementById('existing-files');
+  if (!container) return;
+  container.innerHTML = '';
+  var { data, error } = await sb.from('atividade_arquivos').select('*').eq('atividade_id', atividadeId);
+  if (error || !data || data.length === 0) return;
+  for (var i = 0; i < data.length; i++) {
+    var f = data[i];
+    var div = document.createElement('div');
+    div.className = 'file-item';
+    var sizeKB = (f.tamanho / 1024).toFixed(0);
+    var sizeLabel = sizeKB > 1024 ? (f.tamanho / 1024 / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+    div.innerHTML = '<span class="file-name">' + escapeHtml(f.nome) + '</span>' +
+      '<span class="file-size">' + sizeLabel + '</span>' +
+      '<a href="' + escapeHtml(f.url) + '" target="_blank" rel="noopener">Abrir</a>' +
+      '<button type="button" class="file-remove" data-file-id="' + f.id + '" data-path="' + escapeHtml(f.path) + '" title="Remover">&times;</button>';
+    container.appendChild(div);
+  }
+  container.querySelectorAll('.file-remove').forEach(function(btn) {
+    btn.addEventListener('click', async function() {
+      var fileId = this.getAttribute('data-file-id');
+      var filePath = this.getAttribute('data-path');
+      await sb.storage.from('arquivos').remove([filePath]);
+      await sb.from('atividade_arquivos').delete().eq('id', fileId);
+      this.closest('.file-item').remove();
+      showToast('Arquivo removido', 'success');
+    });
+  });
+}
+
+function clearFileUI() {
+  _pendingFiles = [];
+  var fl = document.getElementById('file-list');
+  var ef = document.getElementById('existing-files');
+  if (fl) fl.innerHTML = '';
+  if (ef) ef.innerHTML = '';
 }
 
 // Avança o status no fluxo: pendente → em_andamento → entregue
