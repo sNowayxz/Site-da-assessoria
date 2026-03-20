@@ -36,6 +36,18 @@
     .btn-status-action.to-pago:hover { background: rgba(34,197,94,0.2); }
 
     .valor-text { font-weight: 800; color: var(--gray-800); font-size: 1.1rem; }
+
+    /* Tabs */
+    .ped-tabs{display:flex;gap:0;border-bottom:2px solid var(--gray-200,#e5e7eb);margin-bottom:18px;padding:0 2px}
+    .ped-tab{padding:10px 20px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--gray-500,#6b7280);border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;font-family:inherit}
+    .ped-tab:hover{color:var(--dark,#1a1a2e)}
+    .ped-tab.active{color:var(--gold,#f0c030);border-bottom-color:var(--gold,#f0c030)}
+    [data-theme=dark] .ped-tabs{border-bottom-color:#30363d}
+    [data-theme=dark] .ped-tab{color:#8b949e}
+    [data-theme=dark] .ped-tab:hover{color:#e6edf3}
+    [data-theme=dark] .ped-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+    .ped-tab-content{display:none}
+    .ped-tab-content.active{display:block}
     [data-theme="dark"] .pedido-detail { background: #1c2128; }
     [data-theme="dark"] .detail-actions { border-top-color: #30363d; }
     [data-theme="dark"] .btn-details { background: #1c2128; border-color: #30363d; color: #8b949e; }
@@ -122,7 +134,7 @@
           <button class="mobile-toggle" id="mobile-toggle">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
-          <h1>Pedidos de Extens&atilde;o</h1>
+          <h1>Pedidos</h1>
         </div>
         <div class="global-search-wrap">
           <span class="global-search-icon">🔍</span>
@@ -131,74 +143,100 @@
           <div class="global-search-results" id="global-search-results"></div>
         </div>
         <div class="topbar-actions">
-          <button class="btn-export" onclick="exportTableToPDF('pedidos-table','Pedidos - Relatório','pedidos')">📄 PDF</button>
+          <button class="btn-export" onclick="exportPedidoPDF()">📄 PDF</button>
           <button class="btn-notif-bell" id="btn-notif-bell" title="Notificações" style="position:relative;background:none;border:none;cursor:pointer;font-size:1.2rem;padding:6px;">🔔<span class="notif-badge" id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#ef4444;color:white;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;"></span></button>
           </div>
       </div>
 
+      <!-- Tabs -->
+      <div class="ped-tabs">
+        <button class="ped-tab active" onclick="switchPedidoTab('extensoes')" id="ped-tab-extensoes">Extens&otilde;es</button>
+        <button class="ped-tab" onclick="switchPedidoTab('atividades')" id="ped-tab-atividades">Atividades</button>
+      </div>
+
       <!-- Stats -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon blue">📦</div>
-          <div class="stat-info">
-            <h3 id="count-total">0</h3>
-            <p>Total de Pedidos</p>
+      <div class="stats-grid" id="ped-stats"></div>
+
+      <!-- Tab: Extensões -->
+      <div class="ped-tab-content active" id="tab-extensoes">
+        <div class="panel">
+          <div class="filters-bar">
+            <input type="text" id="filter-busca" placeholder="Buscar por nome, email, curso...">
+            <select id="filter-status">
+              <option value="">Todos os status</option>
+              <option value="aguardando_pagamento">Aguardando Pagamento</option>
+              <option value="pago">Pago</option>
+              <option value="em_andamento">Em Andamento</option>
+              <option value="concluido">Conclu&iacute;do</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+            <input type="text" id="filter-tema" placeholder="Filtrar por tema/descri&ccedil;&atilde;o...">
           </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon orange">⏳</div>
-          <div class="stat-info">
-            <h3 id="count-aguardando">0</h3>
-            <p>Aguardando Pgto</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green">💳</div>
-          <div class="stat-info">
-            <h3 id="count-pagos">0</h3>
-            <p>Pagos</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon purple">🔄</div>
-          <div class="stat-info">
-            <h3 id="count-andamento">0</h3>
-            <p>Em Andamento</p>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Curso</th>
+                    <th>CH</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th>Data</th>
+                    <th>A&ccedil;&otilde;es</th>
+                  </tr>
+                </thead>
+                <tbody id="pedidos-table">
+                  <tr><td colspan="7" class="empty-state">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Table -->
-      <div class="panel">
-        <div class="filters-bar">
-          <input type="text" id="filter-busca" placeholder="Buscar por nome, email, curso...">
-          <select id="filter-status">
-            <option value="">Todos os status</option>
-            <option value="aguardando_pagamento">Aguardando Pagamento</option>
-            <option value="pago">Pago</option>
-            <option value="em_andamento">Em Andamento</option>
-            <option value="concluido">Conclu&iacute;do</option>
-            <option value="cancelado">Cancelado</option>
-          </select>
-        </div>
-        <div class="panel-body">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Curso</th>
-                  <th>CH</th>
-                  <th>Valor</th>
-                  <th>Status</th>
-                  <th>Data</th>
-                  <th>A&ccedil;&otilde;es</th>
-                </tr>
-              </thead>
-              <tbody id="pedidos-table">
-                <tr><td colspan="7" class="empty-state">Carregando...</td></tr>
-              </tbody>
-            </table>
+      <!-- Tab: Atividades -->
+      <div class="ped-tab-content" id="tab-atividades">
+        <div class="panel">
+          <div class="filters-bar">
+            <input type="text" id="filter-aluno-ativ" placeholder="Buscar por aluno ou RA...">
+            <select id="filter-status-ativ">
+              <option value="">Todos os status</option>
+              <option value="pendente">Pendente</option>
+              <option value="em_andamento">Em Andamento</option>
+              <option value="entregue">Entregue</option>
+              <option value="revisao">Revis&atilde;o</option>
+            </select>
+            <select id="filter-tipo-ativ">
+              <option value="">Todos os tipos</option>
+              <option value="atividade">Atividade</option>
+              <option value="mapa">Mapa</option>
+              <option value="tcc">TCC</option>
+              <option value="relatorio">Relat&oacute;rio</option>
+              <option value="extensao">Extens&atilde;o</option>
+              <option value="pacote">Pacote</option>
+            </select>
+            <input type="text" id="filter-descricao-ativ" placeholder="Filtrar por descri&ccedil;&atilde;o...">
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Aluno</th>
+                    <th>Tipo</th>
+                    <th>Descri&ccedil;&atilde;o</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th>Criada</th>
+                    <th>A&ccedil;&otilde;es</th>
+                  </tr>
+                </thead>
+                <tbody id="atividades-ped-table">
+                  <tr><td colspan="7" class="empty-state">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

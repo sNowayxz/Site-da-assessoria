@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     currentEditAtivId = null;
     document.getElementById('modal-title-ativ').textContent = 'Nova Atividade';
     document.getElementById('form-atividade').reset();
+    resetDescricaoFields();
     openModal('modal-atividade');
   });
 
@@ -46,6 +47,101 @@ document.addEventListener('DOMContentLoaded', async function () {
   if (dtInicio) dtInicio.addEventListener('change', filterAtividades);
   if (dtFim) dtFim.addEventListener('change', filterAtividades);
 });
+
+/* ── Multi-disciplina helpers ───────── */
+
+function resetDescricaoFields() {
+  var container = document.getElementById('descricao-fields');
+  container.innerHTML =
+    '<div class="descricao-row" style="display:flex;gap:6px;margin-bottom:6px;">' +
+      '<input type="text" class="descricao-input" placeholder="Ex: MAPA - Gestão de Pessoas" style="flex:1">' +
+    '</div>';
+  updateDescricaoCounter();
+  toggleAddBtn();
+  toggleRemoveBtns();
+}
+
+function addDescricaoField() {
+  var container = document.getElementById('descricao-fields');
+  var rows = container.querySelectorAll('.descricao-row');
+  if (rows.length >= 7) {
+    showToast('Máximo de 7 disciplinas', 'warning');
+    return;
+  }
+
+  var div = document.createElement('div');
+  div.className = 'descricao-row';
+  div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;';
+  div.innerHTML =
+    '<input type="text" class="descricao-input" placeholder="Ex: MAPA - Gestão de Pessoas" style="flex:1">' +
+    '<button type="button" class="btn-remove-desc" onclick="removeDescricaoField(this)" style="background:none;border:1px solid rgba(239,68,68,.2);color:#ef4444;width:32px;height:38px;border-radius:6px;cursor:pointer;font-size:1.1rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;">&times;</button>';
+  container.appendChild(div);
+
+  updateDescricaoCounter();
+  toggleAddBtn();
+  toggleRemoveBtns();
+  div.querySelector('input').focus();
+}
+
+function removeDescricaoField(btn) {
+  var container = document.getElementById('descricao-fields');
+  var rows = container.querySelectorAll('.descricao-row');
+  if (rows.length <= 1) return;
+  btn.closest('.descricao-row').remove();
+  updateDescricaoCounter();
+  toggleAddBtn();
+  toggleRemoveBtns();
+}
+
+function updateDescricaoCounter() {
+  var count = document.querySelectorAll('#descricao-fields .descricao-row').length;
+  var el = document.getElementById('descricao-counter');
+  if (el) el.textContent = count + '/7';
+}
+
+function toggleAddBtn() {
+  var count = document.querySelectorAll('#descricao-fields .descricao-row').length;
+  var btn = document.getElementById('btn-add-disciplina');
+  if (btn) {
+    btn.style.display = count >= 7 ? 'none' : 'block';
+  }
+}
+
+function toggleRemoveBtns() {
+  var rows = document.querySelectorAll('#descricao-fields .descricao-row');
+  // Show remove buttons only when there's more than 1 row
+  for (var i = 0; i < rows.length; i++) {
+    var removeBtn = rows[i].querySelector('.btn-remove-desc');
+    if (rows.length === 1) {
+      // First row never has remove button when it's the only one
+      if (removeBtn) removeBtn.style.display = 'none';
+    } else {
+      // Add remove button to first row if it doesn't have one
+      if (i === 0 && !removeBtn) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-remove-desc';
+        btn.onclick = function() { removeDescricaoField(this); };
+        btn.style.cssText = 'background:none;border:1px solid rgba(239,68,68,.2);color:#ef4444;width:32px;height:38px;border-radius:6px;cursor:pointer;font-size:1.1rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;';
+        btn.innerHTML = '&times;';
+        rows[i].appendChild(btn);
+      }
+      if (removeBtn) removeBtn.style.display = 'flex';
+    }
+  }
+}
+
+function getDescricaoValues() {
+  var inputs = document.querySelectorAll('#descricao-fields .descricao-input');
+  var values = [];
+  for (var i = 0; i < inputs.length; i++) {
+    var v = inputs[i].value.trim();
+    if (v) values.push(v);
+  }
+  return values;
+}
+
+/* ── Data ───────────────────────────── */
 
 async function loadAlunosSelect() {
   var { data } = await sb.from('alunos').select('id, nome, ra').order('nome');
@@ -143,32 +239,88 @@ function filterAtividades() {
   updateCounters(filtered);
 }
 
+/* ── Save (batch + auto-pagamento) ──── */
+
 async function handleSaveAtividade(e) {
   e.preventDefault();
   var form = e.target;
   var submitBtn = form.querySelector('button[type="submit"]');
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Salvando...'; }
-  var data = {
+
+  var baseData = {
     aluno_id: form.aluno_id.value,
     tipo: form.tipo.value,
-    descricao: form.descricao.value.trim(),
     status: form.status.value,
     valor: parseFloat(form.valor.value) || 0,
     observacoes: form.observacoes.value.trim()
   };
 
-  if (!data.aluno_id) { showToast('Selecione um aluno', 'warning'); return; }
+  if (!baseData.aluno_id) {
+    showToast('Selecione um aluno', 'warning');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Salvar'; }
+    return;
+  }
 
   try {
     if (currentEditAtivId) {
-      var { error } = await sb.from('atividades').update(data).eq('id', currentEditAtivId);
+      // Edição: campo único de descrição (primeiro input)
+      var descInputs = document.querySelectorAll('#descricao-fields .descricao-input');
+      baseData.descricao = descInputs.length > 0 ? descInputs[0].value.trim() : '';
+      var { error } = await sb.from('atividades').update(baseData).eq('id', currentEditAtivId);
       if (error) throw error;
+      logAudit('update_atividade', 'atividades', currentEditAtivId, { tipo: baseData.tipo, descricao: baseData.descricao });
+      showToast('Atividade atualizada!', 'success');
     } else {
-      var { error } = await sb.from('atividades').insert(data);
+      // Criação: múltiplas disciplinas
+      var descricoes = getDescricaoValues();
+      if (descricoes.length === 0) descricoes = [''];
+
+      var records = [];
+      for (var i = 0; i < descricoes.length; i++) {
+        records.push({
+          aluno_id: baseData.aluno_id,
+          tipo: baseData.tipo,
+          status: baseData.status,
+          valor: baseData.valor,
+          descricao: descricoes[i],
+          observacoes: baseData.observacoes
+        });
+      }
+
+      var { data: inserted, error } = await sb.from('atividades').insert(records).select();
       if (error) throw error;
+
+      logAudit('create_atividade', 'atividades', 'batch_' + records.length, {
+        tipo: baseData.tipo,
+        descricoes: descricoes.join(', '),
+        count: records.length
+      });
+
+      // Auto-criar pagamentos para atividades com valor > 0
+      if (baseData.valor > 0) {
+        var pagamentos = [];
+        for (var j = 0; j < records.length; j++) {
+          pagamentos.push({
+            aluno_id: baseData.aluno_id,
+            valor: baseData.valor,
+            tipo: (baseData.tipo === 'pacote') ? 'pacote' : 'avulso',
+            status: 'pendente',
+            referencia: records[j].descricao || formatTipo(baseData.tipo),
+            observacoes: 'Gerado automaticamente via atividade'
+          });
+        }
+        var pagResult = await sb.from('pagamentos').insert(pagamentos);
+        if (pagResult.error) {
+          console.error('Erro ao criar pagamentos:', pagResult.error);
+          showToast('Atividade(s) criada(s), mas erro ao gerar pagamento(s)', 'warning');
+        } else {
+          showToast(records.length + ' atividade(s) criada(s) + pagamento(s) pendente(s) no Financeiro!', 'success');
+        }
+      } else {
+        showToast(records.length + ' atividade(s) criada(s)!', 'success');
+      }
     }
-    logAudit(currentEditAtivId ? 'update_atividade' : 'create_atividade', 'atividades', currentEditAtivId || 'new', { tipo: data.tipo, descricao: data.descricao });
-    showToast(currentEditAtivId ? 'Atividade atualizada!' : 'Atividade criada!', 'success');
+
     closeModal('modal-atividade');
     await loadAtividades();
   } catch (err) {
@@ -177,6 +329,8 @@ async function handleSaveAtividade(e) {
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Salvar'; }
   }
 }
+
+/* ── Edit ───────────────────────────── */
 
 async function editAtividade(id) {
   var ativ = _atividades.find(function (a) { return a.id === id; });
@@ -187,12 +341,27 @@ async function editAtividade(id) {
   var form = document.getElementById('form-atividade');
   form.aluno_id.value = ativ.aluno_id;
   form.tipo.value = ativ.tipo;
-  form.descricao.value = ativ.descricao || '';
   form.status.value = ativ.status;
   form.valor.value = ativ.valor || 0;
   form.observacoes.value = ativ.observacoes || '';
+
+  // Reset to single description field for edit
+  var container = document.getElementById('descricao-fields');
+  container.innerHTML =
+    '<div class="descricao-row" style="display:flex;gap:6px;margin-bottom:6px;">' +
+      '<input type="text" class="descricao-input" placeholder="Ex: MAPA - Gestão de Pessoas" style="flex:1" value="' + escapeHtml(ativ.descricao || '') + '">' +
+    '</div>';
+
+  // Hide add button and counter in edit mode
+  var addBtn = document.getElementById('btn-add-disciplina');
+  var counter = document.getElementById('descricao-counter');
+  if (addBtn) addBtn.style.display = 'none';
+  if (counter) counter.textContent = '';
+
   openModal('modal-atividade');
 }
+
+/* ── Delete ─────────────────────────── */
 
 async function deleteAtividade(id) {
   showConfirm('Tem certeza que deseja excluir esta atividade?', async function() {
