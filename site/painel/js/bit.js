@@ -522,12 +522,6 @@ function renderContasReceber() {
 function setFilter(filter) {
   currentFilter = filter;
   renderFilters();
-
-  // Sync select dropdown with current filter
-  var selId = currentTab === 'gestao' ? 'bit-filter-status' : (currentTab === 'cp' ? 'bit-filter-status-cp' : 'bit-filter-status-cr');
-  var sel = document.getElementById(selId);
-  if (sel && sel.value !== filter) sel.value = filter;
-
   if (currentTab === 'gestao') renderGestao();
   else if (currentTab === 'cp') renderContasPagar();
   else if (currentTab === 'cr') renderContasReceber();
@@ -948,6 +942,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   var user = result.user;
   var role = result.role;
   setupSidebarPermissions(role);
+  document.getElementById('btn-logout').addEventListener('click', handleLogout);
 
   var name = getUserName(user);
   document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
