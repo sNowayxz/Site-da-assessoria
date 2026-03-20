@@ -535,7 +535,14 @@
             </div>
             <div class="calc-line">
               <span class="calc-line-label">Desconto</span>
-              <span class="calc-line-val green">20%</span>
+              <div class="calc-line-input">
+                <div class="calc-parc-stepper">
+                  <button type="button" onclick="stepPercent('calc-op3-desc', -1)">-</button>
+                  <input type="number" id="calc-op3-desc" value="20" min="0" max="100" oninput="calcExtensao()">
+                  <button type="button" onclick="stepPercent('calc-op3-desc', 1)">+</button>
+                </div>
+                <span class="calc-suffix">%</span>
+              </div>
             </div>
             <div class="calc-line">
               <span class="calc-line-label">Economia</span>
@@ -650,6 +657,14 @@
       el.value = val;
       calcExtensao();
     }
+    function stepPercent(id, delta) {
+      var el = document.getElementById(id);
+      var val = (parseInt(el.value) || 0) + delta;
+      if (val < 0) val = 0;
+      if (val > 100) val = 100;
+      el.value = val;
+      calcExtensao();
+    }
     function setHoras(val, btn) {
       document.getElementById('calc-horas').value = val;
       clearPresets();
@@ -683,9 +698,10 @@
       document.getElementById('calc-op2-restante').textContent = formatBRL(restante);
       document.getElementById('calc-op2-parcela').textContent = formatBRL(vlrParcela2);
 
-      // Op 3: Pix 20%
-      var desconto3 = total * 0.80;
-      var economia3 = total * 0.20;
+      // Op 3: Pix — desconto editável
+      var pixDesc = parseFloat(document.getElementById('calc-op3-desc').value) || 0;
+      var desconto3 = total * (1 - pixDesc / 100);
+      var economia3 = total * (pixDesc / 100);
       document.getElementById('calc-op3-total').textContent = formatBRL(desconto3);
       document.getElementById('calc-op3-economia').textContent = formatBRL(economia3);
     }
@@ -702,7 +718,8 @@
       var vlrParcela1 = parcelas1 > 0 ? desconto1 / parcelas1 : desconto1;
       var restante = Math.max(0, total - sinal);
       var vlrParcela2 = parcelas2 > 0 ? restante / parcelas2 : restante;
-      var desconto3 = total * 0.80;
+      var pixDesc = parseFloat(document.getElementById('calc-op3-desc').value) || 0;
+      var desconto3 = total * (1 - pixDesc / 100);
 
       var texto = '📋 *' + horas + ' Horas a serem cumpridas*\n\n' +
         'Carga Horária: ' + horas + ' hrs\n' +
@@ -717,7 +734,7 @@
         'Sinal: ' + formatBRL(sinal) + '\n' +
         'Parcelas: ' + parcelas2 + 'x de ' + formatBRL(vlrParcela2) + '\n\n' +
         '🟢 *3ª Opção — Pix à Vista*\n' +
-        'Desconto: 20%\n' +
+        'Desconto: ' + pixDesc + '%\n' +
         'Valor à vista: ' + formatBRL(desconto3);
 
       var btn = document.getElementById('calc-copy-btn');
