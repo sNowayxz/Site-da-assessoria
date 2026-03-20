@@ -136,7 +136,9 @@
       padding: 0; font-family: inherit; transition: all 0.15s;
     }
     .calc-stepper button:hover { background: var(--gold, #f0c030); color: var(--dark, #1a1a2e); }
-    .calc-stepper button:active { transform: scale(0.92); }
+    .calc-stepper button:active { transform: scale(0.95); }
+    .calc-stepper button { user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+    .calc-stepper { user-select: none; -webkit-user-select: none; }
     .calc-stepper input {
       width: 70px; height: 34px; border: none;
       border-left: 1px solid var(--gray-200, #e5e7eb);
@@ -411,7 +413,6 @@
           <h1>Extens&otilde;es</h1>
         </div>
         <div class="topbar-actions">
-          <button class="btn-notif-bell" id="btn-notif-bell" title="Notificações" style="position:relative;background:none;border:none;cursor:pointer;font-size:1.2rem;padding:6px;">🔔<span class="notif-badge" id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#ef4444;color:white;font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;"></span></button>
           </div>
       </div>
 
@@ -439,9 +440,9 @@
           <div class="calc-field">
             <label>Horas</label>
             <div class="calc-stepper">
-              <button type="button" onmousedown="startHold('calc-horas', -5)" onmouseup="stopHold()" onmouseleave="stopHold()">-</button>
+              <button type="button" onmousedown="startHold('calc-horas', -5)" onmouseup="stopHold()">-</button>
               <input type="number" id="calc-horas" placeholder="0" min="0" max="9999" oninput="calcExtensao()">
-              <button type="button" onmousedown="startHold('calc-horas', 5)" onmouseup="stopHold()" onmouseleave="stopHold()">+</button>
+              <button type="button" onmousedown="startHold('calc-horas', 5)" onmouseup="stopHold()">+</button>
             </div>
           </div>
           <div class="calc-presets">
@@ -454,9 +455,9 @@
           <div class="calc-field">
             <label>R$/hora</label>
             <div class="calc-stepper">
-              <button type="button" onmousedown="startHold('calc-valor-hora', -0.50)" onmouseup="stopHold()" onmouseleave="stopHold()">-</button>
+              <button type="button" onmousedown="startHold('calc-valor-hora', -0.50)" onmouseup="stopHold()">-</button>
               <input type="number" id="calc-valor-hora" placeholder="0.00" min="0" step="0.50" oninput="calcExtensao()">
-              <button type="button" onmousedown="startHold('calc-valor-hora', 0.50)" onmouseup="stopHold()" onmouseleave="stopHold()">+</button>
+              <button type="button" onmousedown="startHold('calc-valor-hora', 0.50)" onmouseup="stopHold()">+</button>
             </div>
           </div>
           <div class="calc-total-box">
@@ -635,17 +636,21 @@
     var _holdTimer = null;
     var _holdInterval = null;
     function startHold(inputId, delta) {
+      stopHold();
       doStep(inputId, delta);
       _holdTimer = setTimeout(function() {
         _holdInterval = setInterval(function() { doStep(inputId, delta); }, 80);
       }, 400);
     }
     function stopHold() {
+      if (!_holdTimer && !_holdInterval) return;
       clearTimeout(_holdTimer);
       clearInterval(_holdInterval);
       _holdTimer = null;
       _holdInterval = null;
     }
+    document.addEventListener('mouseup', stopHold);
+    document.addEventListener('touchend', stopHold);
     function doStep(inputId, delta) {
       var el = document.getElementById(inputId);
       var val = (parseFloat(el.value) || 0) + delta;
@@ -732,7 +737,8 @@
       var pixDesc = parseFloat(document.getElementById('calc-op3-desc').value) || 0;
       var desconto3 = total * (1 - pixDesc / 100);
 
-      var texto = '📋 *' + horas + ' Horas a serem cumpridas*\n\n' +
+      var texto = 'Olá! Segue o resumo de valores das suas extensões 👇\n\n' +
+        '📋 *' + horas + ' Horas a serem cumpridas*\n\n' +
         'Carga Horária: ' + horas + ' hrs\n' +
         'Valor por Hora: ' + formatBRL(valorHora) + '\n' +
         '*Valor Total: ' + formatBRL(total) + '*\n\n' +

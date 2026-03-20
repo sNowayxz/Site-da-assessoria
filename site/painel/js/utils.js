@@ -675,8 +675,133 @@ function timeAgo(date) {
   return date.toLocaleDateString('pt-BR');
 }
 
-document.addEventListener('DOMContentLoaded', initNotifications);
+// Sininho removido — substituído por badge de chat na sidebar
+// document.addEventListener('DOMContentLoaded', initNotifications);
+document.addEventListener('DOMContentLoaded', initChatBadge);
 
+/* ── Chat Badge na Sidebar ─────────── */
+
+var _chatBadgeLastCheck = null;
+var _chatBadgeSub = null;
+
+function initChatBadge() {
+  if (!window.sb) return;
+  // Não mostrar badge se já estamos na página de chat
+  if (window.location.pathname.indexOf('chat.html') !== -1) return;
+
+  // Esperar auth
+  setTimeout(function() {
+    checkUnreadMessages();
+    subscribeChatBadge();
+  }, 1500);
+}
+
+async function checkUnreadMessages() {
+  try {
+    var userRes = await sb.auth.getUser();
+    if (!userRes.data || !userRes.data.user) return;
+    var userId = userRes.data.user.id;
+
+    // Buscar mensagens das últimas 24h que não são do usuário
+    var since = new Date();
+    since.setHours(since.getHours() - 24);
+
+    var { data: msgs, error } = await sb.from('mensagens')
+      .select('id, sender_id, channel, content, created_at')
+      .neq('sender_id', userId)
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error || !msgs) return;
+
+    // Filtrar apenas DMs que envolvem este usuário
+    var unread = [];
+    var senderNames = {};
+    for (var i = 0; i < msgs.length; i++) {
+      var m = msgs[i];
+      if (m.channel && m.channel.indexOf('dm-') === 0 && m.channel.indexOf(userId) !== -1) {
+        unread.push(m);
+        senderNames[m.sender_id] = true;
+      }
+    }
+
+    // Buscar nomes dos remetentes
+    var senderIds = Object.keys(senderNames);
+    if (senderIds.length > 0) {
+      var { data: assessores } = await sb.from('assessores')
+        .select('id, nome, label')
+        .in('id', senderIds);
+      if (assessores) {
+        for (var j = 0; j < assessores.length; j++) {
+          senderNames[assessores[j].id] = assessores[j].label || assessores[j].nome || 'Alguém';
+        }
+      }
+    }
+
+    updateChatBadge(unread.length, senderNames, unread);
+  } catch(e) {
+    console.warn('[chat-badge] Erro:', e.message);
+  }
+}
+
+function updateChatBadge(count, senderNames, messages) {
+  // Encontrar link do Chat na sidebar
+  var chatLink = document.querySelector('a.sidebar-link[href="chat.html"]');
+  if (!chatLink) return;
+
+  // Remover badge antigo
+  var oldBadge = chatLink.querySelector('.chat-unread-badge');
+  if (oldBadge) oldBadge.remove();
+
+  // Remover tooltip antigo
+  var oldTip = chatLink.querySelector('.chat-unread-tip');
+  if (oldTip) oldTip.remove();
+
+  if (count <= 0) {
+    chatLink.title = 'Chat';
+    return;
+  }
+
+  // Criar badge vermelho
+  var badge = document.createElement('span');
+  badge.className = 'chat-unread-badge';
+  badge.textContent = count > 99 ? '99+' : count;
+  badge.style.cssText = 'background:#ef4444;color:#fff;font-size:.55rem;font-weight:700;padding:1px 5px;border-radius:10px;min-width:16px;text-align:center;margin-left:auto;line-height:1.3;animation:notifPulse 2s infinite;';
+  chatLink.style.position = 'relative';
+  chatLink.appendChild(badge);
+
+  // Montar tooltip com nomes de quem mandou
+  var names = [];
+  for (var id in senderNames) {
+    if (typeof senderNames[id] === 'string') {
+      names.push(senderNames[id]);
+    }
+  }
+  if (names.length > 0) {
+    chatLink.title = count + ' mensagem(ns) de: ' + names.join(', ');
+  }
+}
+
+function subscribeChatBadge() {
+  if (_chatBadgeSub || !window.sb) return;
+  try {
+    _chatBadgeSub = sb.channel('chat-badge-realtime')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'mensagens'
+      }, function(payload) {
+        // Nova mensagem chegou — atualizar badge
+        if (window.location.pathname.indexOf('chat.html') === -1) {
+          checkUnreadMessages();
+        }
+      })
+      .subscribe();
+  } catch(e) {
+    console.warn('[chat-badge] Erro no realtime:', e.message);
+  }
+}
 
 // ─── Supabase Realtime (notificações) ───
 function subscribeToChanges(table, onInsert, onUpdate) {
@@ -869,8 +994,8 @@ document.addEventListener('DOMContentLoaded', function () {
 // ─── Role-Based Sidebar Permissions ───
 
 var PAGE_ACCESS = {
-  admin: ['app', 'agenda', 'chat', 'alunos', 'atividades', 'solicitar', 'kanban', 'rastreio', 'gabaritos', 'acompanhar', 'extensoes', 'calculadora', 'depoimentos', 'financeiro', 'pedidos', 'relatorios', 'bit', 'perfil'],
-  dono: ['app', 'agenda', 'chat', 'alunos', 'atividades', 'solicitar', 'kanban', 'rastreio', 'gabaritos', 'acompanhar', 'extensoes', 'calculadora', 'depoimentos', 'financeiro', 'pedidos', 'relatorios', 'bit', 'perfil'],
+  admin: ['app', 'agenda', 'alunos', 'atividades', 'solicitar', 'kanban', 'rastreio', 'gabaritos', 'acompanhar', 'extensoes', 'calculadora', 'depoimentos', 'financeiro', 'pedidos', 'relatorios', 'bit', 'perfil'],
+  dono: ['app', 'agenda', 'alunos', 'atividades', 'solicitar', 'kanban', 'rastreio', 'gabaritos', 'acompanhar', 'extensoes', 'calculadora', 'depoimentos', 'financeiro', 'pedidos', 'relatorios', 'bit', 'perfil'],
   extensao: ['chat', 'extensoes', 'calculadora', 'solicitar', 'acompanhar', 'perfil'],
   assessoria: ['app', 'chat', 'solicitar', 'acompanhar', 'perfil'],
   assessor: ['app', 'agenda', 'chat', 'alunos', 'atividades', 'extensoes', 'kanban', 'perfil'],

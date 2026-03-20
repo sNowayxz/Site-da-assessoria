@@ -26,8 +26,37 @@ var SVG_ICONS = {
   copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
   user: '<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
   lock: '<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-  empty: '<svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>'
+  empty: '<svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
+  refresh: '<svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
+  message: '<svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>',
+  template: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>',
+  send: '<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  plus: '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
 };
+
+/* ── Message Templates ─────────────── */
+var MSG_TEMPLATES = [
+  {
+    nome: 'Boas-vindas',
+    texto: 'Olá {nome}! 👋\n\nSeja bem-vindo(a) à nossa assessoria! Estamos muito felizes em tê-lo(a) conosco.\n\nSeu acesso já está liberado:\n🔑 Login: {login}\n🔒 Senha: {senha}\n\nQualquer dúvida, estou à disposição!'
+  },
+  {
+    nome: 'Lembrete de Vencimento',
+    texto: 'Olá {nome}! 📋\n\nPassando para lembrar que seu serviço *{servico}* vence em *{expiracao}*.\n\nValor para renovação: *{valor}*\n\nDeseja renovar? Estou à disposição para ajudar! 😊'
+  },
+  {
+    nome: 'Serviço Expirado',
+    texto: 'Olá {nome}! ⚠️\n\nSeu serviço *{servico}* expirou em *{expiracao}*.\n\nPara não perder o acesso, entre em contato para renovar.\n\nValor: *{valor}*\n\nEstamos à disposição!'
+  },
+  {
+    nome: 'Confirmação de Pagamento',
+    texto: 'Olá {nome}! ✅\n\nConfirmamos o recebimento do seu pagamento referente ao serviço *{servico}*.\n\nValor: *{valor}*\n\nSeu acesso continua ativo. Obrigado pela confiança!'
+  },
+  {
+    nome: 'Credenciais de Acesso',
+    texto: 'Olá {nome}! 🔐\n\nSegue suas credenciais de acesso:\n\n🔑 Login: {login}\n🔒 Senha: {senha}\n\n⚠️ Não compartilhe esses dados com terceiros.\n\nBons estudos!'
+  }
+];
 
 /* ── Utility ────────────────────────── */
 
@@ -345,6 +374,13 @@ function renderGestao() {
       cred += '</div>';
     }
 
+    var renewBtn = expired
+      ? '<button class="bit-ab a-renew" onclick="renewGestao(' + r.id + ')" title="Renovar">' + SVG_ICONS.refresh + '</button>'
+      : '';
+    var msgBtn = wppClean
+      ? '<button class="bit-ab a-msg" onclick="openTemplateModal(' + r.id + ')" title="Enviar mensagem">' + SVG_ICONS.message + '</button>'
+      : '';
+
     html += '<tr>' +
       '<td class="td-name"><strong>' + escapeHtml(clienteNome) + '</strong>' + cred + '</td>' +
       '<td>' + wppCell + '</td>' +
@@ -353,6 +389,8 @@ function renderGestao() {
       '<td>' + formatDate(r.data_expiracao) + '</td>' +
       '<td>' + badge + '</td>' +
       '<td class="td-a"><div class="bit-actions">' +
+        msgBtn +
+        renewBtn +
         '<button class="bit-ab a-edit" onclick="openModal(\'gestao\',' + r.id + ')" title="Editar">' + SVG_ICONS.edit + '</button>' +
         '<button class="bit-ab a-del" onclick="deleteRecord(\'bit_gestao\',' + r.id + ')" title="Excluir">' + SVG_ICONS.trash + '</button>' +
       '</div></td>' +
@@ -589,6 +627,10 @@ function fillModalForEdit(type, id) {
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('show');
   editingId = null;
+  // Restore default save button
+  var saveBtn = document.getElementById('modal-save-btn');
+  saveBtn.style.display = '';
+  saveBtn.setAttribute('onclick', 'saveRecord()');
 }
 
 function preencherValorServico() {
@@ -745,6 +787,152 @@ async function quitarConta(id, tipo) {
     console.error('Erro ao quitar:', e);
     showToast('Erro ao processar', 'error');
   }
+}
+
+/* ── Renewal ────────────────────────── */
+
+function renewGestao(id) {
+  var rec = gestaoData.find(function (r) { return r.id === id; });
+  if (!rec) return;
+
+  var clienteNome = (rec.bit_clientes && rec.bit_clientes.nome) || 'Cliente';
+  var servicoDesc = (rec.bit_servicos && rec.bit_servicos.descricao) || 'Serviço';
+
+  // Open modal with renewal form
+  var bodyHtml =
+    '<p style="font-size:.84rem;color:var(--gray-600,#4a5568);margin-bottom:14px">Renovar serviço de <strong>' + escapeHtml(clienteNome) + '</strong> — <strong>' + escapeHtml(servicoDesc) + '</strong></p>' +
+    '<label>Nova Data de Expiração</label><input type="date" id="m-renew-exp">' +
+    '<label>Novo Valor (R$)</label><input type="number" id="m-renew-valor" step="0.01" min="0" value="' + (rec.valor || '') + '">' +
+    '<label>Observação</label><textarea id="m-renew-obs" placeholder="Obs da renovação..."></textarea>';
+
+  document.getElementById('modal-title').textContent = 'Renovar Serviço';
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  document.getElementById('modal-save-btn').setAttribute('onclick', 'saveRenewal(' + id + ')');
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+async function saveRenewal(id) {
+  var newExp = document.getElementById('m-renew-exp').value;
+  var newValor = Number(document.getElementById('m-renew-valor').value) || 0;
+  var obs = document.getElementById('m-renew-obs').value || '';
+
+  if (!newExp) {
+    showToast('Informe a nova data de expiração', 'error');
+    return;
+  }
+
+  try {
+    var payload = {
+      data_expiracao: newExp,
+      valor: newValor
+    };
+    if (obs) payload.observacao = obs;
+
+    var result = await sb.from('bit_gestao').update(payload).eq('id', id);
+    if (result.error) throw result.error;
+
+    showToast('Serviço renovado com sucesso!', 'success');
+    closeModal();
+    // Reset save button onclick
+    document.getElementById('modal-save-btn').setAttribute('onclick', 'saveRecord()');
+    loadGestao();
+  } catch (e) {
+    console.error('Erro ao renovar:', e);
+    showToast('Erro ao renovar serviço', 'error');
+  }
+}
+
+/* ── Message Templates ──────────────── */
+
+function openTemplateModal(gestaoId) {
+  var rec = gestaoData.find(function (r) { return r.id === gestaoId; });
+  if (!rec) return;
+
+  var clienteNome = (rec.bit_clientes && rec.bit_clientes.nome) || '';
+  var whatsapp = (rec.bit_clientes && rec.bit_clientes.whatsapp) || '';
+  var servicoDesc = (rec.bit_servicos && rec.bit_servicos.descricao) || '';
+
+  var html = '<p style="font-size:.84rem;color:var(--gray-600,#4a5568);margin-bottom:12px">Enviar mensagem para <strong>' + escapeHtml(clienteNome) + '</strong></p>';
+  html += '<div class="tpl-list">';
+
+  for (var i = 0; i < MSG_TEMPLATES.length; i++) {
+    var tpl = MSG_TEMPLATES[i];
+    var preview = tpl.texto.substring(0, 60).replace(/\n/g, ' ') + '...';
+    html += '<div class="tpl-item" onclick="useTemplate(' + gestaoId + ',' + i + ')">' +
+      '<div class="tpl-item-icon">' + SVG_ICONS.template + '</div>' +
+      '<div class="tpl-item-info"><div class="tpl-item-name">' + escapeHtml(tpl.nome) + '</div>' +
+      '<div class="tpl-item-preview">' + escapeHtml(preview) + '</div></div>' +
+      '<div class="tpl-actions"><button class="bit-ab a-wpp" style="width:28px;height:28px" title="Usar template">' + SVG_ICONS.send + '</button></div>' +
+    '</div>';
+  }
+
+  html += '</div>';
+  html += '<div style="border-top:1px solid var(--gray-200,#d8dde8);margin-top:12px;padding-top:12px">';
+  html += '<label style="margin-top:0">Ou escreva uma mensagem personalizada:</label>';
+  html += '<textarea id="m-custom-msg" placeholder="Digite sua mensagem..." style="min-height:80px"></textarea>';
+  html += '<button class="btn-save" style="margin-top:8px;width:100%" onclick="sendCustomMsg(' + gestaoId + ')">Enviar via WhatsApp</button>';
+  html += '</div>';
+
+  document.getElementById('modal-title').textContent = 'Enviar Mensagem';
+  document.getElementById('modal-body').innerHTML = html;
+  // Hide default save button
+  document.getElementById('modal-save-btn').style.display = 'none';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function fillTemplate(texto, rec) {
+  var clienteNome = (rec.bit_clientes && rec.bit_clientes.nome) || '';
+  var servicoDesc = (rec.bit_servicos && rec.bit_servicos.descricao) || '';
+  var msg = texto
+    .replace(/\{nome\}/g, clienteNome)
+    .replace(/\{servico\}/g, servicoDesc)
+    .replace(/\{valor\}/g, formatBRL(rec.valor))
+    .replace(/\{expiracao\}/g, formatDate(rec.data_expiracao))
+    .replace(/\{login\}/g, rec.login || '—')
+    .replace(/\{senha\}/g, rec.senha || '—');
+  return msg;
+}
+
+function useTemplate(gestaoId, tplIndex) {
+  var rec = gestaoData.find(function (r) { return r.id === gestaoId; });
+  if (!rec) return;
+
+  var tpl = MSG_TEMPLATES[tplIndex];
+  var msg = fillTemplate(tpl.texto, rec);
+  var whatsapp = (rec.bit_clientes && rec.bit_clientes.whatsapp) || '';
+  var phone = cleanPhone(whatsapp);
+
+  if (!phone) {
+    showToast('Cliente sem WhatsApp cadastrado', 'error');
+    return;
+  }
+
+  var url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+  closeModal();
+}
+
+function sendCustomMsg(gestaoId) {
+  var rec = gestaoData.find(function (r) { return r.id === gestaoId; });
+  if (!rec) return;
+
+  var msg = (document.getElementById('m-custom-msg').value || '').trim();
+  if (!msg) {
+    showToast('Digite uma mensagem', 'error');
+    return;
+  }
+
+  var whatsapp = (rec.bit_clientes && rec.bit_clientes.whatsapp) || '';
+  var phone = cleanPhone(whatsapp);
+
+  if (!phone) {
+    showToast('Cliente sem WhatsApp cadastrado', 'error');
+    return;
+  }
+
+  var url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+  closeModal();
 }
 
 /* ── Init ───────────────────────────── */

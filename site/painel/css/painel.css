@@ -1634,6 +1634,22 @@ tbody tr:last-child td {
   50% { transform: scale(1.1); }
 }
 
+/* ═══ CHAT UNREAD BADGE (sidebar) ═══ */
+.chat-unread-badge {
+  background: var(--danger, #ef4444);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+  margin-left: auto;
+  line-height: 1.4;
+  animation: notifPulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
 /* ═══ NOTIFICATION PANEL ═══ */
 .notif-panel {
   display: none;
