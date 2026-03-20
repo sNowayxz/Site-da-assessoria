@@ -40,7 +40,9 @@ CREATE POLICY "Download arquivos publico" ON storage.objects
 CREATE POLICY "Delete arquivos autenticados" ON storage.objects
   FOR DELETE USING (bucket_id = 'arquivos' AND auth.role() = 'authenticated');
 
--- 6. Corrigir constraint alunos_tipo_check (caso esteja diferente)
--- Primeiro, dropar o constraint atual e recriar:
+-- 6. Corrigir constraint alunos_tipo_check
+-- Primeiro normalizar dados existentes que podem ter valores antigos
+UPDATE alunos SET tipo = 'mensalista' WHERE tipo NOT IN ('avulso', 'mensalista');
+-- Dropar e recriar o constraint
 ALTER TABLE alunos DROP CONSTRAINT IF EXISTS alunos_tipo_check;
 ALTER TABLE alunos ADD CONSTRAINT alunos_tipo_check CHECK (tipo IN ('avulso', 'mensalista'));
