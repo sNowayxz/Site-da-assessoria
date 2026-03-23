@@ -2,7 +2,7 @@
    Google Calendar Integration — gcal.js
    ═══════════════════════════════════════════ */
 
-var GCAL_CLIENT_ID = ''; // Será preenchido após setup no Google Cloud Console
+var GCAL_CLIENT_ID = '345600364747-hujcipm7lg8bp1bucqbqcdld8k46urt6.apps.googleusercontent.com';
 var GCAL_SCOPES = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email';
 var GCAL_API = 'https://www.googleapis.com/calendar/v3';
 
