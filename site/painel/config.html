@@ -368,6 +368,19 @@
             </div>
           </div>
         </div>
+        <!-- Google Calendar -->
+        <div class="config-card">
+          <div class="config-card-header"><span class="config-icon">&#128197;</span> Google Calendar</div>
+          <div class="config-card-body">
+            <div class="config-item">
+              <div class="config-item-info">
+                <div class="config-item-label" id="gcal-cfg-label">Desconectado</div>
+                <div class="config-item-desc" id="gcal-cfg-desc">Sincronize eventos da agenda com o Google Calendar</div>
+              </div>
+              <button class="btn btn-outline" id="btn-gcal-cfg" style="font-size:0.78rem;padding:5px 12px;" onclick="gcalConfigAction()">Conectar</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Gerenciar Assessores (admin/dono) -->
@@ -434,9 +447,11 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="js/supabase-config.js?v=8"></script>
   <script src="js/auth.js?v=8"></script>
   <script src="js/utils.js?v=8"></script>
+  <script src="js/gcal.js?v=1"></script>
   <script>
     document.getElementById('mobile-toggle').addEventListener('click', function () {
       document.getElementById('sidebar').classList.toggle('open');
@@ -448,6 +463,37 @@
     var CONFIG_KEY = 'painel-config';
     var _currentUser = null;
     var _currentRole = null;
+    var currentUserId = null;
+
+    function gcalConfigAction() {
+      if (_gcalConnected) {
+        gcalDisconnect();
+        setTimeout(gcalUpdateConfigUI, 500);
+      } else {
+        gcalConnect();
+        // gcalUpdateConfigUI será chamado após connect via callback
+        var _origGcalUI = gcalUpdateUI;
+        gcalUpdateUI = function () { _origGcalUI(); gcalUpdateConfigUI(); };
+      }
+    }
+
+    function gcalUpdateConfigUI() {
+      var label = document.getElementById('gcal-cfg-label');
+      var desc = document.getElementById('gcal-cfg-desc');
+      var btn = document.getElementById('btn-gcal-cfg');
+      if (!label) return;
+      if (_gcalConnected) {
+        label.textContent = 'Conectado' + (_gcalEmail ? ' — ' + _gcalEmail : '');
+        desc.textContent = 'Eventos sincronizados com Google Calendar';
+        btn.textContent = 'Desconectar';
+        btn.style.color = '#dc2626';
+      } else {
+        label.textContent = 'Desconectado';
+        desc.textContent = 'Sincronize eventos da agenda com o Google Calendar';
+        btn.textContent = 'Conectar';
+        btn.style.color = '';
+      }
+    }
 
     function loadConfig() {
       try { return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {}; } catch (e) { return {}; }
@@ -654,6 +700,8 @@
       if (roleLabel) roleLabel.textContent = roleLabels[role] || role;
 
       document.getElementById('btn-logout').addEventListener('click', handleLogout);
+      currentUserId = user.id;
+      gcalInit(function () { gcalUpdateConfigUI(); });
 
       // Avatar
       try {

@@ -32,6 +32,7 @@
     .cal-event.atividade { background: rgba(59,130,246,0.12); color: #2563eb; }
     .cal-event.entrega { background: rgba(34,197,94,0.12); color: #16a34a; }
     .cal-event.manual { background: rgba(139,92,246,0.12); color: #7c3aed; }
+    .cal-event.google { background: rgba(234,67,53,0.12); color: #ea4335; }
 
     .calendar-day:not(.other-month) { cursor: pointer; }
 
@@ -105,6 +106,7 @@
     .agenda-summary-icon.blue { background: rgba(59,130,246,0.1); }
     .agenda-summary-icon.green { background: rgba(34,197,94,0.1); }
     .agenda-summary-icon.purple { background: rgba(139,92,246,0.1); }
+    .agenda-summary-icon.gred { background: rgba(234,67,53,0.1); }
     .agenda-summary-num { font-size: 1.2rem; font-weight: 800; color: var(--gray-800); }
     .agenda-summary-label { font-size: 0.7rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600; }
     .agenda-month-count { font-size: 0.82rem; color: var(--gray-400); font-weight: 500; }
@@ -143,6 +145,20 @@
     [data-theme="dark"] .view-toggle { border-color: #30363d; }
     [data-theme="dark"] .view-toggle button { background: #1c2128; color: #8b949e; }
     [data-theme="dark"] .view-toggle button.active { background: var(--gold); color: var(--dark); }
+
+    /* Google Calendar badge */
+    .gcal-bar { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+    .gcal-badge { display:none; align-items:center; gap:8px; padding:6px 14px; border-radius:10px; background:rgba(234,67,53,0.08); border:1.5px solid rgba(234,67,53,0.2); font-size:0.78rem; font-weight:600; color:#ea4335; }
+    .gcal-badge svg { width:16px; height:16px; flex-shrink:0; }
+    .gcal-email { color:var(--gray-600); font-weight:500; }
+    .btn-gcal { padding:6px 14px; border-radius:10px; border:1.5px solid var(--gray-200); background:var(--white); font-size:0.78rem; font-weight:600; cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:6px; transition:all .2s; color:var(--gray-600); }
+    .btn-gcal:hover { border-color:#ea4335; color:#ea4335; }
+    .btn-gcal.disconnect { font-size:0.72rem; color:var(--gray-400); border-color:transparent; padding:4px 10px; }
+    .btn-gcal.disconnect:hover { color:#dc2626; }
+    [data-theme=dark] .gcal-badge { background:rgba(234,67,53,0.1); border-color:rgba(234,67,53,0.25); }
+    [data-theme=dark] .gcal-email { color:#8b949e; }
+    [data-theme=dark] .btn-gcal { background:#1c2128; border-color:#30363d; color:#8b949e; }
+    [data-theme=dark] .btn-gcal:hover { border-color:#ea4335; color:#ea4335; }
 
     @media (max-width: 768px) {
       .calendar-day { min-height: 60px; padding: 4px; }
@@ -231,6 +247,17 @@
         <div class="agenda-summary-card"><div class="agenda-summary-icon blue">📘</div><div><div class="agenda-summary-num" id="sum-atividades">0</div><div class="agenda-summary-label">Atividades</div></div></div>
         <div class="agenda-summary-card"><div class="agenda-summary-icon green">📬</div><div><div class="agenda-summary-num" id="sum-entregas">0</div><div class="agenda-summary-label">Entregas</div></div></div>
         <div class="agenda-summary-card"><div class="agenda-summary-icon purple">📌</div><div><div class="agenda-summary-num" id="sum-manuais">0</div><div class="agenda-summary-label">Eventos</div></div></div>
+        <div class="agenda-summary-card" id="sum-google-card" style="display:none;"><div class="agenda-summary-icon gred">📅</div><div><div class="agenda-summary-num" id="sum-google">0</div><div class="agenda-summary-label">Google</div></div></div>
+      </div>
+
+      <!-- Google Calendar Connection -->
+      <div class="gcal-bar">
+        <div class="gcal-badge" id="gcal-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="gcal-email"></span>
+        </div>
+        <button class="btn-gcal" id="btn-gcal-connect" onclick="gcalConnect()">📅 Conectar Google Calendar</button>
+        <button class="btn-gcal disconnect" id="btn-gcal-disconnect" style="display:none;" onclick="gcalDisconnect()">Desconectar</button>
       </div>
 
       <div class="calendar-header">
@@ -256,6 +283,7 @@
         <button class="filter-btn active" data-filter="atividade"><span class="filter-dot" style="background:#2563eb;"></span> Atividade</button>
         <button class="filter-btn active" data-filter="entrega"><span class="filter-dot" style="background:#16a34a;"></span> Entrega</button>
         <button class="filter-btn active" data-filter="manual"><span class="filter-dot" style="background:#8b5cf6;"></span> Evento Manual</button>
+        <button class="filter-btn active" data-filter="google" id="filter-google" style="display:none;"><span class="filter-dot" style="background:#ea4335;"></span> Google</button>
       </div>
 
       <div class="calendar-grid" id="calendar-grid"></div>
@@ -333,16 +361,18 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="js/supabase-config.js?v=8"></script>
   <script src="js/auth.js?v=8"></script>
   <script src="js/utils.js?v=8"></script>
+  <script src="js/gcal.js?v=1"></script>
   <script>
     document.getElementById('mobile-toggle').addEventListener('click', function () { document.getElementById('sidebar').classList.toggle('open'); });
     document.getElementById('sidebar-overlay').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); });
 
     var currentYear, currentMonth, currentUserId = null;
     var allEvents = {};
-    var activeFilters = ['vencimento', 'atividade', 'entrega', 'manual'];
+    var activeFilters = ['vencimento', 'atividade', 'entrega', 'manual', 'google'];
     var MESES = ['Janeiro','Fevereiro','Mar\u00e7o','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
     // ── Modal helpers ──
@@ -433,6 +463,14 @@
         });
       });
 
+      // Google Calendar init
+      gcalInit(function () {
+        if (_gcalConnected) {
+          document.getElementById('filter-google').style.display = '';
+          document.getElementById('sum-google-card').style.display = '';
+        }
+      });
+
       await renderCalendar();
       initCalendarDragDrop();
     });
@@ -489,6 +527,20 @@
           if (!events[dt]) events[dt] = [];
           events[dt].push({ type: 'manual', text: m.titulo, id: m.id, hora: m.hora, descricao: m.descricao || '', cor: m.cor, tipo_evento: m.tipo, deletable: true });
         });
+
+        // Google Calendar events
+        if (_gcalConnected) {
+          await new Promise(function (resolve) {
+            gcalPullFromGoogle(startStr, endStr, function (gEvents) {
+              (gEvents || []).forEach(function (ge) {
+                var dt = ge.date;
+                if (!events[dt]) events[dt] = [];
+                events[dt].push(ge);
+              });
+              resolve();
+            });
+          });
+        }
       } catch (e) { console.warn('Calendar error:', e); }
 
       allEvents = events;
@@ -666,6 +718,15 @@
         closeModal('modal-novo-evento');
         showToast('Evento criado!', 'success');
         if (typeof logAudit === 'function') logAudit('create_evento', 'eventos_agenda', null, { titulo: titulo });
+
+        // Sync to Google Calendar
+        if (_gcalConnected) {
+          var { data: inserted } = await sb.from('eventos_agenda').select('id').eq('titulo', titulo).eq('data', data).eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(1).single();
+          if (inserted) {
+            gcalSyncEventToGoogle({ id: inserted.id, titulo: titulo, data: data, hora: document.getElementById('evento-hora').value || null, descricao: document.getElementById('evento-descricao').value, cor: document.getElementById('evento-cor').value });
+          }
+        }
+
         await renderCalendar();
       } catch (e) {
         console.error('Erro ao salvar evento:', e);
@@ -677,7 +738,7 @@
 
     // ── Summary & List View ──
     function updateAgendaSummary(events) {
-      var counts = { vencimento: 0, atividade: 0, entrega: 0, manual: 0 };
+      var counts = { vencimento: 0, atividade: 0, entrega: 0, manual: 0, google: 0 };
       var total = 0;
       Object.keys(events).forEach(function (dt) {
         events[dt].forEach(function (ev) {
@@ -689,13 +750,14 @@
       document.getElementById('sum-atividades').textContent = counts.atividade;
       document.getElementById('sum-entregas').textContent = counts.entrega;
       document.getElementById('sum-manuais').textContent = counts.manual;
+      document.getElementById('sum-google').textContent = counts.google;
       document.getElementById('agenda-month-count').textContent = total + ' evento' + (total !== 1 ? 's' : '');
     }
 
     function renderListView() {
       var listEl = document.getElementById('agenda-list');
-      var typeColors = { vencimento: '#dc2626', atividade: '#2563eb', entrega: '#16a34a', manual: '#8b5cf6' };
-      var typeLabels = { vencimento: 'Vencimento', atividade: 'Atividade', entrega: 'Entrega', manual: 'Evento' };
+      var typeColors = { vencimento: '#dc2626', atividade: '#2563eb', entrega: '#16a34a', manual: '#8b5cf6', google: '#ea4335' };
+      var typeLabels = { vencimento: 'Vencimento', atividade: 'Atividade', entrega: 'Entrega', manual: 'Evento', google: 'Google' };
       var DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','S\u00e1b'];
 
       // Collect and sort all events for the month
@@ -734,6 +796,9 @@
     }
     async function _doDeleteEvento(id) {
       try {
+        // Sync delete to Google Calendar before removing from DB
+        if (_gcalConnected) gcalDeleteFromGoogle(id);
+
         var { error } = await sb.from('eventos_agenda').delete().eq('id', id);
         if (error) throw error;
         closeModal('modal-dia');
