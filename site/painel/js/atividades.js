@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Carregar atividades
   await loadAtividades();
 
+  // Realtime: atualiza tabela automaticamente ao inserir/atualizar/deletar
+  subscribeAtividadesRealtime();
+
   // Nova atividade
   document.getElementById('btn-nova-atividade').addEventListener('click', function () {
     currentEditAtivId = null;
@@ -537,6 +540,19 @@ function clearFileUI() {
   var ef = document.getElementById('existing-files');
   if (fl) fl.innerHTML = '';
   if (ef) ef.innerHTML = '';
+}
+
+/* ── Realtime ──────────────────────────── */
+
+var _atividadesRealtimeSub = null;
+
+function subscribeAtividadesRealtime() {
+  if (_atividadesRealtimeSub) sb.removeChannel(_atividadesRealtimeSub);
+  _atividadesRealtimeSub = sb.channel('atividades-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'atividades' }, function () {
+      loadAtividades();
+    })
+    .subscribe();
 }
 
 // Avança o status no fluxo: pendente → em_andamento → entregue

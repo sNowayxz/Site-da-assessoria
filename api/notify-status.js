@@ -24,7 +24,7 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: true, skipped: true, reason: 'RESEND_API_KEY not set' });
   }
 
-  const { aluno_nome, ra, novo_status, horas, email_aluno } = req.body || {};
+  const { aluno_nome, ra, novo_status, horas, email_aluno, origem, curso, tema, telefone, valor, valor_hora, valor_pago, observacoes } = req.body || {};
   if (!aluno_nome || !novo_status) {
     return res.status(400).json({ error: 'aluno_nome + novo_status required' });
   }
@@ -42,12 +42,15 @@ module.exports = async function handler(req, res) {
   const isNewOrder = novo_status === 'novo_pedido';
   const statusLabel = STATUS_LABELS[novo_status] || novo_status;
 
+  // Origem: "Aluno" para compras do site, nome da assessoria para solicitações internas
+  const origemLabel = origem || 'Aluno';
+
   // Template diferente para novo pedido (enviado para Gessica) vs atualização (enviado para aluno)
   const htmlBody = isNewOrder ? `
-    <div style="font-family:Inter,Arial,sans-serif;max-width:500px;margin:0 auto;background:#f0f7ff;padding:30px;border-radius:16px;">
+    <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;background:#f0f7ff;padding:30px;border-radius:16px;">
       <div style="text-align:center;margin-bottom:24px;">
-        <h2 style="color:#1a1a2e;margin:0;">🆕 Novo Pedido de Extensão</h2>
-        <p style="color:#8892a4;font-size:0.85rem;">Um aluno acabou de solicitar extensão pelo site</p>
+        <h2 style="color:#1a1a2e;margin:0;">📋 Novo Projeto</h2>
+        <p style="color:#8892a4;font-size:0.85rem;margin-top:6px;">[${origemLabel.toUpperCase()}]</p>
       </div>
       <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <div style="background:#3b82f6;color:white;padding:12px 20px;border-radius:10px;text-align:center;font-weight:700;font-size:1.1rem;margin:0 0 16px;">
@@ -55,8 +58,16 @@ module.exports = async function handler(req, res) {
         </div>
         ${ra ? '<p style="color:#4a5568;margin:8px 0;"><strong>RA:</strong> ' + ra + '</p>' : ''}
         ${horas ? '<p style="color:#4a5568;margin:8px 0;"><strong>Horas:</strong> ' + horas + 'h</p>' : ''}
+        ${valor ? '<p style="color:#4a5568;margin:8px 0;"><strong>Valor:</strong> R$ ' + Number(valor).toFixed(2).replace('.', ',') + '</p>' : ''}
+        ${valor_hora ? '<p style="color:#4a5568;margin:8px 0;"><strong>Valor/Hora:</strong> R$ ' + Number(valor_hora).toFixed(2).replace('.', ',') + '</p>' : ''}
+        ${valor_pago ? '<p style="color:#4a5568;margin:8px 0;"><strong>Valor Pago:</strong> R$ ' + Number(valor_pago).toFixed(2).replace('.', ',') + '</p>' : ''}
+        ${curso ? '<p style="color:#4a5568;margin:8px 0;"><strong>Curso:</strong> ' + curso + '</p>' : ''}
+        ${tema ? '<p style="color:#4a5568;margin:8px 0;"><strong>Tema:</strong> ' + tema + '</p>' : ''}
         ${email_aluno ? '<p style="color:#4a5568;margin:8px 0;"><strong>Email:</strong> ' + email_aluno + '</p>' : ''}
+        ${telefone ? '<p style="color:#4a5568;margin:8px 0;"><strong>Telefone:</strong> ' + telefone + '</p>' : ''}
+        ${observacoes ? '<p style="color:#4a5568;margin:8px 0;"><strong>Observações:</strong> ' + observacoes + '</p>' : ''}
         <hr style="border:none;border-top:1px solid #eef1f6;margin:20px 0;">
+        <p style="color:#8892a4;font-size:0.8rem;text-align:center;margin:0 0 8px;">Origem: <strong>${origemLabel}</strong></p>
         <p style="color:#3b82f6;font-weight:600;text-align:center;margin:0;">
           <a href="https://assessoriaextensoes.com/painel/acompanhar.html" style="color:#3b82f6;">Acessar Painel →</a>
         </p>
@@ -102,7 +113,7 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         from: 'Assessoria Extensões <noreply@assessoriaextensoes.com>',
         to: recipients,
-        subject: `${statusLabel} — ${aluno_nome}`,
+        subject: isNewOrder ? `[${origemLabel.toUpperCase()}] Novo Projeto — ${aluno_nome}` : `${statusLabel} — ${aluno_nome}`,
         html: htmlBody
       })
     });

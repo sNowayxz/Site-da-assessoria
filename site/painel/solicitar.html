@@ -42,6 +42,23 @@
       color: var(--gray-600);
       margin-bottom: 4px;
     }
+    .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--gray-800);
+      background: var(--white);
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow);
+    }
     .form-group input, .form-group textarea {
       width: 100%;
       padding: 10px 14px;
@@ -106,7 +123,7 @@
     /* Dark mode */
     [data-theme="dark"] .form-card { background: #1c2128; }
     [data-theme="dark"] .form-card h2 { color: var(--gold); }
-    [data-theme="dark"] .form-group input, [data-theme="dark"] .form-group textarea {
+    [data-theme="dark"] .form-group input, [data-theme="dark"] .form-group textarea, [data-theme="dark"] .form-group select {
       background: #161b22; border-color: #30363d; color: #e6edf3;
     }
     [data-theme="dark"] .solic-card { background: #1c2128; }
@@ -252,6 +269,12 @@
             </div>
           </div>
           <div class="form-group">
+            <label>Assessoria</label>
+            <select name="assessoria_id" id="select-assessoria">
+              <option value="">Selecione a assessoria</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label>Observações</label>
             <textarea name="observacoes" placeholder="Descrição das atividades solicitadas, prazos, etc..."></textarea>
           </div>
@@ -290,6 +313,7 @@
   <script>
     var currentUserId = null;
     var currentRole = null;
+    var currentUserName = '';
 
     document.addEventListener('DOMContentLoaded', async function () {
       var result = await requireRole(['admin', 'dono', 'extensao', 'assessoria']);
@@ -298,16 +322,45 @@
       currentRole = result.role;
       currentUserId = user.id;
       setupSidebarPermissions(currentRole);
-      document.getElementById('user-name').textContent = getUserName(user);
-      document.getElementById('user-avatar').textContent = getUserName(user).charAt(0).toUpperCase();
+      currentUserName = getUserName(user);
+      document.getElementById('user-name').textContent = currentUserName;
+      document.getElementById('user-avatar').textContent = currentUserName.charAt(0).toUpperCase();
       document.getElementById('btn-logout').addEventListener('click', handleLogout);
+
+      // Load assessorias for select
+      await loadAssessorias();
 
       // Load existing requests
       await loadSolicitacoes();
 
+      // Realtime: atualiza solicitações automaticamente
+      sb.channel('solicitacoes-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'solicitacoes' }, function () {
+          loadSolicitacoes();
+        })
+        .subscribe();
+
       // Form submit
       document.getElementById('form-solicitar').addEventListener('submit', handleSolicitar);
     });
+
+    async function loadAssessorias() {
+      try {
+        var { data } = await sb.from('assessores').select('id, label, nome, role');
+        var sel = document.getElementById('select-assessoria');
+        if (data && sel) {
+          data.forEach(function (a) {
+            // Mostra assessores e assessorias
+            if (a.role === 'assessor' || a.role === 'assessoria' || a.role === 'admin' || a.role === 'dono') {
+              var opt = document.createElement('option');
+              opt.value = a.id;
+              opt.textContent = (a.label || a.nome) + (a.role === 'assessoria' ? ' (Assessoria)' : '');
+              sel.appendChild(opt);
+            }
+          });
+        }
+      } catch (e) { console.warn('Erro ao carregar assessorias:', e.message); }
+    }
 
     async function handleSolicitar(e) {
       e.preventDefault();
@@ -317,8 +370,9 @@
       btn.textContent = 'Enviando...';
 
       try {
+        var assessoriaId = form.assessoria_id.value || currentUserId;
         var record = {
-          assessor_id: currentUserId,
+          assessor_id: assessoriaId,
           aluno_nome: form.aluno_nome.value.trim(),
           ra: form.ra.value.trim(),
           senha: form.senha.value.trim(),
@@ -331,6 +385,26 @@
 
         var { error } = await sb.from('solicitacoes').insert(record);
         if (error) throw error;
+
+        // Pegar nome da assessoria selecionada para o email
+        var selAssessoria = document.getElementById('select-assessoria');
+        var origemNome = selAssessoria.selectedIndex > 0 ? selAssessoria.options[selAssessoria.selectedIndex].textContent.replace(' (Assessoria)', '') : currentUserName;
+
+        // Notificar por email sobre nova solicitação (non-blocking)
+        fetch('https://site-da-assessoria.vercel.app/api/notify-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            aluno_nome: record.aluno_nome,
+            ra: record.ra,
+            novo_status: 'novo_pedido',
+            horas: record.horas,
+            origem: origemNome,
+            valor_hora: record.valor_hora,
+            valor_pago: record.valor_pago,
+            observacoes: record.observacoes
+          })
+        }).catch(function() {});
 
         showToast('Solicitação enviada!', 'success');
         form.reset();

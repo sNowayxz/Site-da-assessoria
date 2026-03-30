@@ -178,21 +178,13 @@ function exportTableToPDF(tableId, title, filename) {
     doc.setTextColor(136, 146, 164);
     doc.text('Assessoria Acadêmica — Gerado em ' + new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR'), 14, 28);
 
-    // Tabela
-    var table = document.querySelector('#' + tableId);
-    if (!table) {
-      // Tenta pegar do tbody
-      var el = document.querySelector('#' + tableId);
-      table = el ? el.closest('table') : null;
-    }
-
-    // Se passou o ID do tbody, pega a table pai
-    var tableEl = table;
-    if (table && table.tagName === 'TBODY') {
-      tableEl = table.closest('table');
+    // Tabela — aceita ID de table ou tbody
+    var el = document.querySelector('#' + tableId);
+    var tableEl = null;
+    if (el) {
+      tableEl = (el.tagName === 'TBODY') ? el.closest('table') : el;
     }
     if (!tableEl) {
-      // Tenta qualquer tabela visível
       tableEl = document.querySelector('.table-wrap table');
     }
 
@@ -251,8 +243,11 @@ function exportTableToPDF(tableId, title, filename) {
 
 // ─── CSV Export ───
 function exportTableToCSV(tableId, filename) {
-  var table = document.querySelector('#' + tableId);
-  if (!table) table = document.querySelector('.table-wrap table');
+  var el = document.querySelector('#' + tableId);
+  if (!el) el = document.querySelector('.table-wrap table');
+  if (!el) { showToast('Nenhuma tabela encontrada', 'error'); return; }
+  // Se pegou tbody, sobe para table
+  var table = (el.tagName === 'TBODY') ? el.closest('table') : el;
   if (!table) { showToast('Nenhuma tabela encontrada', 'error'); return; }
 
   var rows = table.querySelectorAll('tr');
@@ -261,13 +256,21 @@ function exportTableToCSV(tableId, filename) {
   rows.forEach(function (row) {
     var cols = row.querySelectorAll('th, td');
     var rowData = [];
+    var totalCols = cols.length;
     cols.forEach(function (col, idx) {
-      // Ignora última coluna (Ações)
-      if (idx === cols.length - 1 && col.classList.contains('actions')) return;
-      var text = col.textContent.trim().replace(/"/g, '""');
+      // Ignora coluna Ações (última com classe actions ou header "Ações")
+      if (idx === totalCols - 1) {
+        if (col.classList.contains('actions')) return;
+        var hText = col.textContent.trim();
+        if (hText === 'Ações' || hText === 'Acoes') return;
+      }
+      // Limpa o texto: remove emojis de badges, quebras de linha, espaços múltiplos
+      var text = col.textContent.trim()
+        .replace(/\s+/g, ' ')    // colapsa espaços e quebras de linha
+        .replace(/"/g, '""');    // escapa aspas para CSV
       rowData.push('"' + text + '"');
     });
-    csv.push(rowData.join(','));
+    if (rowData.length > 0) csv.push(rowData.join(';'));
   });
 
   var blob = new Blob(['\ufeff' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });

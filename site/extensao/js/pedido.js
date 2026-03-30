@@ -119,7 +119,13 @@ document.getElementById('form-pedido').addEventListener('submit', async function
         ra: ra,
         novo_status: 'novo_pedido',
         horas: ch,
-        email_aluno: email
+        email_aluno: email,
+        origem: 'Aluno',
+        curso: curso,
+        tema: tema,
+        telefone: telefone,
+        valor: valor,
+        observacoes: observacoes
       })
     }).catch(function() {});
 
